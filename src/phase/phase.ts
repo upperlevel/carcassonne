@@ -12,10 +12,6 @@ export class Phase {
         this.canvas = document.getElementById(this.name + "Canvas") as HTMLCanvasElement;
     }
 
-    querySelector(query: string) {
-        return this.div.querySelector(query);
-    }
-
     enable() {
         console.log(`[${this.name}] Enabling`);
         this.div.style.display = "block";
@@ -37,6 +33,6 @@ export class Phase {
     update(delta: number) {
     }
 
-    render() {
+    render(graphics: PIXI.Graphics) {
     }
 }

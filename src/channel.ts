@@ -23,10 +23,10 @@ export class Channel {
         this.packetId++;
     }
 
-    readOnce(type: string | "any", callback: (packet: any) => void) {
+    readOnce(type: string | "any", callback: (event: Event) => void) {
         const self = this;
-        self.eventManager.addEventListener(type, function (packet: Event)  {
-            callback(packet);
+        self.eventManager.addEventListener(type, function (event: Event)  {
+            callback(event);
             self.eventManager.removeEventListener(type, this);
         });
     }

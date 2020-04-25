@@ -9,6 +9,7 @@ export class LoginPhase extends Phase {
     channel: Channel;
 
     nameElement: HTMLInputElement;
+    colorElement: HTMLInputElement;
     submitNameElement: HTMLButtonElement;
     errorElement: HTMLElement;
 
@@ -20,12 +21,13 @@ export class LoginPhase extends Phase {
         this.channel = Channel.get();
 
         this.nameElement = document.getElementById("loginName") as HTMLInputElement;
+        this.colorElement = document.getElementById("loginColor") as HTMLInputElement;
         this.submitNameElement = document.getElementById("loginButton") as HTMLButtonElement;
         this.errorElement = document.getElementById("errorElement") as HTMLButtonElement;
     }
 
     checkName(name: string) {
-        return name.length > 0 && name.match(/^[a-zA-Z0-9_]*$/);
+        return name.length > 0 && name.length <= 16 && name.match(/^[a-zA-Z0-9_]*$/);
     }
 
     onSubmitName() {
@@ -34,17 +36,24 @@ export class LoginPhase extends Phase {
             this.errorElement.innerText = "Invalid name!";
             return;
         }
+        const color = parseInt(this.colorElement.value);
+        const strokeColor = 0xff0000;
         this.submitNameElement.disabled = true;
-        this.handshake(name);
+        this.login({
+            name: name,
+            color: color,
+            strokeColor: strokeColor,
+        });
     }
 
-    handshake(name: string) {
-        this.channel.readOnce("response", (packet: any) => {
+    login(me: PlayerObject) {
+        this.channel.readOnce("response", (packet: LoginResponse) => {
             if (packet.result !== "ok") {
                 console.error("Unexpected response result: " + packet.result);
                 return;
             }
-            this.onHandshake();
+            me.id = packet.player_id;
+            this.onLogin(me);
         });
         this.channel.send({
             type: "handshake",
@@ -52,15 +61,15 @@ export class LoginPhase extends Phase {
         });
     }
 
-    onHandshake() {
+    onLogin(me: PlayerObject) {
         if (window.location.hash) {
-            this.joinRoom(window.location.hash.substr(1));
+            this.joinRoom(window.location.hash.substr(1), me);
         } else {
-            this.createRoom();
+            this.createRoom(me);
         }
     }
 
-    createRoom() {
+    createRoom(me: PlayerObject) {
         this.channel.readOnce("response", (packet: any) => {
             if (packet.result !== "ok") {
                 console.error("Error: " + packet.result);
@@ -69,25 +78,25 @@ export class LoginPhase extends Phase {
 
             const roomId = packet.invite_id;
             window.location.hash = "#" + roomId;
-            this.onJoinRoom(roomId);
+            this.onJoinRoom(roomId, me);
         });
         this.channel.send({
             type: "room_create",
         });
     }
 
-    joinRoom(roomId: string) {
+    joinRoom(roomId: string, me: PlayerObject) {
         this.channel.readOnce("response", (packet: any) => {
             if (packet.result !== "ok") {
                 console.error("Error: " + packet.result);
                 return;
             }
-            this.onJoinRoom(roomId);
+            this.onJoinRoom(roomId, me);
         });
     }
 
-    onJoinRoom(roomId: string) {
-        this.mainStage.setPhase(new RoomPhase(roomId));
+    onJoinRoom(roomId: string, me: PlayerObject) {
+        this.mainStage.setPhase(new RoomPhase(roomId, me));
     }
 
     enable() {

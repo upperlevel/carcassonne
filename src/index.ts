@@ -2,6 +2,10 @@ import {Stage} from "./phase/stage";
 import {LoadingPhase} from "./phase/loadingPhase";
 import {Channel} from "./channel";
 import {LoginPhase} from "./phase/loginPhase";
+import * as PIXI from "pixi.js";
+
+// PIXI
+const app = new PIXI.Application();
 
 // Stage
 const mainStage = new Stage("root");
