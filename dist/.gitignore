@@ -1,0 +1,6 @@
+# Ignore all
+*
+
+# A part from
+!.gitignore
+!index.html
