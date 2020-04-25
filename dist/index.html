@@ -2,10 +2,60 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Carcasson</title>
+    <title>Carcassonne</title>
+
+    <style>
+        * {
+            margin: 0;
+        }
+
+        canvas {
+            background-color: darkgray;
+        }
+
+        .phase {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            display: none;
+            background-color: black;
+            color: white;
+        }
+
+        .player {
+
+        }
+    </style>
 </head>
-<body>
-    <h1>Carcasson</h1>
+<body id="root">
+    <!-- Loading -->
+    <div id="loading" class="phase">
+        <h1>Carcassonne</h1>
+        Loading...
+    </div>
+
+    <!-- Login -->
+    <div id="login" class="phase">
+        <label for="loginName">Insert a name:</label>
+        <input id="loginName" type="text" style="display: block">
+        <button id="loginButton">Login</button>
+    </div>
+
+    <!-- Room -->
+    <div id="room" class="phase">
+        <h1>Carcassonne</h1>
+        <div>
+
+        </div>
+    </div>
+
+    <!-- Game -->
+    <div id="game" class="phase">
+        <h1>Carcassonne</h1>
+        <canvas style="width: 100%; height: 100%">
+
+        </canvas>
+    </div>
 </body>
 
 <script src="bundle.js"></script>
