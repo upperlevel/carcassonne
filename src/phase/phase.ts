@@ -19,7 +19,4 @@ export class Phase {
         console.log(`[${this.name}] Disabling`);
         this.div.style.display = "none";
     }
-
-    update(delta: number) {
-    }
 }

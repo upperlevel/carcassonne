@@ -64,7 +64,7 @@ export class LoginPhase extends Phase {
     onLogin(me: PlayerObject) {
         if (window.location.hash) {
             const roomId = window.location.hash.substr(1);
-            this.joinRoom(parseInt(roomId), me);
+            this.joinRoom(roomId, me);
         } else {
             this.createRoom(me);
         }
@@ -86,8 +86,8 @@ export class LoginPhase extends Phase {
         } as RoomCreate);
     }
 
-    joinRoom(roomId: number, me: PlayerObject) {
-        this.channel.readOnce("response", (packet: RoomJoinResponse) => {
+    joinRoom(roomId: string, me: PlayerObject) {
+        this.channel.readOnce("room_join_response", (packet: RoomJoinResponse) => {
             if (packet.result !== "ok") {
                 console.error("Error: " + packet.result);
                 return;
@@ -100,7 +100,7 @@ export class LoginPhase extends Phase {
         } as RoomJoin)
     }
 
-    onJoinRoom(roomId: number, me: PlayerObject, players: PlayerObject[]) {
+    onJoinRoom(roomId: string, me: PlayerObject, players: PlayerObject[]) {
         this.mainStage.setPhase(new RoomPhase(roomId, me, players));
     }
 

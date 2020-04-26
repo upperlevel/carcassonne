@@ -3,18 +3,100 @@ import {Channel} from "../channel";
 import {app} from "../index";
 import * as PIXI from "pixi.js";
 
+/**
+ * A configuration to edit the main things regarding this phase.
+ */
+const config = {
+    player: {
+        createHead: function (details: PlayerObject, isMe: boolean) {
+            const container = new PIXI.Container();
+            let h;
+
+            // Head
+            const headRadius = 50;
+
+            const head = new PIXI.Graphics();
+            head.beginFill(details.color);
+            head.lineStyle(3, details.border_color);
+            head.drawCircle(0, 0, headRadius);
+            head.pivot.x = -headRadius;
+            head.pivot.y = -headRadius;
+            head.zIndex = 0;
+            container.addChild(head);
+
+            // Mouth
+            const mouthPadding = 15;
+            const mouthHeight  = 30;
+
+            const mouth = new PIXI.Graphics();
+            h = head.height - mouthHeight;
+            mouth.lineStyle(3, details.border_color);
+            mouth.moveTo(mouthPadding, h);
+            mouth.lineTo(head.width - mouthPadding, h);
+            mouth.zIndex = 1;
+            container.addChild(mouth);
+
+            // Eyes
+            const eyesRadius  = 3;
+            const eyesPadding = 20;
+            const eyesHeight  = 70;
+
+            const eyes = new PIXI.Graphics();
+            h = head.height - eyesHeight;
+            eyes.beginFill(details.border_color);
+            eyes.drawCircle(eyesPadding, h, eyesRadius);
+            eyes.drawCircle(head.width - eyesPadding, h, eyesRadius);
+            eyes.zIndex = 1;
+            container.addChild(eyes);
+
+            return container;
+        },
+
+        createNameTag: function (details: PlayerObject, isMe: boolean) {
+            const color = isMe ? "#ff0000" : "#ffffff";
+
+            const nameTag = new PIXI.Text(details.username, new PIXI.TextStyle({
+                fill: color,
+                stroke: details.border_color,
+            }));
+            nameTag.pivot.x = nameTag.width / 2;
+            nameTag.pivot.y = 0;
+            return nameTag;
+        },
+
+        createEntity: function (details: PlayerObject, isMe: boolean) {
+            const container = new PIXI.Container();
+
+            const head = config.player.createHead(details, isMe);
+            container.addChild(head);
+
+            const nameTag = config.player.createNameTag(details, isMe);
+            nameTag.x = head.width / 2;
+            nameTag.y = head.height;
+            container.addChild(nameTag);
+
+            return container;
+        }
+    }
+};
+
+/**
+ * RoomPhase logic is handled in there.
+ */
 export class RoomPhase extends Phase {
     channel: Channel;
 
-    roomId: number;
+    roomId: string;
     me: PlayerObject;
-    playersById: Map<number, PlayerObject> = new Map();
-    spawnedPlayersById: Map<number, PIXI.Container> = new Map();
+    playersById: Map<string, PlayerObject> = new Map();
 
-    roomIdElement: HTMLElement;
-    roomPlayersCountElement: HTMLElement;
+    spawnedPlayersById: Map<string, PIXI.Container> = new Map();
+    nextX: number;
 
-    constructor(roomId: number, me: PlayerObject, players: PlayerObject[]) {
+    htmlRoomHeader: HTMLElement;
+    htmlRoomFooter: HTMLElement;
+
+    constructor(roomId: string, me: PlayerObject, players: PlayerObject[]) {
         super("room");
 
         this.channel = Channel.get();
@@ -25,63 +107,51 @@ export class RoomPhase extends Phase {
             this.playersById.set(player.id, player);
         }
 
-        this.roomIdElement = document.getElementById("roomId");
-        this.roomPlayersCountElement = document.getElementById("roomPlayersCount");
+        this.htmlRoomHeader = document.getElementById("roomHeader");
+        this.htmlRoomFooter = document.getElementById("roomFooter");
     }
 
     spawnPlayer(player: PlayerObject, x: number) {
-        const entity = new PIXI.Container();
+        const padding = {x: 15, y: 15};
 
-        // Body
-        const radius = 125;
-        const body = new PIXI.Graphics();
-        body.beginFill(player.color);
-        body.lineStyle(5, player.border_color);
-        body.drawCircle(0, 0, radius);
-        body.pivot.x = -radius;
-        body.pivot.y = -radius;
-        body.x = x;
-        body.y = 0;
-        entity.addChild(body);
+        const entity = config.player.createEntity(player, player.id === this.me.id);
+        entity.x = this.nextX;
+        entity.y = this.htmlRoomHeader.clientHeight + padding.y;
 
-        // Name
-        const text = new PIXI.Text(player.username, new PIXI.TextStyle({
-            fill: this.me.id === player.id ? "#ff0000" : "#ffffff"
-        }));
-        text.x = x + (body.width - text.width) / 2;
-        text.y = body.height;
-        entity.addChild(text);
+        this.htmlRoomFooter.style.marginTop = (entity.height + padding.y * 2) + "px";
 
         app.stage.addChild(entity);
         this.spawnedPlayersById.set(player.id, entity);
 
+        this.nextX += entity.width;
+
         return entity;
     }
 
-    despawnPlayer(id: number) {
+    despawnPlayer(id: string) {
         const entity = this.spawnedPlayersById.get(id);
         if (entity) {
             this.spawnedPlayersById.delete(id);
-            let x = 0;
+            this.nextX = 0;
             for (const [id, container] of this.spawnedPlayersById) {
-                entity.x = x;
-                x += entity.width;
+                entity.x = this.nextX;
+                this.nextX += entity.width;
             }
         }
     }
 
-    onPlayerJoin(packet: EventPlayerJoin) {
+    onPlayerJoin(event: CustomEvent) {
+        const packet = event.detail as EventPlayerJoin;
         const player = packet.player;
         this.playersById.set(player.id, player);
 
-        const x = this.spawnedPlayersById.size * 25 * 2;
-        this.spawnPlayer(packet.player, x);
+        this.spawnPlayer(packet.player, this.nextX);
     }
 
-    onPlayerLeft(packet: EventPlayerLeft) {
+    onPlayerLeft(event: CustomEvent) {
+        const packet = event.detail as EventPlayerLeft;
         const player = packet.player;
         this.playersById.delete(player.id);
-
         this.despawnPlayer(player.id);
     }
 
@@ -89,13 +159,11 @@ export class RoomPhase extends Phase {
         super.enable();
 
         app.stage = new PIXI.Container();
-        let x = 0;
+        this.nextX = 0;
         for (const [id, player] of this.playersById) {
-            const entity = this.spawnPlayer(player, x);
-            x += entity.width;
+            const entity = this.spawnPlayer(player, this.nextX);
+            this.nextX += entity.width;
         }
-
-        this.roomIdElement.innerText = this.roomId.toString();
 
         this.channel.eventManager.addEventListener("event_player_joined", this.onPlayerJoin.bind(this));
         this.channel.eventManager.addEventListener("event_player_left", this.onPlayerLeft.bind(this));

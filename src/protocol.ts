@@ -1,5 +1,5 @@
 interface PlayerObject {
-    id?: number,
+    id?: string,
     username: string,
     color: number,
     border_color: number,
@@ -16,7 +16,7 @@ interface LoginResponse {
     type: "login_response",
     request_id: number,
     result: string,
-    player_id?: number,
+    player_id?: string,
 }
 
 interface RoomCreate {
@@ -30,13 +30,13 @@ interface RoomCreateResponse {
     request_id: number,
     result: string,
     players?: PlayerObject[],
-    invite_id?: number,
+    invite_id?: string,
 }
 
 interface RoomJoin {
-    id?: number,
+    id?: string,
     type: "room_join",
-    invite_id: number,
+    invite_id: string,
 }
 
 interface RoomJoinResponse {
