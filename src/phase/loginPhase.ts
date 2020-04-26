@@ -101,7 +101,7 @@ export class LoginPhase extends Phase {
     }
 
     onJoinRoom(roomId: string, me: PlayerObject, players: PlayerObject[]) {
-        this.mainStage.setPhase(new RoomPhase(roomId, me, players));
+        this.mainStage.setPhase(new RoomPhase(this.mainStage, roomId, me, players));
     }
 
     enable() {

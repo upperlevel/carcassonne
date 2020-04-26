@@ -56,5 +56,29 @@ interface EventPlayerJoin {
 interface EventPlayerLeft {
     id: number,
     type: "event_player_left",
-    player: PlayerObject
+    player: string
+}
+
+interface RoomStart {
+    id?: number,
+    type: "room_start",
+    connection_type: string, // fixed
+}
+
+interface RoomStartResponse {
+    id: number,
+    type: "room_start_response",
+    request_id: number,
+    result: string,
+}
+
+interface EventRoomStart {
+    id?: number,
+    type: "event_room_start",
+}
+
+interface EventRoomStartAck {
+    id?: number,
+    type: "event_room_start_ack",
+    request_id: number
 }

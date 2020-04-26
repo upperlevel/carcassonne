@@ -2,6 +2,8 @@ import {Phase} from "./phase";
 import {Channel} from "../channel";
 import {app} from "../index";
 import * as PIXI from "pixi.js";
+import {Stage} from "./stage";
+import {GamePhase} from "./gamePhase";
 
 /**
  * A configuration to edit the main things regarding this phase.
@@ -84,6 +86,8 @@ const config = {
  * RoomPhase logic is handled in there.
  */
 export class RoomPhase extends Phase {
+    mainStage: Stage;
+
     channel: Channel;
 
     roomId: string;
@@ -91,13 +95,16 @@ export class RoomPhase extends Phase {
     playersById: Map<string, PlayerObject> = new Map();
 
     spawnedPlayersById: Map<string, PIXI.Container> = new Map();
-    nextX: number;
+    nextX: number = 0;
 
     htmlRoomHeader: HTMLElement;
     htmlRoomFooter: HTMLElement;
+    htmlStart: HTMLButtonElement;
 
-    constructor(roomId: string, me: PlayerObject, players: PlayerObject[]) {
+    constructor(mainStage: Stage, roomId: string, me: PlayerObject, players: PlayerObject[]) {
         super("room");
+
+        this.mainStage = mainStage;
 
         this.channel = Channel.get();
 
@@ -109,9 +116,10 @@ export class RoomPhase extends Phase {
 
         this.htmlRoomHeader = document.getElementById("roomHeader");
         this.htmlRoomFooter = document.getElementById("roomFooter");
+        this.htmlStart = document.getElementById("roomStart") as HTMLButtonElement;
     }
 
-    spawnPlayer(player: PlayerObject, x: number) {
+    spawnPlayer(player: PlayerObject) {
         const padding = {x: 15, y: 15};
 
         const entity = config.player.createEntity(player, player.id === this.me.id);
@@ -128,15 +136,27 @@ export class RoomPhase extends Phase {
         return entity;
     }
 
+    spawnPlayers() {
+        for (const [id, player] of this.playersById) {
+            this.spawnPlayer(player);
+        }
+    }
+
+    fixPlayerPositions() {
+        this.nextX = 0;
+        for (const [id, entity] of this.spawnedPlayersById) {
+            entity.x = this.nextX;
+            this.nextX += entity.width;
+        }
+    }
+
     despawnPlayer(id: string) {
         const entity = this.spawnedPlayersById.get(id);
         if (entity) {
             this.spawnedPlayersById.delete(id);
-            this.nextX = 0;
-            for (const [id, container] of this.spawnedPlayersById) {
-                entity.x = this.nextX;
-                this.nextX += entity.width;
-            }
+            app.stage.removeChild(entity);
+            console.log(entity);
+            this.fixPlayerPositions();
         }
     }
 
@@ -144,29 +164,49 @@ export class RoomPhase extends Phase {
         const packet = event.detail as EventPlayerJoin;
         const player = packet.player;
         this.playersById.set(player.id, player);
-
-        this.spawnPlayer(packet.player, this.nextX);
+        this.spawnPlayer(packet.player);
+        this.updateStartButton();
     }
 
     onPlayerLeft(event: CustomEvent) {
         const packet = event.detail as EventPlayerLeft;
-        const player = packet.player;
-        this.playersById.delete(player.id);
-        this.despawnPlayer(player.id);
+        this.playersById.delete(packet.player);
+        this.despawnPlayer(packet.player);
+        this.updateStartButton();
+    }
+
+    updateStartButton() {
+        this.htmlStart.disabled = this.playersById.size <= 1;
+    }
+
+    onStart() {
+        this.channel.send({
+            type: "room_start",
+            connection_type: "server_broadcast"
+        } as RoomStart);
+    }
+
+    onServerStart(event: CustomEvent) {
+        this.channel.send({
+            type: "event_room_start_ack",
+            request_id: (event.detail as EventRoomStart).id
+        } as EventRoomStartAck);
+        this.mainStage.setPhase(new GamePhase());
     }
 
     enable() {
         super.enable();
 
         app.stage = new PIXI.Container();
-        this.nextX = 0;
-        for (const [id, player] of this.playersById) {
-            const entity = this.spawnPlayer(player, this.nextX);
-            this.nextX += entity.width;
-        }
+        this.spawnPlayers();
+
+        this.updateStartButton();
 
         this.channel.eventManager.addEventListener("event_player_joined", this.onPlayerJoin.bind(this));
         this.channel.eventManager.addEventListener("event_player_left", this.onPlayerLeft.bind(this));
+        this.channel.eventManager.addEventListener("event_room_start", this.onServerStart.bind(this));
+
+        this.htmlStart.addEventListener("click", this.onStart.bind(this));
     }
 
     disable() {
@@ -174,5 +214,7 @@ export class RoomPhase extends Phase {
 
         this.channel.eventManager.removeEventListener("event_player_joined", this.onPlayerJoin.bind(this));
         this.channel.eventManager.removeEventListener("event_player_left", this.onPlayerLeft.bind(this));
+
+        this.htmlStart.addEventListener("click", this.onStart.bind(this));
     }
 }
