@@ -3,13 +3,11 @@ export class Phase {
     name: string;
 
     div: HTMLDivElement;
-    canvas: HTMLCanvasElement | null;
 
     constructor(name: string) {
         this.name = name;
 
         this.div = document.getElementById(this.name) as HTMLDivElement;
-        this.canvas = document.getElementById(this.name + "Canvas") as HTMLCanvasElement;
     }
 
     enable() {
@@ -22,17 +20,6 @@ export class Phase {
         this.div.style.display = "none";
     }
 
-    resize() {
-        console.log(`[${this.name}] Resize`);
-        if (this.canvas) {
-            this.canvas.width = this.canvas.clientWidth;
-            this.canvas.height = this.canvas.clientHeight;
-        }
-    }
-
     update(delta: number) {
-    }
-
-    render(graphics: PIXI.Graphics) {
     }
 }

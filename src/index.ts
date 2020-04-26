@@ -5,25 +5,15 @@ import {LoginPhase} from "./phase/loginPhase";
 import * as PIXI from "pixi.js";
 
 // PIXI
-const app = new PIXI.Application();
+export const app = new PIXI.Application({resizeTo: window});
+document.body.appendChild(app.view);
 
 // Stage
 const mainStage = new Stage("root");
 mainStage.setPhase(new LoadingPhase());
 
-window.onload   = () => mainStage.resize();
-window.onresize = () => mainStage.resize();
-
-function loop() {
-    mainStage.update(0);
-    mainStage.render();
-    window.requestAnimationFrame(loop);
-}
-
-window.requestAnimationFrame(loop);
-
 // Connection
-const socket = new WebSocket("");
+const socket = new WebSocket("ws://151.67.112.192:8080/api/matchmaking");
 
 socket.onopen = () => {
     Channel.instance = new Channel(socket);

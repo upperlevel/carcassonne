@@ -10,7 +10,7 @@ export class LoginPhase extends Phase {
 
     nameElement: HTMLInputElement;
     colorElement: HTMLInputElement;
-    submitNameElement: HTMLButtonElement;
+    submitElement: HTMLButtonElement;
     errorElement: HTMLElement;
 
     constructor(mainStage: Stage) {
@@ -22,7 +22,7 @@ export class LoginPhase extends Phase {
 
         this.nameElement = document.getElementById("loginName") as HTMLInputElement;
         this.colorElement = document.getElementById("loginColor") as HTMLInputElement;
-        this.submitNameElement = document.getElementById("loginButton") as HTMLButtonElement;
+        this.submitElement = document.getElementById("loginSubmit") as HTMLButtonElement;
         this.errorElement = document.getElementById("errorElement") as HTMLButtonElement;
     }
 
@@ -36,18 +36,18 @@ export class LoginPhase extends Phase {
             this.errorElement.innerText = "Invalid name!";
             return;
         }
-        const color = parseInt(this.colorElement.value);
-        const strokeColor = 0xff0000;
-        this.submitNameElement.disabled = true;
+        const color = parseInt(this.colorElement.value.substr(1), 16);
+        const borderColor = 0xffffff ^ color;
+        this.submitElement.disabled = true;
         this.login({
-            name: name,
+            username: name,
             color: color,
-            strokeColor: strokeColor,
+            border_color: borderColor,
         });
     }
 
     login(me: PlayerObject) {
-        this.channel.readOnce("response", (packet: LoginResponse) => {
+        this.channel.readOnce("login_response", (packet: LoginResponse) => {
             if (packet.result !== "ok") {
                 console.error("Unexpected response result: " + packet.result);
                 return;
@@ -56,21 +56,22 @@ export class LoginPhase extends Phase {
             this.onLogin(me);
         });
         this.channel.send({
-            type: "handshake",
-            name: name,
-        });
+            type: "login",
+            details: me,
+        } as Login);
     }
 
     onLogin(me: PlayerObject) {
         if (window.location.hash) {
-            this.joinRoom(window.location.hash.substr(1), me);
+            const roomId = window.location.hash.substr(1);
+            this.joinRoom(parseInt(roomId), me);
         } else {
             this.createRoom(me);
         }
     }
 
     createRoom(me: PlayerObject) {
-        this.channel.readOnce("response", (packet: any) => {
+        this.channel.readOnce("room_create_response", (packet: RoomCreateResponse) => {
             if (packet.result !== "ok") {
                 console.error("Error: " + packet.result);
                 return;
@@ -78,34 +79,38 @@ export class LoginPhase extends Phase {
 
             const roomId = packet.invite_id;
             window.location.hash = "#" + roomId;
-            this.onJoinRoom(roomId, me);
+            this.onJoinRoom(roomId, me, packet.players);
         });
         this.channel.send({
             type: "room_create",
-        });
+        } as RoomCreate);
     }
 
-    joinRoom(roomId: string, me: PlayerObject) {
-        this.channel.readOnce("response", (packet: any) => {
+    joinRoom(roomId: number, me: PlayerObject) {
+        this.channel.readOnce("response", (packet: RoomJoinResponse) => {
             if (packet.result !== "ok") {
                 console.error("Error: " + packet.result);
                 return;
             }
-            this.onJoinRoom(roomId, me);
+            this.onJoinRoom(roomId, me, packet.players);
         });
+        this.channel.send({
+            type: "room_join",
+            invite_id: roomId,
+        } as RoomJoin)
     }
 
-    onJoinRoom(roomId: string, me: PlayerObject) {
-        this.mainStage.setPhase(new RoomPhase(roomId, me));
+    onJoinRoom(roomId: number, me: PlayerObject, players: PlayerObject[]) {
+        this.mainStage.setPhase(new RoomPhase(roomId, me, players));
     }
 
     enable() {
         super.enable();
-        this.submitNameElement.addEventListener("click", this.onSubmitName.bind(this));
+        this.submitElement.addEventListener("click", this.onSubmitName.bind(this));
     }
 
     disable() {
         super.disable();
-        this.submitNameElement.removeEventListener("click", this.onSubmitName.bind(this));
+        this.submitElement.removeEventListener("click", this.onSubmitName.bind(this));
     }
 }

@@ -2,12 +2,13 @@
 export class Channel {
     socket: WebSocket;
     packetId: number = 0;
-    eventManager: EventTarget;
+    eventManager: EventTarget = new EventTarget();
 
     onMessage(event: MessageEvent) {
         const packet = JSON.parse(event.data);
-        this.eventManager.dispatchEvent(new Event("any", packet));
-        this.eventManager.dispatchEvent(new Event(packet.type, packet));
+        console.log("Read", packet);
+        this.eventManager.dispatchEvent(new CustomEvent("any", {detail: packet}));
+        this.eventManager.dispatchEvent(new CustomEvent(packet.type, {detail: packet}));
     }
 
     constructor(socket: WebSocket) {
@@ -16,17 +17,19 @@ export class Channel {
     }
 
     send(packet: any) {
-        this.socket.send(JSON.stringify({
-            packetId: this.packetId,
+        const wrapped = {
+            id: this.packetId,
             ...packet
-        }));
+        };
+        console.log("Sent", wrapped);
+        this.socket.send(JSON.stringify(wrapped));
         this.packetId++;
     }
 
-    readOnce(type: string | "any", callback: (event: Event) => void) {
+    readOnce(type: string | "any", callback: (packet: any) => void) {
         const self = this;
-        self.eventManager.addEventListener(type, function (event: Event)  {
-            callback(event);
+        self.eventManager.addEventListener(type, function (event: CustomEvent)  {
+            callback(event.detail);
             self.eventManager.removeEventListener(type, this);
         });
     }

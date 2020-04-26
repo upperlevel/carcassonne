@@ -19,22 +19,4 @@ export class Stage extends Phase {
         super.disable();
         this.setPhase(null);
     }
-
-    resize() {
-        super.resize();
-        if (this.phase)
-            this.phase.resize();
-    }
-
-    update(delta: number) {
-        super.update(delta);
-        if (this.phase)
-            this.phase.update(delta);
-    }
-
-    render() {
-        super.render();
-        if (this.phase)
-            this.phase.render();
-    }
 }

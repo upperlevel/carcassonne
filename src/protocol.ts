@@ -1,17 +1,17 @@
 interface PlayerObject {
     id?: number,
-    name: string,
+    username: string,
     color: number,
-    strokeColor: number,
+    border_color: number,
 }
 
-interface Login extends Event {
+interface Login {
     id: number,
     type: "login",
-    username: "username",
+    details: PlayerObject,
 }
 
-interface LoginResponse extends Event {
+interface LoginResponse {
     id: number,
     type: "login_response",
     request_id: number,
@@ -19,13 +19,41 @@ interface LoginResponse extends Event {
     player_id?: number,
 }
 
-interface EventPlayerJoin extends Event {
+interface RoomCreate {
+    id?: number,
+    type: "room_create",
+}
+
+interface RoomCreateResponse {
+    id: number,
+    type: "room_create_response",
+    request_id: number,
+    result: string,
+    players?: PlayerObject[],
+    invite_id?: number,
+}
+
+interface RoomJoin {
+    id?: number,
+    type: "room_join",
+    invite_id: number,
+}
+
+interface RoomJoinResponse {
+    id: number,
+    type: "room_join_response",
+    request_id: number,
+    result: string,
+    players?: PlayerObject[]
+}
+
+interface EventPlayerJoin {
     id: number,
     type: "event_player_joined",
     player: PlayerObject
 }
 
-interface EventPlayerLeft extends Event {
+interface EventPlayerLeft {
     id: number,
     type: "event_player_left",
     player: PlayerObject
