@@ -1,9 +1,3 @@
-interface PlayerObject {
-    id?: string,
-    username: string,
-    color: number,
-    border_color: number,
-}
 
 interface Login {
     id: number,
@@ -14,9 +8,9 @@ interface Login {
 interface LoginResponse {
     id: number,
     type: "login_response",
-    request_id: number,
+    requestId: number,
     result: string,
-    player_id?: string,
+    playerId?: string,
 }
 
 interface RoomCreate {
@@ -27,22 +21,22 @@ interface RoomCreate {
 interface RoomCreateResponse {
     id: number,
     type: "room_create_response",
-    request_id: number,
+    requestId: number,
     result: string,
     players?: PlayerObject[],
-    invite_id?: string,
+    inviteId?: string,
 }
 
 interface RoomJoin {
     id?: string,
     type: "room_join",
-    invite_id: string,
+    inviteId: string,
 }
 
 interface RoomJoinResponse {
     id: number,
     type: "room_join_response",
-    request_id: number,
+    requestId: number,
     result: string,
     players?: PlayerObject[]
 }
@@ -62,13 +56,13 @@ interface EventPlayerLeft {
 interface RoomStart {
     id?: number,
     type: "room_start",
-    connection_type: string, // fixed
+    connectionType: string, // fixed
 }
 
 interface RoomStartResponse {
     id: number,
     type: "room_start_response",
-    request_id: number,
+    requestId: number,
     result: string,
 }
 
@@ -80,5 +74,5 @@ interface EventRoomStart {
 interface EventRoomStartAck {
     id?: number,
     type: "event_room_start_ack",
-    request_id: number
+    requestId: number
 }

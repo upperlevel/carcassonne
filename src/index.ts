@@ -5,22 +5,52 @@ import {LoginPhase} from "./phase/loginPhase";
 import * as PIXI from "pixi.js";
 
 // PIXI
-export const app = new PIXI.Application({resizeTo: window});
-document.body.appendChild(app.view);
+export let app: PIXI.Application;
+export let channel: Channel;
 
-// Stage
-const mainStage = new Stage("root");
-mainStage.setPhase(new LoadingPhase());
+async function loadResources() {
+    return new Promise(
+        (resolve, reject) =>
+            PIXI.Loader.shared
+                .add("cards", "images/cards.json")
+                .add("avatars", "images/avatars.json")
+                .add("bag", "images/bag.json")
 
-// Connection
-const socket = new WebSocket("ws://151.67.112.192:8080/api/matchmaking");
+                .add("modalities/classical", "modalities/classical.json")
 
-socket.onopen = () => {
-    Channel.instance = new Channel(socket);
+                .load(resolve)
+    );
+}
+
+async function wsConnect(address: string, port: number, path: string): Promise<WebSocket> {
+    return new Promise((resolve, reject) => {
+        const socket = new WebSocket("ws://" + address + ":" + port + "/" + path);
+
+        socket.onopen = () => {
+            console.log("Connection opened");
+            resolve(socket);
+        };
+
+        socket.onclose = () => {
+            console.error("Connection closed");
+            reject();
+        };
+    });
+}
+
+(async function () {
+    const mainStage = new Stage("root");
+
+    app = new PIXI.Application({resizeTo: window});
+    document.body.appendChild(app.view);
+
+    mainStage.setPhase(new LoadingPhase());
+
+    await loadResources();
+    console.log("Resources:", PIXI.Loader.shared.resources);
+
+    const socket = await wsConnect("localhost", 8080, "api/matchmaking");
+    channel = new Channel(socket);
+
     mainStage.setPhase(new LoginPhase(mainStage));
-};
-
-socket.onclose = () => {
-    console.error("WebSocket connection closed");
-    // TODO ERROR
-};
+})();

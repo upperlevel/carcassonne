@@ -12,11 +12,13 @@ export class Phase {
 
     enable() {
         console.log(`[${this.name}] Enabling`);
-        this.div.style.display = "block";
+        if (this.div)
+            this.div.style.display = "block";
     }
 
     disable() {
         console.log(`[${this.name}] Disabling`);
-        this.div.style.display = "none";
+        if (this.div)
+            this.div.style.display = "none";
     }
 }

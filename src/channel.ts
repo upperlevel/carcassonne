@@ -33,12 +33,5 @@ export class Channel {
             self.eventManager.removeEventListener(type, this);
         });
     }
-
-    // Manager
-    static instance: Channel;
-
-    static get() {
-        return Channel.instance;
-    }
 }
 

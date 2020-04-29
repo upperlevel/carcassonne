@@ -1,12 +1,10 @@
 import {Phase} from "./phase";
-import {Channel} from "../channel";
 import {RoomPhase} from "./roomPhase";
 import {Stage} from "./stage";
+import {channel} from "../index";
 
 export class LoginPhase extends Phase {
     mainStage: Stage;
-
-    channel: Channel;
 
     nameElement: HTMLInputElement;
     colorElement: HTMLInputElement;
@@ -17,8 +15,6 @@ export class LoginPhase extends Phase {
         super("login");
 
         this.mainStage = mainStage;
-
-        this.channel = Channel.get();
 
         this.nameElement = document.getElementById("loginName") as HTMLInputElement;
         this.colorElement = document.getElementById("loginColor") as HTMLInputElement;
@@ -42,20 +38,20 @@ export class LoginPhase extends Phase {
         this.login({
             username: name,
             color: color,
-            border_color: borderColor,
+            borderColor: borderColor,
         });
     }
 
     login(me: PlayerObject) {
-        this.channel.readOnce("login_response", (packet: LoginResponse) => {
+        channel.readOnce("login_response", (packet: LoginResponse) => {
             if (packet.result !== "ok") {
                 console.error("Unexpected response result: " + packet.result);
                 return;
             }
-            me.id = packet.player_id;
+            me.id = packet.playerId;
             this.onLogin(me);
         });
-        this.channel.send({
+        channel.send({
             type: "login",
             details: me,
         } as Login);
@@ -64,39 +60,41 @@ export class LoginPhase extends Phase {
     onLogin(me: PlayerObject) {
         if (window.location.hash) {
             const roomId = window.location.hash.substr(1);
+            me.isHost = false;
             this.joinRoom(roomId, me);
         } else {
+            me.isHost = true;
             this.createRoom(me);
         }
     }
 
     createRoom(me: PlayerObject) {
-        this.channel.readOnce("room_create_response", (packet: RoomCreateResponse) => {
+        channel.readOnce("room_create_response", (packet: RoomCreateResponse) => {
             if (packet.result !== "ok") {
                 console.error("Error: " + packet.result);
                 return;
             }
 
-            const roomId = packet.invite_id;
+            const roomId = packet.inviteId;
             window.location.hash = "#" + roomId;
             this.onJoinRoom(roomId, me, packet.players);
         });
-        this.channel.send({
+        channel.send({
             type: "room_create",
         } as RoomCreate);
     }
 
     joinRoom(roomId: string, me: PlayerObject) {
-        this.channel.readOnce("room_join_response", (packet: RoomJoinResponse) => {
+        channel.readOnce("room_join_response", (packet: RoomJoinResponse) => {
             if (packet.result !== "ok") {
                 console.error("Error: " + packet.result);
                 return;
             }
             this.onJoinRoom(roomId, me, packet.players);
         });
-        this.channel.send({
+        channel.send({
             type: "room_join",
-            invite_id: roomId,
+            inviteId: roomId,
         } as RoomJoin)
     }
 

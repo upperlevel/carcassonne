@@ -1,6 +1,5 @@
 import {Phase} from "./phase";
-import {Channel} from "../channel";
-import {app} from "../index";
+import {app, channel} from "../index";
 import * as PIXI from "pixi.js";
 import {Stage} from "./stage";
 import {GamePhase} from "./gamePhase";
@@ -19,7 +18,7 @@ const config = {
 
             const head = new PIXI.Graphics();
             head.beginFill(details.color);
-            head.lineStyle(3, details.border_color);
+            head.lineStyle(3, details.borderColor);
             head.drawCircle(0, 0, headRadius);
             head.pivot.x = -headRadius;
             head.pivot.y = -headRadius;
@@ -32,7 +31,7 @@ const config = {
 
             const mouth = new PIXI.Graphics();
             h = head.height - mouthHeight;
-            mouth.lineStyle(3, details.border_color);
+            mouth.lineStyle(3, details.borderColor);
             mouth.moveTo(mouthPadding, h);
             mouth.lineTo(head.width - mouthPadding, h);
             mouth.zIndex = 1;
@@ -45,7 +44,7 @@ const config = {
 
             const eyes = new PIXI.Graphics();
             h = head.height - eyesHeight;
-            eyes.beginFill(details.border_color);
+            eyes.beginFill(details.borderColor);
             eyes.drawCircle(eyesPadding, h, eyesRadius);
             eyes.drawCircle(head.width - eyesPadding, h, eyesRadius);
             eyes.zIndex = 1;
@@ -59,7 +58,8 @@ const config = {
 
             const nameTag = new PIXI.Text(details.username, new PIXI.TextStyle({
                 fill: color,
-                stroke: details.border_color,
+                stroke: details.borderColor,
+                fontWeight: details.isHost ? "bold" : "normal",
             }));
             nameTag.pivot.x = nameTag.width / 2;
             nameTag.pivot.y = 0;
@@ -88,9 +88,8 @@ const config = {
 export class RoomPhase extends Phase {
     mainStage: Stage;
 
-    channel: Channel;
-
     roomId: string;
+
     me: PlayerObject;
     playersById: Map<string, PlayerObject> = new Map();
 
@@ -106,9 +105,8 @@ export class RoomPhase extends Phase {
 
         this.mainStage = mainStage;
 
-        this.channel = Channel.get();
-
         this.roomId = roomId;
+
         this.me = me;
         for (const player of players) {
             this.playersById.set(player.id, player);
@@ -176,22 +174,22 @@ export class RoomPhase extends Phase {
     }
 
     updateStartButton() {
-        this.htmlStart.disabled = this.playersById.size <= 1;
+        this.htmlStart.disabled = this.playersById.size <= 1 && this.me.isHost;
     }
 
     onStart() {
-        this.channel.send({
+        channel.send({
             type: "room_start",
-            connection_type: "server_broadcast"
+            connectionType: "server_broadcast"
         } as RoomStart);
     }
 
     onServerStart(event: CustomEvent) {
-        this.channel.send({
+        channel.send({
             type: "event_room_start_ack",
-            request_id: (event.detail as EventRoomStart).id
+            requestId: (event.detail as EventRoomStart).id
         } as EventRoomStartAck);
-        this.mainStage.setPhase(new GamePhase());
+        this.mainStage.setPhase(new GamePhase(this.me, this.playersById));
     }
 
     enable() {
@@ -202,9 +200,9 @@ export class RoomPhase extends Phase {
 
         this.updateStartButton();
 
-        this.channel.eventManager.addEventListener("event_player_joined", this.onPlayerJoin.bind(this));
-        this.channel.eventManager.addEventListener("event_player_left", this.onPlayerLeft.bind(this));
-        this.channel.eventManager.addEventListener("event_room_start", this.onServerStart.bind(this));
+        channel.eventManager.addEventListener("event_player_joined", this.onPlayerJoin.bind(this));
+        channel.eventManager.addEventListener("event_player_left", this.onPlayerLeft.bind(this));
+        channel.eventManager.addEventListener("event_room_start", this.onServerStart.bind(this));
 
         this.htmlStart.addEventListener("click", this.onStart.bind(this));
     }
@@ -212,8 +210,8 @@ export class RoomPhase extends Phase {
     disable() {
         super.disable();
 
-        this.channel.eventManager.removeEventListener("event_player_joined", this.onPlayerJoin.bind(this));
-        this.channel.eventManager.removeEventListener("event_player_left", this.onPlayerLeft.bind(this));
+        channel.eventManager.removeEventListener("event_player_joined", this.onPlayerJoin.bind(this));
+        channel.eventManager.removeEventListener("event_player_left", this.onPlayerLeft.bind(this));
 
         this.htmlStart.addEventListener("click", this.onStart.bind(this));
     }
