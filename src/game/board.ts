@@ -1,5 +1,5 @@
 import {CardTile} from "./cardTile";
-import {Bag} from "../bag";
+import {Bag} from "./bag";
 
 export class Board {
     readonly gridSide: number;

@@ -49,7 +49,7 @@ async function wsConnect(address: string, port: number, path: string): Promise<W
     await loadResources();
     console.log("Resources:", PIXI.Loader.shared.resources);
 
-    const socket = await wsConnect("localhost", 8080, "api/matchmaking");
+    const socket = await wsConnect("151.67.37.10", 8080, "api/matchmaking");
     channel = new Channel(socket);
 
     mainStage.setPhase(new LoginPhase(mainStage));

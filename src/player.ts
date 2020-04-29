@@ -2,7 +2,6 @@
 interface PlayerObject {
     id?: string,
     username: string,
-    color: number,
-    borderColor: number,
+    avatar: string,
     isHost?: boolean,
 }

@@ -6,8 +6,8 @@ import {channel} from "../index";
 export class LoginPhase extends Phase {
     mainStage: Stage;
 
-    nameElement: HTMLInputElement;
-    colorElement: HTMLInputElement;
+    htmlName: HTMLInputElement;
+    htmlAvatar: HTMLInputElement;
     submitElement: HTMLButtonElement;
     errorElement: HTMLElement;
 
@@ -16,8 +16,8 @@ export class LoginPhase extends Phase {
 
         this.mainStage = mainStage;
 
-        this.nameElement = document.getElementById("loginName") as HTMLInputElement;
-        this.colorElement = document.getElementById("loginColor") as HTMLInputElement;
+        this.htmlName = document.getElementById("loginName") as HTMLInputElement;
+        this.htmlAvatar = document.getElementById("loginAvatar") as HTMLInputElement;
         this.submitElement = document.getElementById("loginSubmit") as HTMLButtonElement;
         this.errorElement = document.getElementById("errorElement") as HTMLButtonElement;
     }
@@ -27,18 +27,15 @@ export class LoginPhase extends Phase {
     }
 
     onSubmitName() {
-        const name = this.nameElement.value;
+        const name = this.htmlName.value;
         if (!this.checkName(name)) {
             this.errorElement.innerText = "Invalid name!";
             return;
         }
-        const color = parseInt(this.colorElement.value.substr(1), 16);
-        const borderColor = 0xffffff ^ color;
         this.submitElement.disabled = true;
         this.login({
             username: name,
-            color: color,
-            borderColor: borderColor,
+            avatar: "avatar_1.jpg",
         });
     }
 

@@ -9,48 +9,9 @@ import {GamePhase} from "./gamePhase";
  */
 const config = {
     player: {
-        createHead: function (details: PlayerObject, isMe: boolean) {
-            const container = new PIXI.Container();
-            let h;
-
-            // Head
-            const headRadius = 50;
-
-            const head = new PIXI.Graphics();
-            head.beginFill(details.color);
-            head.lineStyle(3, details.borderColor);
-            head.drawCircle(0, 0, headRadius);
-            head.pivot.x = -headRadius;
-            head.pivot.y = -headRadius;
-            head.zIndex = 0;
-            container.addChild(head);
-
-            // Mouth
-            const mouthPadding = 15;
-            const mouthHeight  = 30;
-
-            const mouth = new PIXI.Graphics();
-            h = head.height - mouthHeight;
-            mouth.lineStyle(3, details.borderColor);
-            mouth.moveTo(mouthPadding, h);
-            mouth.lineTo(head.width - mouthPadding, h);
-            mouth.zIndex = 1;
-            container.addChild(mouth);
-
-            // Eyes
-            const eyesRadius  = 3;
-            const eyesPadding = 20;
-            const eyesHeight  = 70;
-
-            const eyes = new PIXI.Graphics();
-            h = head.height - eyesHeight;
-            eyes.beginFill(details.borderColor);
-            eyes.drawCircle(eyesPadding, h, eyesRadius);
-            eyes.drawCircle(head.width - eyesPadding, h, eyesRadius);
-            eyes.zIndex = 1;
-            container.addChild(eyes);
-
-            return container;
+        createAvatar: function (details: PlayerObject, isMe: boolean) {
+            const spritesheet = PIXI.Loader.shared.resources["avatars"].spritesheet;
+            return new PIXI.Sprite(spritesheet.textures[details.avatar]);
         },
 
         createNameTag: function (details: PlayerObject, isMe: boolean) {
@@ -58,7 +19,6 @@ const config = {
 
             const nameTag = new PIXI.Text(details.username, new PIXI.TextStyle({
                 fill: color,
-                stroke: details.borderColor,
                 fontWeight: details.isHost ? "bold" : "normal",
             }));
             nameTag.pivot.x = nameTag.width / 2;
@@ -69,12 +29,12 @@ const config = {
         createEntity: function (details: PlayerObject, isMe: boolean) {
             const container = new PIXI.Container();
 
-            const head = config.player.createHead(details, isMe);
-            container.addChild(head);
+            const avatar = config.player.createAvatar(details, isMe);
+            container.addChild(avatar);
 
             const nameTag = config.player.createNameTag(details, isMe);
-            nameTag.x = head.width / 2;
-            nameTag.y = head.height;
+            nameTag.x = avatar.width / 2;
+            nameTag.y = avatar.height;
             container.addChild(nameTag);
 
             return container;

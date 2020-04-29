@@ -3,47 +3,112 @@ import {app, channel} from "../index";
 import * as PIXI from "pixi.js";
 import {PlayerDraw, PlayerPlace, RandomSeed} from "../protocol/game";
 import {Bag} from "../game/bag";
-import {Board} from "../game/board/board";
-import {CardTile} from "../game/board/cardTile";
+import {Board} from "../game/board";
+import {CardTile} from "../game/cardTile";
 import {shuffle} from "../util/array";
 
 export class GamePhase extends Phase {
     seed: number;
 
-    readonly bag: Bag;
+    bag: Bag;
     readonly board: Board;
 
     me: PlayerObject;
     playersById: Map<string, PlayerObject>;
 
     orderedPlayers: Array<PlayerObject>;
+    avatars: Array<PIXI.Container>;
     roundOfIdx: number = -1;
     roundOf: PlayerObject = undefined;
 
     drawnCard: CardTile;
 
+    /* UI */
+    topBar: PIXI.Container;
+
+
     constructor(me: PlayerObject, playersById: Map<string, PlayerObject>) {
         super("game");
 
-        this.bag = Bag.fromModality("classical");
-        this.setupBag();
-
-        this.board = new Board(this.bag);
-
         this.me = me;
         this.playersById = playersById;
-
         this.orderedPlayers = Array.from(playersById.values()).sort((a, b) => {
             if (a.id < b.id) return -1;
             if (a.id > b.id) return  1;
             return 0;
         }); // The players are sorted this way to make sure all clients has the same list.
+
+        // UI
+        this.setupTopBar();
+        this.setupBag();
+        this.board = new Board(this.bag);
+    }
+
+    // ================================================================================================
+    // UI
+    // ================================================================================================
+
+    setupAvatar(player: PlayerObject) {
+        const avatars = PIXI.Loader.shared.resources["avatars"].spritesheet;
+
+        const container = new PIXI.Container();
+
+        const image = new PIXI.Sprite(avatars.textures[player.avatar]);
+        container.addChild(image);
+
+        const name = new PIXI.Text(player.username);
+        name.anchor.x = 0.5;
+        name.position.set(image.width / 2, image.height);
+        container.addChild(name);
+
+        const points = new PIXI.Text("0");
+        points.anchor.x = 0.5;
+        points.position.set(image.width / 2, image.height + name.height);
+        container.addChild(points);
+
+        return container;
+    }
+
+    setupTopBar() {
+        const height = 150;
+
+        this.topBar = new PIXI.Container();
+
+        const background = new PIXI.Graphics();
+        background.zIndex = -1;
+        background.beginFill(0xe0e0e0);
+        background.drawRect(0, 0, app.screen.width, height); // TODO resize
+        this.topBar.addChild(background);
+
+        this.avatars = new Array<PIXI.Container>();
+        let width = 0;
+        for (const player of this.orderedPlayers) {
+            const avatar = this.setupAvatar(player);
+            avatar.width = (avatar.width / avatar.height) * height;
+            avatar.height = height;
+            this.topBar.addChild(avatar);
+
+            width += avatar.width;
+            this.avatars.push(avatar);
+        }
+
+        let x = this.topBar.width / 2 - width / 2;
+        for (const avatar of this.avatars) {
+            avatar.x = x;
+            x += avatar.width;
+        }
     }
 
     setupBag() {
+        this.bag = Bag.fromModality("classical");
+        this.bag.position.set(0, this.topBar.height);
+
         const cancelled = () => !this.isMyRound() || this.drawnCard !== undefined;
         this.bag.onClick = cancelled;
         this.bag.onOver  = cancelled;
+    }
+
+    setupBoard() {
     }
 
     setSeed(seed: number) {
@@ -186,13 +251,8 @@ export class GamePhase extends Phase {
     enable() {
         super.enable();
         app.stage = new PIXI.Container();
-
-
-        //app.stage.interactive = true;
-
-        console.log("Stage", app.stage);
-
         app.stage.addChild(this.bag);
+        app.stage.addChild(this.topBar);
 
         if (this.me.isHost) {
             this.setSeed(Math.random());
@@ -202,8 +262,6 @@ export class GamePhase extends Phase {
                 seed: this.seed,
             } as RandomSeed);
         }
-
-        //app.stage.on("pointermove", this.onCursorMove.bind(this));
 
         this.bag.listen();
 
