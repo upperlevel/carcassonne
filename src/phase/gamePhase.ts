@@ -6,6 +6,7 @@ import {Bag} from "../game/bag";
 import {Board} from "../game/board";
 import {CardTile} from "../game/cardTile";
 import {shuffle} from "../util/array";
+import {TopBar} from "../game/ui/topBar";
 
 export class GamePhase extends Phase {
     seed: number;
@@ -23,9 +24,10 @@ export class GamePhase extends Phase {
 
     drawnCard: CardTile;
 
-    /* UI */
-    topBar: PIXI.Container;
+    readonly eventTarget: EventTarget = new EventTarget();
 
+    /* UI */
+    topBar: TopBar;
 
     constructor(me: PlayerObject, playersById: Map<string, PlayerObject>) {
         super("game");
@@ -39,7 +41,8 @@ export class GamePhase extends Phase {
         }); // The players are sorted this way to make sure all clients has the same list.
 
         // UI
-        this.setupTopBar();
+        this.topBar = new TopBar(this);
+
         this.setupBag();
         this.setupBoard();
     }
@@ -47,57 +50,6 @@ export class GamePhase extends Phase {
     // ================================================================================================
     // UI
     // ================================================================================================
-
-    setupAvatar(player: PlayerObject) {
-        const avatars = PIXI.Loader.shared.resources["avatars"].spritesheet;
-
-        const container = new PIXI.Container();
-
-        const image = new PIXI.Sprite(avatars.textures[player.avatar]);
-        container.addChild(image);
-
-        const name = new PIXI.Text(player.username);
-        name.anchor.x = 0.5;
-        name.position.set(image.width / 2, image.height);
-        container.addChild(name);
-
-        const points = new PIXI.Text("0");
-        points.anchor.x = 0.5;
-        points.position.set(image.width / 2, image.height + name.height);
-        container.addChild(points);
-
-        return container;
-    }
-
-    setupTopBar() {
-        const height = 150;
-
-        this.topBar = new PIXI.Container();
-
-        const background = new PIXI.Graphics();
-        background.zIndex = -1;
-        background.beginFill(0xe0e0e0);
-        background.drawRect(0, 0, app.screen.width, height); // TODO resize
-        this.topBar.addChild(background);
-
-        this.avatars = new Array<PIXI.Container>();
-        let width = 0;
-        for (const player of this.orderedPlayers) {
-            const avatar = this.setupAvatar(player);
-            avatar.width = (avatar.width / avatar.height) * height;
-            avatar.height = height;
-            this.topBar.addChild(avatar);
-
-            width += avatar.width;
-            this.avatars.push(avatar);
-        }
-
-        let x = this.topBar.width / 2 - width / 2;
-        for (const avatar of this.avatars) {
-            avatar.x = x;
-            x += avatar.width;
-        }
-    }
 
     setupBag() {
         this.bag = Bag.fromModality("classical");
@@ -121,6 +73,8 @@ export class GamePhase extends Phase {
         shuffle(this.bag.cards, this.seed);
 
         this.onStart();
+
+        this.topBar.setPlayers(this.orderedPlayers);
     }
 
     onRandomSeed(event: CustomEvent) {
@@ -139,7 +93,11 @@ export class GamePhase extends Phase {
     }
 
     isMyRound() {
-        return this.roundOf && this.roundOf.id == this.me.id;
+        return this.isRoundOf(this.me);
+    }
+
+    isRoundOf(player: PlayerObject) {
+        return this.roundOf && this.roundOf.id == player.id;
     }
 
     /** Goes on with the next round. */
@@ -193,8 +151,6 @@ export class GamePhase extends Phase {
         channel.send({
             type: "player_draw",
         } as PlayerDraw);
-
-
     }
 
     /** Function called when another player (that is not me) draws a card. */
@@ -266,6 +222,10 @@ export class GamePhase extends Phase {
             } as RandomSeed);
         }
 
+        app.stage.addChild(this.topBar);
+        app.stage.addChild(this.bag);
+
+        this.topBar.listen();
         this.bag.listen();
 
         channel.eventManager.addEventListener("random_seed",  this.onRandomSeed.bind(this));
@@ -278,6 +238,7 @@ export class GamePhase extends Phase {
 
         app.stage.off("mousemove", this.onCursorMove.bind(this));
 
+        this.topBar.unlisten();
         this.bag.unlisten();
 
         channel.eventManager.removeEventListener("random_seed",  this.onRandomSeed.bind(this));
