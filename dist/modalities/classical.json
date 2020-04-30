@@ -1,0 +1,22 @@
+[
+  {
+    "hasMonastery": false,
+    "spritePath": "image--019.jpg",
+    "sides": {
+      "left": "road",
+      "right": "road",
+      "top": "village",
+      "bottom": "lawn"
+    }
+  },
+  {
+    "hasMonastery": false,
+    "spritePath": "image--002.jpg",
+    "sides": {
+      "left": "village",
+      "right": "village",
+      "top": "village",
+      "bottom": "village"
+    }
+  }
+]
