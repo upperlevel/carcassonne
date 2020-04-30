@@ -1,9 +1,9 @@
 
-enum Side {
-    LEFT,
+export enum Side {
+    TOP,
     RIGHT,
     BOTTOM,
-    TOP,
+    LEFT,
 
     size
 }

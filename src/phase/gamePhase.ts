@@ -11,7 +11,7 @@ export class GamePhase extends Phase {
     seed: number;
 
     bag: Bag;
-    readonly board: Board;
+    board: Board;
 
     me: PlayerObject;
     playersById: Map<string, PlayerObject>;
@@ -41,7 +41,7 @@ export class GamePhase extends Phase {
         // UI
         this.setupTopBar();
         this.setupBag();
-        this.board = new Board(this.bag);
+        this.setupBoard();
     }
 
     // ================================================================================================
@@ -109,6 +109,8 @@ export class GamePhase extends Phase {
     }
 
     setupBoard() {
+        this.board = new Board(this.bag);
+        this.board.position.set(0, this.topBar.height);
     }
 
     setSeed(seed: number) {
@@ -253,6 +255,7 @@ export class GamePhase extends Phase {
         app.stage = new PIXI.Container();
         app.stage.addChild(this.bag);
         app.stage.addChild(this.topBar);
+        app.stage.addChild(this.board);
 
         if (this.me.isHost) {
             this.setSeed(Math.random());
