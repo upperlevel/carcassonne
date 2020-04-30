@@ -2,6 +2,7 @@ import * as PIXI from "pixi.js";
 import {CardTile} from "./cardTile";
 import {Bag} from "./bag";
 import {Side} from "./side";
+import InteractionEvent = PIXI.interaction.InteractionEvent;
 
 export class Board extends PIXI.Container {
     readonly gridSide: number;
@@ -14,6 +15,7 @@ export class Board extends PIXI.Container {
 
     // Pixie
     uiBackground: PIXI.Graphics;
+    isDragging: boolean;
 
 
     /**
@@ -40,6 +42,35 @@ export class Board extends PIXI.Container {
     private initPixie() {
         this.width = Board.TILE_SIZE * this.gridSide;
         this.height = Board.TILE_SIZE * this.gridSide;
+        this.hitArea = {
+            contains(x: number, y: number): boolean {
+                return true;
+            }
+        }
+        this.zIndex = 1000;
+
+        // Drag
+        this.interactive = true;
+        this.interactiveChildren = false;
+        this.isDragging = false;
+
+        let thus = this;
+        this.on("mousedown", function(e: InteractionEvent) {
+            thus.isDragging = true;
+        });
+        this.on("mouseup", function(e: InteractionEvent) {
+            thus.isDragging = false;
+        });
+        this.on("mouseupoutside", function(e: InteractionEvent) {
+            thus.isDragging = false;
+        });
+        this.on("mousemove", function(e: InteractionEvent) {
+            if (thus.isDragging) {
+                let event = e.data.originalEvent as MouseEvent;
+                thus.position.x += event.movementX;
+                thus.position.y += event.movementY;
+            }
+        });
     }
 
     private flatIndex(x: number, y: number) {

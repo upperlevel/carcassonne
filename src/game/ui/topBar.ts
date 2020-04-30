@@ -30,6 +30,8 @@ export class TopBar extends PIXI.Container {
         this.uiRoundOfMarker = new PIXI.Graphics();
         this.uiRoundOfMarker.zIndex = 1;
         this.addChild(this.uiRoundOfMarker);
+
+        this.interactive = true;
     }
 
     setPlayers(players: PlayerObject[]) {
