@@ -46,8 +46,6 @@ export class TopBar extends PIXI.Container {
         if (this.uiPlayers.length == 0) // If there's no player, there's no top-bar.
             return;
 
-        this.uiShadow.width = window.innerWidth;
-
         let width = 0;
         let height = Infinity;
         this.uiPlayers.forEach(uiPlayer => {
