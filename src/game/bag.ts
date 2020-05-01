@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";
 import {app} from "../index";
 import Texture = PIXI.Texture;
+import {Card} from "./card";
 
 export class Bag extends PIXI.Container {
     cards: Array<Card>;

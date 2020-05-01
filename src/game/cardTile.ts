@@ -1,18 +1,21 @@
 import {Side} from "./side";
+import {Card, SideType} from "./card";
 import * as PIXI from "pixi.js";
 
 
 export class CardTile {
     card: Card;
     rotation: number;// Steps of 90 degrees clockwise
+    paths: [number, number, number, number];// Ids of the paths (or 0 if they're not connected/closed).
 
     constructor(card: Card, rotation?: number) {
         this.card = card;
         this.rotation = rotation || 0;
+        this.paths = [0, 0, 0, 0];
     }
 
-    getSide(side: Side): SideType {
-        switch ((side + this.rotation) % Side.size) {
+    getSideType(side: Side): SideType {
+        switch ((side + this.rotation) % 4) {
             case Side.TOP: return this.card.sides.top;
             case Side.RIGHT: return this.card.sides.right;
             case Side.BOTTOM: return this.card.sides.bottom;
@@ -20,8 +23,20 @@ export class CardTile {
         }
     }
 
+    getSideConnections(side: Side): Side[] {
+        let originalOrient = (side + this.rotation) % 4;
+        let res = this.card.connections.find(function (x: Side[]) {
+            return x.includes(originalOrient);
+        });
+
+        if (res == undefined) {
+            return [side];
+        }
+        return res;
+    }
+
     isCompatible(side: Side, placedCard: CardTile): boolean {
-        return this.getSide(side) == placedCard.getSide(side + 2)
+        return this.getSideType(side) == placedCard.getSideType(side + 2)
     }
 
     createSprite(): PIXI.Sprite {

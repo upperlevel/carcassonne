@@ -3,20 +3,26 @@
     "hasMonastery": false,
     "spritePath": "image--019.jpg",
     "sides": {
-      "left": "road",
-      "right": "road",
       "top": "village",
-      "bottom": "lawn"
-    }
+      "right": "road",
+      "bottom": "lawn",
+      "left": "road"
+    },
+    "connections": [
+      [1, 3]
+    ]
   },
   {
     "hasMonastery": false,
     "spritePath": "image--002.jpg",
     "sides": {
-      "left": "village",
-      "right": "village",
       "top": "village",
-      "bottom": "village"
-    }
+      "right": "village",
+      "bottom": "village",
+      "left": "village"
+    },
+    "connections": [
+      [0, 1, 2, 3]
+    ]
   }
 ]

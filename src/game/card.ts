@@ -1,7 +1,15 @@
+import {Side} from "./side";
 
-type SideType = "lawn" | "village" | "road";
+export type SideType = "lawn" | "village" | "road";
 
-interface Card {
+export class SideTypeUtil {
+    static isOwnable(sideType: SideType): boolean {
+        // You can't own nature!
+        return sideType != "lawn";
+    }
+}
+
+export interface Card {
     hasMonastery: boolean,
     spritePath: string,
     sides: {
@@ -10,4 +18,5 @@ interface Card {
         top:    SideType,
         bottom: SideType,
     };
+    connections: Side[][]
 }

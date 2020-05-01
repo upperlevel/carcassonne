@@ -1,7 +1,8 @@
 import * as PIXI from "pixi.js";
 import {CardTile} from "./cardTile";
 import {Bag} from "./bag";
-import {Side} from "./side";
+import {Side, SideUtil} from "./side";
+import {CardConnector} from "./cardConnector";
 import InteractionEvent = PIXI.interaction.InteractionEvent;
 
 export class Board extends PIXI.Container {
@@ -10,6 +11,7 @@ export class Board extends PIXI.Container {
 
     readonly rootCardTile: CardTile;
     readonly bag: Bag;
+    readonly cardConnector: CardConnector;
 
     static TILE_SIZE = 120;
 
@@ -36,6 +38,8 @@ export class Board extends PIXI.Container {
         this.set(this.gridSide / 2, this.gridSide / 2, this.rootCardTile);
 
         this.bag = bag;
+        this.cardConnector = new CardConnector(this);
+
         this.initPixie();
     }
 
@@ -73,12 +77,17 @@ export class Board extends PIXI.Container {
         });
     }
 
-    private flatIndex(x: number, y: number) {
+    private flatIndex(x: number, y: number): number {
         return x * this.gridSide + y;
     }
 
-    get(x: number, y: number) {
+    get(x: number, y: number): CardTile | undefined {
         return this.grid[this.flatIndex(x, y)];
+    }
+
+    getNeighbour(x: number, y: number, side: Side): CardTile | undefined {
+        let d = SideUtil.getNeighbourCoords(side);
+        return this.get(x + d[0], x + d[1]);
     }
 
     canSet(x: number, y: number, tile: CardTile): boolean {
@@ -119,6 +128,8 @@ export class Board extends PIXI.Container {
         if (!this.canSet(x, y, tile))
             return false;
         this.grid[this.flatIndex(x, y)] = tile;
+        // Let's hope the caller already checked if he can.
+        this.cardConnector.addCard(undefined, x, y, undefined);
 
         // Graphics
         let sprite = tile.createSprite();
