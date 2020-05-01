@@ -3,11 +3,11 @@
     "outDir": "./dist/",
     "sourceMap": true,
     "noImplicitAny": true,
-    "module": "es6",
+    //"strict": true,
     "target": "es6",
-    "jsx": "react",
-    "allowJs": true,
+    "module": "es6",
     "downlevelIteration": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "experimentalDecorators": true
   }
 }

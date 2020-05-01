@@ -4,9 +4,16 @@ import {Channel} from "./channel";
 import {LoginPhase} from "./phase/loginPhase";
 import * as PIXI from "pixi.js";
 
+import Vue from "vue";
+
 // PIXI
 export let app: PIXI.Application;
 export let channel: Channel;
+
+// Vue
+export const vue = new Vue({
+    el: "#vue",
+});
 
 async function loadResources() {
     return new Promise(
