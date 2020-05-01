@@ -1,6 +1,6 @@
-import {Phase} from "./phase";
-import {RoomPhase} from "./roomPhase";
-import {Stage} from "./stage";
+import {Phase} from "../phase/phase";
+import {RoomPhase} from "../phase/roomPhase";
+import {Stage} from "../phase/stage";
 import {channel} from "../index";
 
 export class LoginPhase extends Phase {
@@ -16,10 +16,6 @@ export class LoginPhase extends Phase {
 
         this.mainStage = mainStage;
 
-        this.htmlName = document.getElementById("loginName") as HTMLInputElement;
-        this.htmlAvatar = document.getElementById("loginAvatar") as HTMLInputElement;
-        this.submitElement = document.getElementById("loginSubmit") as HTMLButtonElement;
-        this.errorElement = document.getElementById("errorElement") as HTMLButtonElement;
     }
 
     checkName(name: string) {

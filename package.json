@@ -11,6 +11,7 @@
   "license": "ISC",
   "devDependencies": {
     "ts-loader": "^7.0.1",
+    "css-loader": "^3.5.3",
     "typescript": "^3.8.3",
     "vue-loader": "^15.9.1",
     "vue-template-compiler": "^2.6.11",

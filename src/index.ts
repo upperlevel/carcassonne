@@ -1,7 +1,7 @@
 import {Stage} from "./phase/stage";
 import {LoadingPhase} from "./phase/loadingPhase";
 import {Channel} from "./channel";
-import {LoginPhase} from "./phase/loginPhase";
+import {LoginPhase} from "./login/loginPhase";
 import * as PIXI from "pixi.js";
 
 import Vue from "vue";
@@ -12,7 +12,7 @@ export let channel: Channel;
 
 // Vue
 export const vue = new Vue({
-    el: "#vue",
+    el: "#app",
 });
 
 async function loadResources() {
@@ -56,7 +56,7 @@ async function wsConnect(address: string, port: number, path: string): Promise<W
     await loadResources();
     console.log("Resources:", PIXI.Loader.shared.resources);
 
-    const socket = await wsConnect("151.67.37.10", 8080, "api/matchmaking");
+    const socket = await wsConnect("localhost", 8080, "api/matchmaking");
     channel = new Channel(socket);
 
     mainStage.setPhase(new LoginPhase(mainStage));
