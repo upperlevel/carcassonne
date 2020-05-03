@@ -1,19 +1,24 @@
 import {Stage} from "./phase/stage";
 import {LoadingPhase} from "./phase/loadingPhase";
 import {Channel} from "./channel";
-import {LoginPhase} from "./login/loginPhase";
 import * as PIXI from "pixi.js";
 
-import Vue from "vue";
+import {LoginPhase} from "./phase/loginPhase";
+
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // PIXI
 export let app: PIXI.Application;
 export let channel: Channel;
 
-// Vue
-export const vue = new Vue({
-    el: "#app",
-});
+// Main
+export let me: PlayerObject = undefined;
+
+export const stage = new Stage("main");
+
+export function setMe(details: PlayerObject) {
+    me = details;
+}
 
 async function loadResources() {
     return new Promise(
@@ -46,12 +51,10 @@ async function wsConnect(address: string, port: number, path: string): Promise<W
 }
 
 (async function () {
-    const mainStage = new Stage("root");
-
     app = new PIXI.Application({resizeTo: window});
     document.body.appendChild(app.view);
 
-    mainStage.setPhase(new LoadingPhase());
+    stage.setPhase(new LoadingPhase());
 
     await loadResources();
     console.log("Resources:", PIXI.Loader.shared.resources);
@@ -59,5 +62,5 @@ async function wsConnect(address: string, port: number, path: string): Promise<W
     const socket = await wsConnect("localhost", 8080, "api/matchmaking");
     channel = new Channel(socket);
 
-    mainStage.setPhase(new LoginPhase(mainStage));
+    stage.setPhase(new LoginPhase());
 })();

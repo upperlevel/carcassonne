@@ -26,7 +26,7 @@ export class CardTile {
     getSideConnections(side: Side): Side[] {
         let originalOrient = (side + this.rotation) % 4;
         let res = this.card.connections.find(function (x: Side[]) {
-            return x.includes(originalOrient);
+            return x.indexOf(originalOrient) > -1;
         });
 
         if (res == undefined) {

@@ -2,23 +2,26 @@
 export class Phase {
     name: string;
 
-    div: HTMLDivElement;
+    vue: any;
 
-    constructor(name: string) {
+    constructor(name: string, Component?: any) {
         this.name = name;
-
-        this.div = document.getElementById(this.name) as HTMLDivElement;
+        if (Component) {
+            this.vue = new Component().$mount();
+        }
     }
 
     enable() {
         console.log(`[${this.name}] Enabling`);
-        if (this.div)
-            this.div.style.display = "block";
+        if (this.vue) {
+            document.getElementById("app").appendChild(this.vue.$el);
+        }
     }
 
     disable() {
         console.log(`[${this.name}] Disabling`);
-        if (this.div)
-            this.div.style.display = "none";
+        if (this.vue) {
+            document.getElementById("app").removeChild(this.vue.$el);
+        }
     }
 }
