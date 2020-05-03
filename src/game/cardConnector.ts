@@ -9,7 +9,7 @@ export class CardConnector {
     private nextId: number;
 
     constructor(board: Board) {
-        this.board = board
+        this.board = board;
         this.pathData = new Map();
         this.nextId = 0;
     }

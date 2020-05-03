@@ -9,9 +9,9 @@ export class Board extends PIXI.Container {
     readonly gridSide: number;
     readonly grid: Array<CardTile>;
 
-    readonly rootCardTile: CardTile;
     readonly bag: Bag;
     readonly cardConnector: CardConnector;
+    readonly rootCardTile: CardTile;
 
     static TILE_SIZE = 120;
 
@@ -34,11 +34,11 @@ export class Board extends PIXI.Container {
         this.gridSide = (bag.size() - 1) * 2 + 1;
         this.grid = new Array<CardTile>(this.gridSide * this.gridSide);
 
-        this.rootCardTile = new CardTile(bag.draw()); // The first card of the un-shuffled bag is the root.
-        this.set(this.gridSide / 2, this.gridSide / 2, this.rootCardTile);
-
         this.bag = bag;
         this.cardConnector = new CardConnector(this);
+
+        this.rootCardTile = new CardTile(bag.draw()); // The first card of the un-shuffled bag is the root.
+        this.set(this.gridSide / 2, this.gridSide / 2, this.rootCardTile);
 
         this.initPixie();
     }
