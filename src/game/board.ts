@@ -17,7 +17,7 @@ export class Board extends PIXI.Container {
     static TILE_SIZE = 120;
 
     // Pixie
-    uiBackground: PIXI.Graphics;
+    background: PIXI.Graphics;
     isDragging: boolean;
 
 
@@ -41,15 +41,24 @@ export class Board extends PIXI.Container {
         this.rootCardTile = new CardTile(initialCard);
         this.set(Math.floor(this.gridSide / 2), Math.floor(this.gridSide / 2), this.rootCardTile, true);
 
-        this.initPixie();
+        // Graphics
+        this.background =
+            new PIXI.Graphics()
+                .beginFill(0x00ff00)
+                .drawRect(0, 0, this.gridSide * Board.TILE_SIZE, this.gridSide * Board.TILE_SIZE)
+                .endFill();
+        this.background.zIndex = 1;
+        //this.addChild(this.background); TODO
+
+        this.initPixi();
     }
 
-    private initPixie() {
+    private initPixi() {
         this.hitArea = {
             contains(x: number, y: number): boolean {
                 return true;
             }
-        }
+        };
         this.zIndex = 1000;
 
         // Drag
@@ -89,8 +98,8 @@ export class Board extends PIXI.Container {
     }
 
     containerCoordsToTileCoords(src: PIXI.Point, target: PIXI.Point) {
-        target.x = Math.floor(src.x * this.scale.x / Board.TILE_SIZE);
-        target.y = Math.floor(src.y * this.scale.y / Board.TILE_SIZE);
+        target.x = Math.floor(src.x / Board.TILE_SIZE);
+        target.y = Math.floor(src.y / Board.TILE_SIZE);
     }
 
     getNeighbour(x: number, y: number, side: Side): CardTile | undefined {
@@ -142,6 +151,7 @@ export class Board extends PIXI.Container {
         sprite.anchor.set(0.5, 0.5);
         sprite.width = Board.TILE_SIZE;
         sprite.height = Board.TILE_SIZE;
+        sprite.zIndex = 0;
         this.cardCoordToRelPos(x, y, sprite.position);
         this.addChild(sprite);
 
@@ -149,6 +159,10 @@ export class Board extends PIXI.Container {
     }
 
     cardCoordToRelPos(x: number, y: number, target: PIXI.IPoint) {
-        target.set(Board.TILE_SIZE / 2 + x * Board.TILE_SIZE, Board.TILE_SIZE / 2 + y * Board.TILE_SIZE);
+        const tileSize = Board.TILE_SIZE;
+        target.set(
+            tileSize / 2 + x * tileSize,
+            tileSize / 2 + y * tileSize
+        );
     }
 }

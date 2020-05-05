@@ -187,6 +187,36 @@ export class GamePhase extends Phase {
     // Place
     // ================================================================================================
 
+    /**
+     * Function called when the mouse scrolls.
+     * The map is zoomed in and out based on the scroll direction.
+     */
+    onMouseWheel(event: WheelEvent) {
+        console.log("[Stage] onMouseWheel");
+
+        const scalingSpeed = 0.01;
+        const dScale = (event.deltaY / -100) * scalingSpeed;
+
+        // Before scaling adjust the position:
+        // Takes the vector that goes from the board position (upper-left) to the cursor.
+        // Normalize that vector using the current scale and re-scale it with the new one.
+        // Finally, the cursor position plus the vector obtained is the new board position.
+
+        let padX = this.board.position.x - event.clientX;
+        let padY = this.board.position.y - event.clientY;
+
+        padX *= 1 + dScale / this.board.scale.x;
+        padY *= 1 + dScale / this.board.scale.y;
+
+        this.board.position.x = padX + event.clientX;
+        this.board.position.y = padY + event.clientY;
+
+        // Now we can set the scale.
+
+        this.board.scale.x += dScale;
+        this.board.scale.y += dScale;
+    }
+
     /** Function called when the cursor moves around the map. */
     onCursorMove(event: PIXI.interaction.InteractionEvent) {
         //console.log("[Stage] onCursorMove");
@@ -288,6 +318,10 @@ export class GamePhase extends Phase {
         }
     }
 
+    /**
+     * Make the board's center and the window's center overlap.
+     * This way the initial board position is centered to the root card.
+     */
     centerBoard() {
         let boardScreenWidth = app.renderer.width;
         let boardScreenHeight = app.renderer.height;
@@ -328,6 +362,8 @@ export class GamePhase extends Phase {
         app.stage.on("mousedown", this.onCursorDown.bind(this));
         app.stage.on("mouseup", this.onCursorUp.bind(this));
         app.stage.on("rightdown", this.onCursorRightClick.bind(this));
+
+        window.addEventListener("wheel", this.onMouseWheel.bind(this));
     }
 
     disable() {
@@ -343,5 +379,7 @@ export class GamePhase extends Phase {
         channel.eventManager.removeEventListener("random_seed",  this.onRandomSeed.bind(this));
         channel.eventManager.removeEventListener("player_draw",  this.onPlayerDraw.bind(this));
         channel.eventManager.removeEventListener("player_place", this.onPlayerPlace.bind(this));
+
+        window.removeEventListener("wheel", this.onMouseWheel.bind(this));
     }
 }
