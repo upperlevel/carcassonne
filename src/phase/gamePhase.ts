@@ -346,6 +346,9 @@ export class GamePhase extends Phase {
 
     enable() {
         super.enable();
+
+        app.renderer.backgroundColor = 0x3e2723; // dark brown
+
         app.stage = new PIXI.Container();
         app.stage.addChild(this.bag);
         app.stage.addChild(this.board);

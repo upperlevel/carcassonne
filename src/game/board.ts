@@ -19,7 +19,6 @@ export class Board extends PIXI.Container {
     static TILE_SIZE = 120;
 
     // Pixie
-    background: PIXI.Graphics;
     isDragging: boolean;
 
 
@@ -43,15 +42,6 @@ export class Board extends PIXI.Container {
 
         this.rootCardTile = new CardTile(initialCard);
         this.set(Math.floor(this.gridSide / 2), Math.floor(this.gridSide / 2), this.rootCardTile, true);
-
-        // Graphics
-        this.background =
-            new PIXI.Graphics()
-                .beginFill(0x00ff00)
-                .drawRect(0, 0, this.gridSide * Board.TILE_SIZE, this.gridSide * Board.TILE_SIZE)
-                .endFill();
-        this.background.zIndex = 1;
-        //this.addChild(this.background); TODO
 
         this.initPixi();
     }
