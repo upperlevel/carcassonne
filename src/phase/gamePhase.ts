@@ -192,12 +192,12 @@ export class GamePhase extends Phase {
      * The map is zoomed in and out based on the scroll direction.
      */
     onMouseWheel(event: WheelEvent) {
-        const scalingSpeed = 0.01;
+        const scalingSpeed = 0.1;
 
         const minScale = 0.1;
         const maxScale = 3;
 
-        const dScale = (event.deltaY / -100) * scalingSpeed;
+        const dScale = -Math.sign(event.deltaY) * scalingSpeed;
 
         //console.log("Scale", this.board.scale.x, this.board.scale.y, "dScale", dScale);
         if (this.board.scale.x < minScale && dScale < 0 || this.board.scale.x > maxScale && dScale > 0)
