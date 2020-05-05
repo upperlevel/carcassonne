@@ -11,7 +11,7 @@
                     <avatar-component
                             style="height: 250px"
                             class="avatar form-control"
-                            :avatar-id="avatarId" :color="color">
+                            :avatar-id="avatarId" :color="parseInt(color.substr(1), 16)">
                     </avatar-component>
                     <div class="input-group-append">
                         <button v-on:click="nextAvatar()">

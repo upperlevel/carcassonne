@@ -3,20 +3,20 @@
         <div style="text-align: center">
             <h1>Carcassonne</h1>
             <h6>
-                Room: <code>{{ roomId }}</code>
+                Room: <code>{{ this.roomId }}</code>
             </h6>
             <div>
-                <small>Players: {{ players.length }}</small>
+                <small>Players: {{ this.playersCount() }}</small>
             </div>
         </div>
         <div class="player-container"> <!-- PlayerObject[] -->
-            <div v-for="player in players" class="player">
+            <div v-for="player of Object.values(this.playersById)" class="player">
                 <!-- Avatar -->
                 <avatar-component
                         class="player-avatar"
 
                         :avatar-id="player.avatar"
-                        :color="hexColor(player.color)">
+                        :color="player.color">
                 </avatar-component>
                 <!-- Name -->
                 <h4 class="player-name" :style="getNameStyle(player)">
@@ -36,18 +36,12 @@
     import {me} from "../../index";
 
     export default Vue.extend({
-        data() {
-            return {
-                roomId: "",
-                players: [] // PlayerObject[]
-            }
-        },
         components: {
             AvatarComponent
         },
         methods: {
-            hexColor(color: number) {
-                return "#" + (color as number).toString(16);
+            playersCount() {
+                return Object.keys(this.playersById).length;
             },
 
             getNameStyle(player: PlayerObject) {
@@ -69,7 +63,7 @@
             },
 
             canStart() {
-                return me.isHost && this.players.length > 1;
+                return me.isHost && this.playersCount() > 1;
             }
         }
     });

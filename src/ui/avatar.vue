@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="w-100 h-100 text-center" :style="{
-            backgroundColor: this.color,
+            backgroundColor: this.colorToString(),
             zIndex: -1
         }">
             <div ref="sprite" class="d-inline-block h-100" :style="getSpriteStyle()"></div>
@@ -16,9 +16,13 @@
     export default Vue.extend({
         props: {
             avatarId: Number,
-            color: String,
+            color: Number,
         },
         methods: {
+            colorToString() {
+                return "#" + this.color.toString(16);
+            },
+
             /**
              * Resizes the frame to maintain aspect ratio.
              * The width is calculated based on the height, that fits the container.

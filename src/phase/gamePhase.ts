@@ -1,13 +1,15 @@
 import {Phase} from "./phase";
-import {app, channel} from "../index";
+import {app, channel, me} from "../index";
 import * as PIXI from "pixi.js";
 import {PlayerDraw, PlayerPlace, RandomSeed} from "../protocol/game";
 import {Bag} from "../game/bag";
 import {Board} from "../game/board";
 import {CardTile} from "../game/cardTile";
 import {shuffle} from "../util/array";
-import {TopBar} from "../game/ui/topBar";
 import {Card} from "../game/card";
+
+import GameComponent from "../ui/game/game.vue";
+import {GamePlayer} from "../game/gamePlayer";
 
 export class GamePhase extends Phase {
     seed: number;
@@ -15,37 +17,54 @@ export class GamePhase extends Phase {
     bag: Bag;
     board: Board;
 
-    me: PlayerObject;
-    playersById: Map<string, PlayerObject>;
+    me: GamePlayer;
+    playersById: Map<string, GamePlayer> = new Map();
+    orderedPlayers: GamePlayer[] = [];
 
-    orderedPlayers: Array<PlayerObject>;
     avatars: Array<PIXI.Container>;
     roundOfIdx: number = -1;
-    roundOf: PlayerObject = undefined;
+    roundOf: GamePlayer = undefined;
 
     drawnCard: CardTile;
 
     readonly eventTarget: EventTarget = new EventTarget();
 
-    /* UI */
-    topBar: TopBar;
-
-    constructor(me: PlayerObject, playersById: Map<string, PlayerObject>) {
+    constructor(playersById: {[id: string]: PlayerObject}) {
         super("game");
 
-        this.me = me;
-        this.playersById = playersById;
-        this.orderedPlayers = Array.from(playersById.values()).sort((a, b) => {
-            if (a.id < b.id) return -1;
-            if (a.id > b.id) return  1;
-            return 0;
-        }); // The players are sorted this way to make sure all clients has the same list.
+        // Prepare Map of GamePlayers by id.
+        Object
+            .keys(playersById)
+            .map(id => {
+                const player = new GamePlayer(this, playersById[id]);
+                if (player.id === me.id) this.me = player;
+
+                this.playersById.set(player.id, player);
+            });
+
+        // The players are sorted by id to make sure all clients has the same list.
+        this.orderedPlayers = Array.from(this.playersById.values())
+            .sort((a, b) => {
+                if (a.id < b.id) return -1;
+                if (a.id > b.id) return  1;
+                return 0;
+            }
+        );
 
         // UI
-        this.topBar = new TopBar(this);
-
         let card = this.setupBag();
         this.setupBoard(card);
+    }
+
+    ui() {
+        const self = this;
+        return new GameComponent({
+            data() {
+                return {
+                    players: self.orderedPlayers,
+                }
+            },
+        })
     }
 
     // ================================================================================================
@@ -54,7 +73,6 @@ export class GamePhase extends Phase {
 
     setupBag() {
         this.bag = Bag.fromModality("classical");
-        this.bag.position.set(0, this.topBar.height);
 
         const cancelled = () => !this.canDrawCard();
         this.bag.onClick = cancelled;
@@ -66,7 +84,7 @@ export class GamePhase extends Phase {
 
     setupBoard(initialCard: Card) {
         this.board = new Board(this.bag, initialCard);
-        this.board.position.set(0, this.topBar.height);
+        this.board.position.set(0, 0);
         this.centerBoard();
         //console.log("BOARD", this.board);
     }
@@ -79,8 +97,6 @@ export class GamePhase extends Phase {
         shuffle(this.bag.cards, this.seed);
 
         this.onStart();
-
-        this.topBar.setPlayers(this.orderedPlayers);
     }
 
     onRandomSeed(event: CustomEvent) {
@@ -102,7 +118,7 @@ export class GamePhase extends Phase {
         return this.isRoundOf(this.me);
     }
 
-    isRoundOf(player: PlayerObject) {
+    isRoundOf(player: GamePlayer) {
         return this.roundOf && this.roundOf.id == player.id;
     }
 
@@ -115,7 +131,7 @@ export class GamePhase extends Phase {
 
         this.roundOfIdx = (this.roundOfIdx + 1) % this.orderedPlayers.length;
         this.roundOf = this.orderedPlayers[this.roundOfIdx];
-        console.log("Round of:", this.roundOf.username);
+        this.vue.$forceUpdate();
 
         this.drawnCard = undefined;
 
@@ -249,9 +265,8 @@ export class GamePhase extends Phase {
 
     centerBoard() {
         let boardScreenWidth = app.renderer.width;
-        let boardScreenHeight = app.renderer.height - this.topBar.height;
+        let boardScreenHeight = app.renderer.height;
 
-        // Relative to the topmost point (0, topBar.height)
         let screenMidPointWidth = boardScreenWidth / 2;
         let screenMidPointHeight = boardScreenHeight / 2;
 
@@ -264,11 +279,10 @@ export class GamePhase extends Phase {
         super.enable();
         app.stage = new PIXI.Container();
         app.stage.addChild(this.bag);
-        app.stage.addChild(this.topBar);
         app.stage.addChild(this.board);
         app.stage.interactive = true;
 
-        if (this.me.isHost) {
+        if (this.me.details.isHost) {
             this.setSeed(Math.random());
 
             channel.send({
@@ -277,10 +291,8 @@ export class GamePhase extends Phase {
             } as RandomSeed);
         }
 
-        app.stage.addChild(this.topBar);
         app.stage.addChild(this.bag);
 
-        this.topBar.listen();
         this.bag.listen();
 
         channel.eventManager.addEventListener("random_seed",  this.onRandomSeed.bind(this));
@@ -299,7 +311,6 @@ export class GamePhase extends Phase {
         app.stage.off("mousedown", this.onCursorClick.bind(this));
         app.stage.off("rightdown", this.onCursorRightClick.bind(this));
 
-        this.topBar.unlisten();
         this.bag.unlisten();
 
         channel.eventManager.removeEventListener("random_seed",  this.onRandomSeed.bind(this));

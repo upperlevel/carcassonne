@@ -8,7 +8,11 @@ export class LoginPhase extends Phase {
     form: any;
 
     constructor() {
-        super("login", LoginComponent);
+        super("login");
+    }
+
+    ui() {
+        return new LoginComponent();
     }
 
     enable() {

@@ -1,26 +1,43 @@
 import {Phase} from "./phase";
-import {app, channel, me, stage} from "../index";
-import * as PIXI from "pixi.js";
+import {channel, me, stage} from "../index";
 
 import RoomComponent from "../ui/room/room.vue";
 import {GamePhase} from "./gamePhase";
+
+import Vue from "vue";
 
 /**
  * RoomPhase logic is handled in there.
  */
 export class RoomPhase extends Phase {
     roomId: string;
-    playersById: Map<string, PlayerObject>;
+    playersById: {[id: string]: PlayerObject} = {};
 
     constructor(roomId: string, players: PlayerObject[]) {
-        super("room", RoomComponent);
+        super("room");
 
         this.roomId = roomId;
-        this.playersById = new Map();
-        players.forEach(player => this.playersById.set(player.id, player));
+        players.forEach(player => this.addPlayer(player));
+    }
 
-        this.vue.roomId = this.roomId;
-        this.vue.players = Array.from(this.playersById.values());
+    addPlayer(player: PlayerObject) {
+        Vue.set(this.playersById, player.id, player);
+    }
+
+    removePlayer(playerId: string) {
+        Vue.delete(this.playersById, playerId);
+    }
+
+    ui() {
+        const self = this;
+        return new RoomComponent({
+            data() {
+                return {
+                    roomId: self.roomId,
+                    playersById: self.playersById
+                }
+            }
+        });
     }
 
     enable() {
@@ -43,17 +60,13 @@ export class RoomPhase extends Phase {
     }
 
     onPlayerJoin(event: CustomEvent) {
-        const packet = event.detail as EventPlayerJoin;
-        this.playersById.set(packet.player.id, packet.player);
-
-        this.vue.players = Array.from(this.playersById.values()); // ... I know.
+        const player = (event.detail as EventPlayerJoin).player;
+        this.addPlayer(player);
     }
 
     onPlayerLeft(event: CustomEvent) {
-        const packet = event.detail as EventPlayerLeft;
-        this.playersById.delete(packet.player);
-
-        this.vue.players = Array.from(this.playersById.values());
+        const playerId = (event.detail as EventPlayerLeft).player;
+        this.removePlayer(playerId);
     }
 
     onStart() {
@@ -70,6 +83,6 @@ export class RoomPhase extends Phase {
         } as EventRoomStartAck);
 
         console.log("The game can start!");
-        stage.setPhase(new GamePhase(me, this.playersById));
+        stage.setPhase(new GamePhase(this.playersById));
     }
 }
