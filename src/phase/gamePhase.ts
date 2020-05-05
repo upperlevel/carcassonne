@@ -7,6 +7,7 @@ import {Board} from "../game/board";
 import {CardTile} from "../game/cardTile";
 import {shuffle} from "../util/array";
 import {TopBar} from "../game/ui/topBar";
+import {Card} from "../game/card";
 
 export class GamePhase extends Phase {
     seed: number;
@@ -43,8 +44,8 @@ export class GamePhase extends Phase {
         // UI
         this.topBar = new TopBar(this);
 
-        this.setupBag();
-        this.setupBoard();
+        let card = this.setupBag();
+        this.setupBoard(card);
     }
 
     // ================================================================================================
@@ -55,14 +56,19 @@ export class GamePhase extends Phase {
         this.bag = Bag.fromModality("classical");
         this.bag.position.set(0, this.topBar.height);
 
-        const cancelled = () => !this.isMyRound() || this.drawnCard !== undefined;
+        const cancelled = () => !this.canDrawCard();
         this.bag.onClick = cancelled;
         this.bag.onOver  = cancelled;
+        let card = this.bag.draw(); // The first card of the un-shuffled bag is the root.
+        this.bag.onCardDraw = this.onDraw.bind(this);
+        return card;
     }
 
-    setupBoard() {
-        this.board = new Board(this.bag);
+    setupBoard(initialCard: Card) {
+        this.board = new Board(this.bag, initialCard);
         this.board.position.set(0, this.topBar.height);
+        this.centerBoard();
+        //console.log("BOARD", this.board);
     }
 
     setSeed(seed: number) {
@@ -130,33 +136,32 @@ export class GamePhase extends Phase {
     // Draw
     // ================================================================================================
 
-    /** Function issued when any player draws a card. */
-    onDraw() {
-        this.drawnCard = new CardTile(this.bag.draw());
-
-        const spritesheet = PIXI.Loader.shared.resources["cards"].spritesheet;
-        const texture = spritesheet.textures[this.drawnCard.card.spritePath];
-
-        this.drawnCardSprite = new PIXI.Sprite(texture);
-        this.drawnCardSprite.anchor.set(0.5);
-        app.stage.addChild(this.drawnCardSprite);
+    canDrawCard() {
+        return this.isMyRound() && this.drawnCard === undefined;
     }
 
-    /** Function called when the bag is clicked. */
-    onBagClick() {
-        if (this.roundOf.id !== this.me.id) // It's not your round!
-            return;
-        this.onDraw();
-        // Notify the other players that a card has been drawn.
-        channel.send({
-            type: "player_draw",
-        } as PlayerDraw);
+    /** Function issued when any player draws a card. */
+    onDraw(card: Card) {
+        if (this.isMyRound()) {
+            // Notify the other players that a card has been drawn.
+            channel.send({
+                type: "player_draw",
+            } as PlayerDraw);
+        }
+
+        this.drawnCard = new CardTile(card);
+
+        this.drawnCardSprite = this.drawnCard.createSprite();
+        this.drawnCardSprite.anchor.set(0.5, 0.5)
+        this.drawnCardSprite.width = Board.TILE_SIZE;
+        this.drawnCardSprite.height = Board.TILE_SIZE;
+        this.board.addChild(this.drawnCardSprite);
     }
 
     /** Function called when another player (that is not me) draws a card. */
     onPlayerDraw(event: CustomEvent) {
         const packet = event.detail as PlayerDraw;
-        this.onDraw();
+        this.bag.draw();
     }
 
     // ================================================================================================
@@ -165,11 +170,40 @@ export class GamePhase extends Phase {
 
     /** Function called when the cursor moves around the map. */
     onCursorMove(event: PIXI.interaction.InteractionEvent) {
-        console.log("[Stage] onCursorMove");
+        //console.log("[Stage] onCursorMove");
         if (this.drawnCardSprite) {
-            const cursor = event.data.global;
-            this.drawnCardSprite.position.set(cursor.x, cursor.y);
+            this.updateDrawnCard(event)
         }
+    }
+
+    /** Function called when the cursor clicks. */
+    onCursorClick(event: PIXI.interaction.InteractionEvent) {
+        if (this.drawnCard && this.isMyRound()) {
+            let pos = event.data.getLocalPosition(this.board, null, event.data.global);
+            this.board.containerCoordsToTileCoords(pos, pos);
+            this.onPlaceSend(pos.x, pos.y)
+        }
+    }
+
+    /** Function called when the cursor clicks. */
+    onCursorRightClick(event: PIXI.interaction.InteractionEvent) {
+        if (this.drawnCard && this.isMyRound()) {
+            this.drawnCard.rotation = (this.drawnCard.rotation + 1) % 4;
+            this.updateDrawnCard(event)
+            // TODO: Send out event: card rotation
+        }
+    }
+
+    updateDrawnCard(event: PIXI.interaction.InteractionEvent) {
+        let pos = event.data.getLocalPosition(this.board, null, event.data.global);
+        this.board.containerCoordsToTileCoords(pos, pos);
+
+        let canSet = this.board.canSet(pos.x, pos.y, this.drawnCard);
+
+        this.board.cardCoordToRelPos(pos.x, pos.y, pos);
+        this.drawnCardSprite.position.set(pos.x, pos.y);
+        this.drawnCardSprite.tint = canSet ? 0xFFFFFF : 0xFFAAAA;
+        this.drawnCardSprite.rotation = -this.drawnCard.rotation * Math.PI / 2;
     }
 
     /**
@@ -181,23 +215,30 @@ export class GamePhase extends Phase {
      */
     onPlace(x: number, y: number, rotation: number) {
         if (!this.board.set(x, y, this.drawnCard))
-            return; // Can't place the card here.
+            return false; // Can't place the card here.
+        this.drawnCard.rotation = rotation;
+        this.board.removeChild(this.drawnCardSprite);
+        this.drawnCard = null;
+        this.drawnCardSprite = null;
         this.nextRound();
+        return true;
     }
 
     /** Function called when the board is clicked. */
-    onBoardClick(x: number, y: number) {
-        if (!this.drawnCard || this.roundOf.id !== this.me.id) // Card not drawn or it's not your round.
-            return;
-        // map.set
-        const rotation = this.drawnCard.rotation;
-        this.onPlace(x, y, rotation); // Doesn't care of the result.
+    onPlaceSend(x: number, y: number) {
+        if (!this.drawnCard || !this.isMyRound()) // Card not drawn or it's not your round.
+            return false;
+        let rotation = this.drawnCard.rotation;
+        if (!this.onPlace(x, y, rotation)) {
+            return false;
+        }
         channel.send({
             type: "player_place",
             x: x,
             y: y,
             rotation: rotation,
-        } as PlayerPlace)
+        } as PlayerPlace);
+        return true;
     }
 
     /** Function called when another player (that is not me) places a card.*/
@@ -206,12 +247,26 @@ export class GamePhase extends Phase {
         this.onPlace(packet.x, packet.y, packet.rotation);
     }
 
+    centerBoard() {
+        let boardScreenWidth = app.renderer.width;
+        let boardScreenHeight = app.renderer.height - this.topBar.height;
+
+        // Relative to the topmost point (0, topBar.height)
+        let screenMidPointWidth = boardScreenWidth / 2;
+        let screenMidPointHeight = boardScreenHeight / 2;
+
+        let boardSize = this.board.gridSide * Board.TILE_SIZE;// Both width and height (they're the same)
+
+        this.board.position.set(screenMidPointWidth - boardSize / 2, screenMidPointHeight - boardSize / 2);
+    }
+
     enable() {
         super.enable();
         app.stage = new PIXI.Container();
         app.stage.addChild(this.bag);
         app.stage.addChild(this.topBar);
         app.stage.addChild(this.board);
+        app.stage.interactive = true;
 
         if (this.me.isHost) {
             this.setSeed(Math.random());
@@ -231,12 +286,18 @@ export class GamePhase extends Phase {
         channel.eventManager.addEventListener("random_seed",  this.onRandomSeed.bind(this));
         channel.eventManager.addEventListener("player_draw",  this.onPlayerDraw.bind(this));
         channel.eventManager.addEventListener("player_place", this.onPlayerPlace.bind(this));
+
+        app.stage.on("mousemove", this.onCursorMove.bind(this));
+        app.stage.on("mousedown", this.onCursorClick.bind(this));
+        app.stage.on("rightdown", this.onCursorRightClick.bind(this));
     }
 
     disable() {
         super.disable();
 
         app.stage.off("mousemove", this.onCursorMove.bind(this));
+        app.stage.off("mousedown", this.onCursorClick.bind(this));
+        app.stage.off("rightdown", this.onCursorRightClick.bind(this));
 
         this.topBar.unlisten();
         this.bag.unlisten();

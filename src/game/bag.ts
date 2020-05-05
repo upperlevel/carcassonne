@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 import {app} from "../index";
 import Texture = PIXI.Texture;
-import {Card} from "./card";
+import {Card, CardSides} from "./card";
 
 export class Bag extends PIXI.Container {
     cards: Array<Card>;
@@ -12,6 +12,8 @@ export class Bag extends PIXI.Container {
     onClick: () => boolean;
     onOver: () => boolean;
     onOut: () => void;
+
+    onCardDraw: (card: Card) => void;
 
     static BAG_OPENED: Texture;
     static BAG_CLOSED: Texture;
@@ -94,6 +96,9 @@ export class Bag extends PIXI.Container {
         //this.text.text = this.cards.length.toString();
 
         this.text.text = this.cards.length.toString();
+
+        if (this.onCardDraw) this.onCardDraw(card);
+
         return card;
     }
 
@@ -103,6 +108,29 @@ export class Bag extends PIXI.Container {
 
     static fromModality(modality: string) {
         const resource = PIXI.Loader.shared.resources["modalities/" + modality];
-        return new Bag(resource.data);
+        let cards = Bag.duplicateCards(resource.data)
+
+        let initialCard = Bag.findFirstInitialCard(cards);
+        // Put the first card first
+        [cards[0], cards[initialCard]] = [cards[initialCard], cards[0]];
+
+        return new Bag(cards);
+    }
+
+    static duplicateCards(original: Array<Card>): Array<Card> {
+        let res = new Array<Card>();
+        for (let card of original) {
+            res.push(...Array(card.quantity).fill(card))
+        }
+        return res;
+    }
+
+    static findFirstInitialCard(cards: Array<Card>): number {
+        let cardsLen = cards.length;
+        for (let i = 0; i < cardsLen; i++) {
+            if (cards[i].flags.indexOf("root") >= 0) {
+                return i;
+            }
+        }
     }
 }

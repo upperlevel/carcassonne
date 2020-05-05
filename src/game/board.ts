@@ -4,6 +4,7 @@ import {Bag} from "./bag";
 import {Side, SideUtil} from "./side";
 import {CardConnector} from "./cardConnector";
 import InteractionEvent = PIXI.interaction.InteractionEvent;
+import {Card} from "./card";
 
 export class Board extends PIXI.Container {
     readonly gridSide: number;
@@ -24,7 +25,7 @@ export class Board extends PIXI.Container {
      * Creates the Board referred to a certain Bag.
      * The Board size is calculated to fit the Bag's cards.
      */
-    constructor(bag: Bag) {
+    constructor(bag: Bag, initialCard: Card) {
         super();
         // Why bag.size() * 2? Good question!
         // We begin the map at the center with one card, then the player can continue however he wants,
@@ -37,15 +38,13 @@ export class Board extends PIXI.Container {
         this.bag = bag;
         this.cardConnector = new CardConnector(this);
 
-        this.rootCardTile = new CardTile(bag.draw()); // The first card of the un-shuffled bag is the root.
-        this.set(this.gridSide / 2, this.gridSide / 2, this.rootCardTile);
+        this.rootCardTile = new CardTile(initialCard);
+        this.set(Math.floor(this.gridSide / 2), Math.floor(this.gridSide / 2), this.rootCardTile, true);
 
         this.initPixie();
     }
 
     private initPixie() {
-        this.width = Board.TILE_SIZE * this.gridSide;
-        this.height = Board.TILE_SIZE * this.gridSide;
         this.hitArea = {
             contains(x: number, y: number): boolean {
                 return true;
@@ -78,11 +77,20 @@ export class Board extends PIXI.Container {
     }
 
     private flatIndex(x: number, y: number): number {
-        return x * this.gridSide + y;
+        if (0 <= x  && x < this.gridSide && 0 <= y && y < this.gridSide) {
+            return x * this.gridSide + y;
+        } else {
+            return -1;
+        }
     }
 
     get(x: number, y: number): CardTile | undefined {
         return this.grid[this.flatIndex(x, y)];
+    }
+
+    containerCoordsToTileCoords(src: PIXI.Point, target: PIXI.Point) {
+        target.x = Math.floor(src.x * this.scale.x / Board.TILE_SIZE);
+        target.y = Math.floor(src.y * this.scale.y / Board.TILE_SIZE);
     }
 
     getNeighbour(x: number, y: number, side: Side): CardTile | undefined {
@@ -91,29 +99,26 @@ export class Board extends PIXI.Container {
     }
 
     canSet(x: number, y: number, tile: CardTile): boolean {
-        let neighbor;
+        let hasNeighbour = false;
 
-        neighbor = this.get(x, y);
-        if (neighbor != null)
+        let node = this.get(x, y);
+        if (node !== undefined) {
+            //console.log("No: occupied")
             return false;
+        }
 
-        neighbor = this.get(x - 1, y);
-        if (neighbor && !tile.isCompatible(Side.LEFT, neighbor))
-            return false;
+        for (let side of SideUtil.all) {
+            let coords = SideUtil.getNeighbourCoords(side);
+            let neighbor = this.get(x + coords[0], y + coords[1]);
+            hasNeighbour = hasNeighbour || neighbor !== undefined;
+            //if (neighbor) console.log("Side ", side, ": ", tile.getSideType(side), neighbor.getSideType(SideUtil.invert(side)));
+            if (neighbor && !tile.isCompatible(side, neighbor)) {
+                //console.log("No: incompatible side ", side, ": ", tile.getSideType(side), neighbor.getSideType(SideUtil.invert(side)));
+                return false;
+            }
+        }
 
-        neighbor = this.get(x + 1, y);
-        if (neighbor && !tile.isCompatible(Side.RIGHT, neighbor))
-            return false;
-
-        neighbor = this.get(x, y - 1);
-        if (neighbor && !tile.isCompatible(Side.BOTTOM, neighbor))
-            return false;
-
-        neighbor = this.get(x, y + 1);
-        if (neighbor && !tile.isCompatible(Side.TOP, neighbor))
-            return false;
-
-        return true;
+        return hasNeighbour;
     }
 
     /**
@@ -121,11 +126,12 @@ export class Board extends PIXI.Container {
      * @param x    the X in Board coordinates.
      * @param y    the Y in Board coordinates.
      * @param tile the CardTile to be set, can be provided with a rotation.
+     * @param force if true will insert the tile without any checks.
      *
      * @return     true if the card has been set, otherwise false.
      */
-    set(x: number, y: number, tile: CardTile): boolean {
-        if (!this.canSet(x, y, tile))
+    set(x: number, y: number, tile: CardTile, force?: boolean): boolean {
+        if (!this.canSet(x, y, tile) && force !== true)
             return false;
         this.grid[this.flatIndex(x, y)] = tile;
         // Let's hope the caller already checked if he can.
@@ -133,11 +139,16 @@ export class Board extends PIXI.Container {
 
         // Graphics
         let sprite = tile.createSprite();
+        sprite.anchor.set(0.5, 0.5);
         sprite.width = Board.TILE_SIZE;
         sprite.height = Board.TILE_SIZE;
-        sprite.position.set(Board.TILE_SIZE / 2 + x * Board.TILE_SIZE, Board.TILE_SIZE / 2 + y * Board.TILE_SIZE);
+        this.cardCoordToRelPos(x, y, sprite.position);
         this.addChild(sprite);
 
         return true;
+    }
+
+    cardCoordToRelPos(x: number, y: number, target: PIXI.IPoint) {
+        target.set(Board.TILE_SIZE / 2 + x * Board.TILE_SIZE, Board.TILE_SIZE / 2 + y * Board.TILE_SIZE);
     }
 }

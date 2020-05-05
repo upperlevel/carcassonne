@@ -1,6 +1,7 @@
 import {Side} from "./side";
 
 export type SideType = "lawn" | "village" | "road";
+export type CardFlag = "monastery" | "doublePoints" | "root";
 
 export class SideTypeUtil {
     static isOwnable(sideType: SideType): boolean {
@@ -9,14 +10,18 @@ export class SideTypeUtil {
     }
 }
 
+export interface CardSides {
+    left:   SideType,
+    right:  SideType,
+    top:    SideType,
+    bottom: SideType,
+}
+
+// TODO: compress this (bitsets & more).
 export interface Card {
-    hasMonastery: boolean,
     spritePath: string,
-    sides: {
-        left:   SideType,
-        right:  SideType,
-        top:    SideType,
-        bottom: SideType,
-    };
-    connections: Side[][]
+    quantity: number,
+    sides: CardSides,
+    connections: Side[][],
+    flags: CardFlag[]
 }

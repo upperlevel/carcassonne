@@ -1,20 +1,33 @@
 [
   {
-    "hasMonastery": false,
-    "spritePath": "image--019.jpg",
+    "spritePath": "image--000.jpg",
+    "quantity": 4,
     "sides": {
-      "top": "village",
-      "right": "road",
+      "top": "lawn",
+      "right": "lawn",
       "bottom": "lawn",
-      "left": "road"
+      "left": "lawn"
     },
     "connections": [
-      [1, 3]
-    ]
+    ],
+    "flags": ["monastery"]
   },
   {
-    "hasMonastery": false,
+    "spritePath": "image--001.jpg",
+    "quantity": 2,
+    "sides": {
+      "top": "lawn",
+      "right": "lawn",
+      "bottom": "road",
+      "left": "lawn"
+    },
+    "connections": [
+    ],
+    "flags": ["monastery"]
+  },
+  {
     "spritePath": "image--002.jpg",
+    "quantity": 2,
     "sides": {
       "top": "village",
       "right": "village",
@@ -23,6 +36,297 @@
     },
     "connections": [
       [0, 1, 2, 3]
-    ]
+    ],
+    "flags": ["doublePoints"]
+  },
+  {
+    "spritePath": "image--003.jpg",
+    "quantity": 3,
+    "sides": {
+      "top": "village",
+      "right": "village",
+      "bottom": "lawn",
+      "left": "village"
+    },
+    "connections": [
+      [0, 1, 3]
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--004.jpg",
+    "quantity": 3,
+    "sides": {
+      "top": "village",
+      "right": "village",
+      "bottom": "lawn",
+      "left": "village"
+    },
+    "connections": [
+      [0, 1, 3]
+    ],
+    "flags": ["doublePoints"]
+  },
+  {
+    "spritePath": "image--005.jpg",
+    "quantity": 1,
+    "sides": {
+      "top": "village",
+      "right": "village",
+      "bottom": "road",
+      "left": "village"
+    },
+    "connections": [
+      [0, 1, 3]
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--006.jpg",
+    "quantity": 2,
+    "sides": {
+      "top": "village",
+      "right": "village",
+      "bottom": "road",
+      "left": "village"
+    },
+    "connections": [
+      [0, 1, 3]
+    ],
+    "flags": ["doublePoints"]
+  },
+  {
+    "spritePath": "image--007.jpg",
+    "quantity": 3,
+    "sides": {
+      "top": "village",
+      "right": "lawn",
+      "bottom": "lawn",
+      "left": "village"
+    },
+    "connections": [
+      [0, 3]
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--008.jpg",
+    "quantity": 2,
+    "sides": {
+      "top": "village",
+      "right": "lawn",
+      "bottom": "lawn",
+      "left": "village"
+    },
+    "connections": [
+      [0, 3]
+    ],
+    "flags": ["doublePoints"]
+  },
+  {
+    "spritePath": "image--009.jpg",
+    "quantity": 3,
+    "sides": {
+      "top": "village",
+      "right": "road",
+      "bottom": "road",
+      "left": "village"
+    },
+    "connections": [
+      [0, 3],
+      [1, 2]
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--010.jpg",
+    "quantity": 2,
+    "sides": {
+      "top": "village",
+      "right": "road",
+      "bottom": "road",
+      "left": "village"
+    },
+    "connections": [
+      [0, 3],
+      [1, 2]
+    ],
+    "flags": ["doublePoints"]
+  },
+  {
+    "spritePath": "image--011.jpg",
+    "quantity": 1,
+    "sides": {
+      "top": "lawn",
+      "right": "village",
+      "bottom": "lawn",
+      "left": "village"
+    },
+    "connections": [
+      [1, 3]
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--012.jpg",
+    "quantity": 2,
+    "sides": {
+      "top": "lawn",
+      "right": "village",
+      "bottom": "lawn",
+      "left": "village"
+    },
+    "connections": [
+      [1, 3]
+    ],
+    "flags": ["doublePoints"]
+  },
+  {
+    "spritePath": "image--013.jpg",
+    "quantity": 3,
+    "sides": {
+      "top": "village",
+      "right": "lawn",
+      "bottom": "lawn",
+      "left": "village"
+    },
+    "connections": [
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--014.jpg",
+    "quantity": 3,
+    "sides": {
+      "top": "village",
+      "right": "lawn",
+      "bottom": "village",
+      "left": "lawn"
+    },
+    "connections": [
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--015.jpg",
+    "quantity": 5,
+    "sides": {
+      "top": "village",
+      "right": "lawn",
+      "bottom": "lawn",
+      "left": "lawn"
+    },
+    "connections": [
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--016.jpg",
+    "quantity": 3,
+    "sides": {
+      "top": "village",
+      "right": "lawn",
+      "bottom": "road",
+      "left": "road"
+    },
+    "connections": [
+      [2, 3]
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--017.jpg",
+    "quantity": 3,
+    "sides": {
+      "top": "village",
+      "right": "road",
+      "bottom": "road",
+      "left": "lawn"
+    },
+    "connections": [
+      [1, 2]
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--018.jpg",
+    "quantity": 3,
+    "sides": {
+      "top": "village",
+      "right": "road",
+      "bottom": "road",
+      "left": "road"
+    },
+    "connections": [
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--019.jpg",
+    "quantity": 4,
+    "sides": {
+      "top": "village",
+      "right": "road",
+      "bottom": "lawn",
+      "left": "road"
+    },
+    "connections": [
+      [1, 3]
+    ],
+    "flags": ["root"]
+  },
+  {
+    "spritePath": "image--020.jpg",
+    "quantity": 8,
+    "sides": {
+      "top": "road",
+      "right": "lawn",
+      "bottom": "road",
+      "left": "lawn"
+    },
+    "connections": [
+      [1, 3]
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--021.jpg",
+    "quantity": 9,
+    "sides": {
+      "top": "lawn",
+      "right": "lawn",
+      "bottom": "road",
+      "left": "road"
+    },
+    "connections": [
+      [2, 3]
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--022.jpg",
+    "quantity": 4,
+    "sides": {
+      "top": "lawn",
+      "right": "road",
+      "bottom": "road",
+      "left": "road"
+    },
+    "connections": [
+    ],
+    "flags": []
+  },
+  {
+    "spritePath": "image--023.jpg",
+    "quantity": 1,
+    "sides": {
+      "top": "road",
+      "right": "road",
+      "bottom": "road",
+      "left": "road"
+    },
+    "connections": [
+    ],
+    "flags": []
   }
 ]

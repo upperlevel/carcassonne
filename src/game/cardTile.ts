@@ -1,4 +1,4 @@
-import {Side} from "./side";
+import {Side, SideUtil} from "./side";
 import {Card, SideType} from "./card";
 import * as PIXI from "pixi.js";
 
@@ -36,7 +36,7 @@ export class CardTile {
     }
 
     isCompatible(side: Side, placedCard: CardTile): boolean {
-        return this.getSideType(side) == placedCard.getSideType(side + 2)
+        return this.getSideType(side) == placedCard.getSideType(SideUtil.invert(side))
     }
 
     createSprite(): PIXI.Sprite {
@@ -44,7 +44,7 @@ export class CardTile {
 
         let res = new PIXI.Sprite(resources["cards"].textures[this.card.spritePath]);
         res.anchor.set(0.5, 0.5);
-        res.rotation = this.rotation * Math.PI / 2;
+        res.rotation = -this.rotation * Math.PI / 2;
         return res;
     }
 }

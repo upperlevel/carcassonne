@@ -54,6 +54,10 @@ async function wsConnect(address: string, port: number, path: string): Promise<W
     app = new PIXI.Application({resizeTo: window});
     document.body.appendChild(app.view);
 
+    app.view.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    })
+
     stage.setPhase(new LoadingPhase());
 
     await loadResources();

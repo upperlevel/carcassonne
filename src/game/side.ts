@@ -11,10 +11,11 @@ export class SideUtil {
 
     static getNeighbourCoords(side: Side): [number, number] {
         switch (side) {
-            case Side.TOP:    return [ 1,  0];
-            case Side.RIGHT:  return [ 0,  1];
-            case Side.BOTTOM: return [-1,  0];
-            case Side.LEFT:   return [ 0, -1];
+            //                         X,  Y
+            case Side.TOP:    return [ 0, -1];
+            case Side.RIGHT:  return [ 1,  0];
+            case Side.BOTTOM: return [ 0,  1];
+            case Side.LEFT:   return [-1,  0];
         }
         return [0,  0];
     }
