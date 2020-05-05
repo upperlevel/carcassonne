@@ -123,6 +123,27 @@ export class Board extends PIXI.Container {
         return hasNeighbour;
     }
 
+    scorePennant(x: number, y: number): number {
+        let score = 1;
+        for (let dx of [-1, 0, 1]) {
+            for (let dy of [-1, 0, 1]) {
+                if (dx == 0 && dy == 0) continue;
+                if (this.get(x + dx, y + dy) !== undefined) score += 1;
+            }
+        }
+        return score;
+    }
+
+    updatePennant(x: number, y: number) {
+        let tile = this.get(x, y);
+        if (tile === undefined || tile.pennantOwner === undefined) return;
+        let score = this.scorePennant(x, y);
+        if (score == 9) {
+            this.phase.awardScore(tile.pennantOwner, 9);
+            tile.pennantOwner = undefined;
+        }
+    }
+
     /**
      * Sets the card at the given Board coordinates.
      * @param x    the X in Board coordinates.
@@ -138,6 +159,13 @@ export class Board extends PIXI.Container {
         this.grid[this.flatIndex(x, y)] = tile;
         // Let's hope the caller already checked if he can.
         this.cardConnector.addCard(undefined, x, y, undefined);
+
+        // Update nearby pennants
+        for (let dx of [-1, 0, 1]) {
+            for (let dy of [-1, 0, 1]) {
+                this.updatePennant(x + dx, y + dy);
+            }
+        }
 
         // Graphics
         let sprite = tile.createSprite();
