@@ -253,9 +253,9 @@ export class GamePhase extends Phase {
      * @param rotation The rotation of the card.
      */
     onPlace(x: number, y: number, rotation: number) {
+        this.drawnCard.rotation = rotation;
         if (!this.board.set(x, y, this.drawnCard))
             return false; // Can't place the card here.
-        this.drawnCard.rotation = rotation;
         this.board.removeChild(this.drawnCardSprite);
         this.drawnCard = null;
         this.drawnCardSprite = null;
@@ -283,7 +283,9 @@ export class GamePhase extends Phase {
     /** Function called when another player (that is not me) places a card.*/
     onPlayerPlace(event: CustomEvent) {
         const packet = event.detail as PlayerPlace;
-        this.onPlace(packet.x, packet.y, packet.rotation);
+        if (!this.onPlace(packet.x, packet.y, packet.rotation)) {
+            console.error("Invalid tile set!")// TODO: better error management
+        }
     }
 
     centerBoard() {
