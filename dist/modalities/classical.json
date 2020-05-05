@@ -55,7 +55,7 @@
   },
   {
     "spritePath": "image--004.jpg",
-    "quantity": 3,
+    "quantity": 1,
     "sides": {
       "top": "village",
       "right": "village",
@@ -183,7 +183,7 @@
   },
   {
     "spritePath": "image--013.jpg",
-    "quantity": 3,
+    "quantity": 2,
     "sides": {
       "top": "village",
       "right": "lawn",
