@@ -11,7 +11,7 @@ export class CardTile {
     constructor(card: Card, rotation?: number) {
         this.card = card;
         this.rotation = rotation || 0;
-        this.paths = [0, 0, 0, 0];
+        this.paths = [-1, -1, -1, -1];
     }
 
     getSideType(side: Side): SideType {
@@ -32,7 +32,7 @@ export class CardTile {
         if (res == undefined) {
             return [side];
         }
-        return res;
+        return res.map((x) => (x + 4 - this.rotation) % 4);
     }
 
     isCompatible(side: Side, placedCard: CardTile): boolean {

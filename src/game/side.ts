@@ -23,4 +23,13 @@ export class SideUtil {
     static invert(side: Side): Side {
         return (side + 2) % 4;
     }
+
+    static toStr(side: Side): String {
+        switch (side) {
+            case Side.TOP: return "top";
+            case Side.RIGHT: return "right";
+            case Side.BOTTOM: return "bottom";
+            case Side.LEFT: return "left";
+        }
+    }
 }

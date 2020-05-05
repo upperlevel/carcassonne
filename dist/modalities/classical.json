@@ -37,7 +37,7 @@
     "connections": [
       [0, 1, 2, 3]
     ],
-    "flags": ["doublePoints"]
+    "flags": ["pennant"]
   },
   {
     "spritePath": "image--003.jpg",
@@ -65,7 +65,7 @@
     "connections": [
       [0, 1, 3]
     ],
-    "flags": ["doublePoints"]
+    "flags": ["pennant"]
   },
   {
     "spritePath": "image--005.jpg",
@@ -93,7 +93,7 @@
     "connections": [
       [0, 1, 3]
     ],
-    "flags": ["doublePoints"]
+    "flags": ["pennant"]
   },
   {
     "spritePath": "image--007.jpg",
@@ -121,7 +121,7 @@
     "connections": [
       [0, 3]
     ],
-    "flags": ["doublePoints"]
+    "flags": ["pennant"]
   },
   {
     "spritePath": "image--009.jpg",
@@ -151,7 +151,7 @@
       [0, 3],
       [1, 2]
     ],
-    "flags": ["doublePoints"]
+    "flags": ["pennant"]
   },
   {
     "spritePath": "image--011.jpg",
@@ -179,7 +179,7 @@
     "connections": [
       [1, 3]
     ],
-    "flags": ["doublePoints"]
+    "flags": ["pennant"]
   },
   {
     "spritePath": "image--013.jpg",
@@ -285,7 +285,7 @@
       "left": "lawn"
     },
     "connections": [
-      [1, 3]
+      [0, 2]
     ],
     "flags": []
   },

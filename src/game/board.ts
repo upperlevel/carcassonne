@@ -5,8 +5,10 @@ import {Side, SideUtil} from "./side";
 import {CardConnector} from "./cardConnector";
 import InteractionEvent = PIXI.interaction.InteractionEvent;
 import {Card} from "./card";
+import {GamePhase} from "../phase/gamePhase";
 
 export class Board extends PIXI.Container {
+    readonly phase: GamePhase;
     readonly gridSide: number;
     readonly grid: Array<CardTile>;
 
@@ -25,8 +27,9 @@ export class Board extends PIXI.Container {
      * Creates the Board referred to a certain Bag.
      * The Board size is calculated to fit the Bag's cards.
      */
-    constructor(bag: Bag, initialCard: Card) {
+    constructor(phase: GamePhase, bag: Bag, initialCard: Card) {
         super();
+        this.phase = phase;
         // Why bag.size() * 2? Good question!
         // We begin the map at the center with one card, then the player can continue however he wants,
         // the worst spatial case is if he places all of the cards in one line, this creates a single line of bag.size()
@@ -104,7 +107,7 @@ export class Board extends PIXI.Container {
 
     getNeighbour(x: number, y: number, side: Side): CardTile | undefined {
         let d = SideUtil.getNeighbourCoords(side);
-        return this.get(x + d[0], x + d[1]);
+        return this.get(x + d[0], y + d[1]);
     }
 
     canSet(x: number, y: number, tile: CardTile): boolean {

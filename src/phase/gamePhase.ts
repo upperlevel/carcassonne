@@ -86,7 +86,7 @@ export class GamePhase extends Phase {
     }
 
     setupBoard(initialCard: Card) {
-        this.board = new Board(this.bag, initialCard);
+        this.board = new Board(this, this.bag, initialCard);
         this.board.position.set(0, 0);
         this.centerBoard();
         //console.log("BOARD", this.board);
@@ -227,7 +227,7 @@ export class GamePhase extends Phase {
 
     onCursorDown(event: PIXI.interaction.InteractionEvent) {
         this.lastMouseDownTime = Date.now();
-        this.lastMouseDownPos = event.data.global;
+        this.lastMouseDownPos = event.data.global.clone();
     }
 
     onCursorUp(event: PIXI.interaction.InteractionEvent) {
@@ -332,6 +332,10 @@ export class GamePhase extends Phase {
         let boardSize = this.board.gridSide * Board.TILE_SIZE;// Both width and height (they're the same)
 
         this.board.position.set(screenMidPointWidth - boardSize / 2, screenMidPointHeight - boardSize / 2);
+    }
+
+    awardScore(playerId: string, score: number) {
+        this.playersById.get(playerId).score += score;
     }
 
     enable() {

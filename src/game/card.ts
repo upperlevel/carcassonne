@@ -1,7 +1,7 @@
 import {Side} from "./side";
 
 export type SideType = "lawn" | "village" | "road";
-export type CardFlag = "monastery" | "doublePoints" | "root";
+export type CardFlag = "monastery" | "pennant" | "root";
 
 export class SideTypeUtil {
     static isOwnable(sideType: SideType): boolean {
