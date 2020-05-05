@@ -27,6 +27,9 @@ export class GamePhase extends Phase {
 
     drawnCard: CardTile;
 
+    lastMouseDownTime?: number;
+    lastMouseDownPos?: PIXI.IPoint;
+
     readonly eventTarget: EventTarget = new EventTarget();
 
     constructor(playersById: {[id: string]: PlayerObject}) {
@@ -192,6 +195,26 @@ export class GamePhase extends Phase {
         }
     }
 
+    onCursorDown(event: PIXI.interaction.InteractionEvent) {
+        this.lastMouseDownTime = Date.now();
+        this.lastMouseDownPos = event.data.global;
+    }
+
+    onCursorUp(event: PIXI.interaction.InteractionEvent) {
+        if (this.lastMouseDownTime === undefined) return;
+
+        let now = Date.now();
+
+        let timeDiff = now - this.lastMouseDownTime;
+
+        let diffX = Math.abs(event.data.global.x - this.lastMouseDownPos.x);
+        let diffY = Math.abs(event.data.global.y - this.lastMouseDownPos.y);
+        let diffPos = Math.sqrt(diffX*diffX + diffY*diffY);
+
+        let isClick = diffPos < 5 && timeDiff < 500;
+        if (isClick) this.onCursorClick(event);
+    }
+
     /** Function called when the cursor clicks. */
     onCursorClick(event: PIXI.interaction.InteractionEvent) {
         if (this.drawnCard && this.isMyRound()) {
@@ -300,7 +323,8 @@ export class GamePhase extends Phase {
         channel.eventManager.addEventListener("player_place", this.onPlayerPlace.bind(this));
 
         app.stage.on("mousemove", this.onCursorMove.bind(this));
-        app.stage.on("mousedown", this.onCursorClick.bind(this));
+        app.stage.on("mousedown", this.onCursorDown.bind(this));
+        app.stage.on("mouseup", this.onCursorUp.bind(this));
         app.stage.on("rightdown", this.onCursorRightClick.bind(this));
     }
 
@@ -308,7 +332,8 @@ export class GamePhase extends Phase {
         super.disable();
 
         app.stage.off("mousemove", this.onCursorMove.bind(this));
-        app.stage.off("mousedown", this.onCursorClick.bind(this));
+        app.stage.off("mousedown", this.onCursorDown.bind(this));
+        app.stage.off("mouseup", this.onCursorUp.bind(this));
         app.stage.off("rightdown", this.onCursorRightClick.bind(this));
 
         this.bag.unlisten();
