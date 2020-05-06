@@ -197,30 +197,30 @@ export class GamePhase extends Phase {
         const minScale = 0.1;
         const maxScale = 3;
 
-        const dScale = -Math.sign(event.deltaY) * scalingSpeed;
+        const dScale = 1 - Math.sign(event.deltaY) * scalingSpeed;
 
         //console.log("Scale", this.board.scale.x, this.board.scale.y, "dScale", dScale);
-        if (this.board.scale.x < minScale && dScale < 0 || this.board.scale.x > maxScale && dScale > 0)
+        if (this.board.scale.x < minScale && dScale < 1 || this.board.scale.x > maxScale && dScale > 1)
             return;
 
         // Before scaling adjust the position:
         // Takes the vector that goes from the board position (upper-left) to the cursor.
-        // Normalize that vector using the current scale and re-scale it with the new one.
+        // Apply the dScale factor to that vector and find the new board position.
         // Finally, the cursor position plus the vector obtained is the new board position.
 
         let padX = this.board.position.x - event.clientX;
         let padY = this.board.position.y - event.clientY;
 
-        padX *= 1 + dScale / this.board.scale.x;
-        padY *= 1 + dScale / this.board.scale.y;
+        padX *= dScale;
+        padY *= dScale;
 
         this.board.position.x = padX + event.clientX;
         this.board.position.y = padY + event.clientY;
 
         // Now we can set the scale.
 
-        this.board.scale.x += dScale;
-        this.board.scale.y += dScale;
+        this.board.scale.x *= dScale;
+        this.board.scale.y *= dScale;
     }
 
     /** Function called when the cursor moves around the map. */
