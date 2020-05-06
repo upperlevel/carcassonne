@@ -27,6 +27,7 @@ async function loadResources() {
                 .add("cards", "images/cards.json")
                 .add("avatars", "images/avatars.json")
                 .add("bag", "images/bag.json")
+                .add("pawns", "images/pawns.json")
 
                 .add("modalities/classical", "modalities/classical.json")
 

@@ -5,7 +5,7 @@ export class GamePlayer {
 
     details: PlayerObject;
     score: number = 0;
-    pawns: number = 0;
+    pawns: number = 5;
 
     constructor(phase: GamePhase, details: PlayerObject) {
         this.phase = phase;
