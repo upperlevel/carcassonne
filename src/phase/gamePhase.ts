@@ -10,12 +10,14 @@ import {Card} from "../game/card";
 
 import GameComponent from "../ui/game/game.vue";
 import {GamePlayer} from "../game/gamePlayer";
+import {ScoreVisualizer} from "../game/particles/scoreVisualizer";
 
 export class GamePhase extends Phase {
     seed: number;
 
     bag: Bag;
     board: Board;
+    scoreVisualizer: ScoreVisualizer;
 
     me: GamePlayer;
     playersById: Map<string, GamePlayer> = new Map();
@@ -57,6 +59,7 @@ export class GamePhase extends Phase {
         // UI
         let card = this.setupBag();
         this.setupBoard(card);
+        this.scoreVisualizer = new ScoreVisualizer(this.orderedPlayers);
     }
 
     ui() {
@@ -343,6 +346,9 @@ export class GamePhase extends Phase {
 
     awardScore(playerId: string, score: number) {
         this.playersById.get(playerId).score += score;
+        let anim = this.scoreVisualizer.animateScore(playerId, score);
+        anim.zIndex = 50;
+        app.stage.addChild(anim);
     }
 
     enable() {
@@ -367,6 +373,7 @@ export class GamePhase extends Phase {
         app.stage.addChild(this.bag);
 
         this.bag.listen();
+        this.scoreVisualizer.enable();
 
         channel.eventManager.addEventListener("random_seed",  this.onRandomSeed.bind(this));
         channel.eventManager.addEventListener("player_draw",  this.onPlayerDraw.bind(this));
@@ -388,6 +395,7 @@ export class GamePhase extends Phase {
         app.stage.off("mouseup", this.onCursorUp.bind(this));
         app.stage.off("rightdown", this.onCursorRightClick.bind(this));
 
+        this.scoreVisualizer.disable();
         this.bag.unlisten();
 
         channel.eventManager.removeEventListener("random_seed",  this.onRandomSeed.bind(this));

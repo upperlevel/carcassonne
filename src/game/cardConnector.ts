@@ -2,6 +2,7 @@ import {Board} from "./board";
 import {CardTile} from "./cardTile";
 import {Side, SideUtil} from "./side";
 import {SideTypeUtil} from "./card";
+import {PathCloseParticle} from "./particles/pathClose";
 
 export class CardConnector {
     readonly board: Board;
@@ -86,11 +87,11 @@ export class CardConnector {
 
         if (!reAssign && pathData.openEndCount <= 0) {
             console.warn("CLOSING " + path.toString())
-            this.closePath(x, y, side, false);
+            this.closePath(x, y, side, false, true);
         }
     }
 
-    assignScore(x: number, y: number, side: number, gameEnd: boolean): number {
+    assignScore(x: number, y: number, side: number, gameEnd: boolean, tiles?: Array<[number, number]>): number {
         let score = 0;
 
         // THIS IS A STACK, queues are not supported in js and I don't want to write one.
@@ -99,6 +100,10 @@ export class CardConnector {
 
         while (todo.length > 0) {
             [x, y, side] = todo.pop();
+
+            if (tiles !== undefined) {
+                tiles.push([x, y]);
+            }
 
             let tile = this.board.get(x, y);
             let sideType = tile.getSideType(side);
@@ -127,16 +132,23 @@ export class CardConnector {
                     todo.push([x + d[0], y + d[1], SideUtil.invert(s)]);
                 }
             }
-
         }
 
         return score;
     }
 
-    closePath(x: number, y: number, side: Side, gameEnd: boolean) {
+    closePath(x: number, y: number, side: Side, gameEnd: boolean, animate: boolean) {
         let path = this.board.get(x, y).paths[side];
 
-        let score = this.assignScore(x, y, side, gameEnd);
+        let tiles = new Array<[number, number]>();
+        let score = this.assignScore(x, y, side, gameEnd, tiles);
+
+        if (animate) {
+            this.board.addChild(new PathCloseParticle(this.board, tiles));
+        }
+
+        // Uncommment to test +score animations (this will give the score to the first player).
+        //this.board.phase.awardScore(this.board.phase.orderedPlayers[0].id, score);
         this.pathData.get(path).getScoreWinners().forEach((x) => {
             this.board.phase.awardScore(x, score);
         });

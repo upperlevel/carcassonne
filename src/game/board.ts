@@ -6,6 +6,7 @@ import {CardConnector} from "./cardConnector";
 import InteractionEvent = PIXI.interaction.InteractionEvent;
 import {Card} from "./card";
 import {GamePhase} from "../phase/gamePhase";
+import {PathCloseParticle} from "./particles/pathClose";
 
 export class Board extends PIXI.Container {
     readonly phase: GamePhase;
@@ -47,12 +48,12 @@ export class Board extends PIXI.Container {
     }
 
     private initPixi() {
+        this.sortableChildren = true;
         this.hitArea = {
             contains(x: number, y: number): boolean {
                 return true;
             }
         };
-        this.zIndex = 1000;
 
         // Drag
         this.interactive = true;
@@ -139,7 +140,14 @@ export class Board extends PIXI.Container {
         if (tile === undefined || tile.pennantOwner === undefined) return;
         let score = this.scorePennant(x, y);
         if (score == 9) {
-            this.phase.awardScore(tile.pennantOwner, 9);
+            this.phase.awardScore(tile.pennantOwner, 9)
+            let tiles = new Array<[number, number]>();
+            for (let dx of [-1, 0, 1]) {
+                for (let dy of [-1, 0, 1]) {
+                    tiles.push([x + dx, y + dy]);
+                }
+            }
+            this.addChild(new PathCloseParticle(this, tiles));
             tile.pennantOwner = undefined;
         }
     }
