@@ -29,7 +29,11 @@ export class CardConnector {
         return true;
     }
 
-    assignPath(x: number, y: number, side: Side, path: number, dontClose?: boolean) {
+    assignPath(x: number, y: number, side: Side, path: number, reAssign?: boolean) {
+        if (reAssign === undefined) {
+            reAssign = false;
+        }
+
         let tile = this.board.get(x, y);
         let cons = tile.getSideConnections(side);
         let oldVal = tile.paths[side];
@@ -40,7 +44,7 @@ export class CardConnector {
             tile.paths[con] = path;
             let adjSide = SideUtil.invert(con);
             let neighbour = this.board.getNeighbour(x, y, con);
-            if (neighbour === undefined) {
+            if (!reAssign && neighbour === undefined) {
                 pathData.openEndCount++;
                 continue;
             }
@@ -53,14 +57,14 @@ export class CardConnector {
             }
 
             let d = SideUtil.getNeighbourCoords(con);
-            if (adjPath != oldVal) {
+            if (!reAssign && adjPath != oldVal) {
                 // Merge!
                 pathData.merge(this.pathData.get(adjPath));
                 this.pathData.delete(adjPath);
                 // By the end of the next recursive call no other tile should have the original path.
                 // (they should all have been replaced with `path`).
             }
-            // Why dontClose = true?
+            // Why reAssign = true?
             //   /   |   /
             // /   0 | 0  /
             //   0   |   1
@@ -74,12 +78,13 @@ export class CardConnector {
             //   x
             // Tile in the lower left space, this will first merge the 1 path to 0
             // then it will explore itself (finding 1 open path),
-            // But the first recursive call to assignPath will close the 0th path (because it sees no open paths).
-            // dontClose is just a flag saying that we're still processing the path and that we should not take conclusions.
+            // The merge method will handle the openEnds, we don't need the call to explore new
+            // open/closed paths, the reAssign flag will do just that: reassign the tile's paths without
+            // meddling with the path status.
             this.assignPath(x + d[0], y + d[1], adjSide, path, true);
         }
 
-        if (dontClose != true && pathData.openEndCount <= 0) {
+        if (!reAssign && pathData.openEndCount <= 0) {
             console.warn("CLOSING " + path.toString())
             this.closePath(x, y, side, false);
         }
