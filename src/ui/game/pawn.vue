@@ -5,6 +5,8 @@
             :atlas-size="this.getAtlasSize()"
             :tint="this.colorToHex(this.color)"
 
+            v-on:click.native="onClick"
+
     ></sprite-component>
 </template>
 
@@ -39,6 +41,10 @@
 
             colorToHex(color: number) {
                 return "#" + color.toString(16);
+            },
+
+            onClick() {
+                this.$eventHub.$emit("pawn-pick", this);
             }
         },
         components: {

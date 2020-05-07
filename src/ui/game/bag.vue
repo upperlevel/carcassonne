@@ -7,8 +7,9 @@
             :atlas-size="this.getAtlasSize()"
             :tint="undefined"
 
-            v-on:mouseover="this.onHover()"
-            v-on:mouseleave="this.onLeave()"
+            v-on:mouseover.native="onOver"
+            v-on:click.native="onClick"
+            v-on:mouseleave.native="onLeave"
     >
     </sprite-component>
 </template>
@@ -46,21 +47,23 @@
                 return this.getAtlas().textures["bag_closed.png"].orig;
             },
 
-            onHover() {
-                console.log("[bag] onHover");
-                this.frame = this.getBagOpened();
+            onOver() {
+                this.$eventHub.$emit("bag-over", this);
+            },
+
+            onClick() {
+                this.$eventHub.$emit("bag-click", this);
             },
 
             onLeave() {
-                console.log("[bag] onLeave");
-                this.frame = this.getBagClosed();
+                this.$eventHub.$emit("bag-leave", this);
             }
         },
         components: {
             SpriteComponent
         },
         mounted() {
-            this.frame = this.getBagClosed();
+            this.frame = this.getBagClosed(); // By default the bag is closed.
         }
     });
 </script>

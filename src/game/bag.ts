@@ -1,120 +1,84 @@
 import * as PIXI from "pixi.js";
-import {app} from "../index";
-import Texture = PIXI.Texture;
-import {Card, CardSides} from "./card";
+import Vue from "vue";
+import {Card} from "./card";
+import {GamePhase} from "../phase/gamePhase";
 
 export class Bag extends PIXI.Container {
+    gamePhase: GamePhase;
+    vPool: Vue;
+
     cards: Array<Card>;
 
     sprite: PIXI.Sprite;
     text: PIXI.Text;
 
-    onClick: () => boolean;
-    onOver: () => boolean;
-    onOut: () => void;
-
     onCardDraw: (card: Card) => void;
 
-    static BAG_OPENED: Texture;
-    static BAG_CLOSED: Texture;
+    bagOpenedFrame: PIXI.Rectangle;
+    bagClosedFrame: PIXI.Rectangle;
 
-    static fetchResources() {
-        const resources = PIXI.Loader.shared.resources;
-        let spritesheet;
-
-        spritesheet = resources["bag"].spritesheet;
-        Bag.BAG_OPENED = spritesheet.textures["bag_opened.png"];
-        Bag.BAG_CLOSED = spritesheet.textures["bag_closed.png"];
-    }
-
-    constructor(cards: Array<Card>) {
+    constructor(gamePhase: GamePhase, cards: Array<Card>) {
         super();
         this.cards = cards;
 
-        Bag.fetchResources();
+        this.gamePhase = gamePhase;
+        this.vPool = this.gamePhase.vEventHandler;
 
-        this.sprite = new PIXI.Sprite(Bag.BAG_CLOSED);
-        this.sprite.scale.set(0.5);
-
-        this.text = new PIXI.Text(
-            this.cards.length.toString(),
-            new PIXI.TextStyle({
-                fill: 0xffffff,
-            })
-        );
-        this.text.anchor.set(0.5);
-        this.text.x = this.sprite.width / 2;
-        this.text.y = this.sprite.height;
-
-
-        this.addChild(this.sprite);
-        this.addChild(this.text);
-
-        this.interactive = true;
+        const atlas = PIXI.Loader.shared.resources["bag"].spritesheet;
+        this.bagOpenedFrame = atlas.textures["bag_opened.png"].orig;
+        this.bagClosedFrame = atlas.textures["bag_closed.png"].orig;
     }
 
-    private _onClick() {
-        const cancelled = !this.onClick || this.onClick();
-        if (cancelled)
-            return;
-        this.draw();
+    onBagOver(vBag: any) {
+        if (this.gamePhase.isMyRound()) {
+            vBag.frame = this.bagOpenedFrame;
+            vBag.$el.style.cursor = "pointer";
+        }
     }
 
-    private _onMouseOver() {
-        const cancelled = !this.onOver || this.onOver();
-        if (cancelled)
-            return;
-        this.buttonMode = true;
-        this.sprite.texture = Bag.BAG_OPENED;
+    onBagClick(vBag: any) {
+        if (this.gamePhase.isMyRound() && !this.gamePhase.hasDrawn()) {
+            const card = this.draw();
+            this.gamePhase.onDraw(card);
+            // TODO update number of cards on graphics!
+        }
     }
 
-    private _onMouseOut() {
-        if (this.onOut)
-            this.onOut();
-        this.buttonMode = false;
-        this.sprite.texture = Bag.BAG_CLOSED;
+    onBagLeave(vBag: any) {
+        vBag.frame = this.bagClosedFrame;
+        vBag.$el.style.cursor = "auto";
     }
 
     listen() {
-        this.on("pointerdown", this._onClick, this);
-        this.on("mouseover", this._onMouseOver, this);
-        this.on("mouseout", this._onMouseOut, this);
+        this.vPool.$on("bag-over", this.onBagOver.bind(this));
+        this.vPool.$on("bag-click", this.onBagClick.bind(this));
+        this.vPool.$on("bag-leave", this.onBagLeave.bind(this));
     }
 
     unlisten() {
-        this.off("click", this._onClick, this);
-        this.off("mouseover", this._onMouseOver, this);
-        this.off("mouseout", this._onMouseOut, this);
+        this.vPool.$off("bag-over", this.onBagOver.bind(this));
+        this.vPool.$off("bag-click", this.onBagClick.bind(this));
+        this.vPool.$off("bag-leave", this.onBagLeave.bind(this));
     }
 
+
     draw(): Card {
-        const card = this.cards.shift();
-
-        //this.sprite.scale.set(0.9);
-        //setTimeout(() => this.sprite.scale.set(1), 1000);
-
-        //this.text.text = this.cards.length.toString();
-
-        this.text.text = this.cards.length.toString();
-
-        if (this.onCardDraw) this.onCardDraw(card);
-
-        return card;
+        return this.cards.shift();
     }
 
     size() {
         return this.cards.length;
     }
 
-    static fromModality(modality: string) {
+    static fromModality(gamePhase: GamePhase, modality: string) {
         const resource = PIXI.Loader.shared.resources["modalities/" + modality];
-        let cards = Bag.duplicateCards(resource.data)
+        let cards = Bag.duplicateCards(resource.data);
 
         let initialCard = Bag.findFirstInitialCard(cards);
         // Put the first card first
         [cards[0], cards[initialCard]] = [cards[initialCard], cards[0]];
 
-        return new Bag(cards);
+        return new Bag(gamePhase, cards);
     }
 
     static duplicateCards(original: Array<Card>): Array<Card> {

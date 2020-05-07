@@ -12,6 +12,8 @@ import GameComponent from "../ui/game/game.vue";
 import {GamePlayer} from "../game/gamePlayer";
 import {ScoreVisualizer} from "../game/particles/scoreVisualizer";
 
+import Vue from "vue";
+
 export class GamePhase extends Phase {
     seed: number;
 
@@ -79,11 +81,8 @@ export class GamePhase extends Phase {
     // ================================================================================================
 
     setupBag() {
-        this.bag = Bag.fromModality("classical");
+        this.bag = Bag.fromModality(this,"classical");
 
-        const cancelled = () => !this.canDrawCard();
-        this.bag.onClick = cancelled;
-        this.bag.onOver  = cancelled;
         let card = this.bag.draw(); // The first card of the un-shuffled bag is the root.
         this.bag.onCardDraw = this.onDraw.bind(this);
         return card;
@@ -129,6 +128,10 @@ export class GamePhase extends Phase {
         return this.roundOf && this.roundOf.id == player.id;
     }
 
+    hasDrawn() {
+        return this.drawnCard !== undefined;
+    }
+
     /** Goes on with the next round. */
     nextRound() {
         if (this.bag.size() == 0) { // If the bag's empty ends the game.
@@ -159,10 +162,6 @@ export class GamePhase extends Phase {
     // Draw
     // ================================================================================================
 
-    canDrawCard() {
-        return this.isMyRound() && this.drawnCard === undefined;
-    }
-
     /** Function issued when any player draws a card. */
     onDraw(card: Card) {
         if (this.isMyRound()) {
@@ -175,7 +174,7 @@ export class GamePhase extends Phase {
         this.drawnCard = new CardTile(card);
 
         this.drawnCardSprite = this.drawnCard.createSprite();
-        this.drawnCardSprite.anchor.set(0.5, 0.5)
+        this.drawnCardSprite.anchor.set(0.5, 0.5);
         this.drawnCardSprite.width = Board.TILE_SIZE;
         this.drawnCardSprite.height = Board.TILE_SIZE;
         this.board.addChild(this.drawnCardSprite);
@@ -183,8 +182,9 @@ export class GamePhase extends Phase {
 
     /** Function called when another player (that is not me) draws a card. */
     onPlayerDraw(event: CustomEvent) {
-        const packet = event.detail as PlayerDraw;
-        this.bag.draw();
+        //const packet = event.detail as PlayerDraw;
+        const card = this.bag.draw();
+        this.onDraw(card);
     }
 
     // ================================================================================================

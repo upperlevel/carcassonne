@@ -2,10 +2,16 @@ import Vue from "vue";
 
 export class Phase {
     name: string;
+
     vue: any;
+    vEventHandler: any;
 
     constructor(name: string) {
         this.name = name;
+
+        // Create Vue instance that is responsible for handling the UI events of the current phase.
+        // https://medium.com/vuejobs/create-a-global-event-bus-in-vue-js-838a5d9ab03a
+        this.vEventHandler = new Vue();
     }
 
     log(message: string) {
@@ -19,9 +25,10 @@ export class Phase {
     enable() {
         this.log("Enabling");
 
+        (Vue.prototype as any).$eventHub = this.vEventHandler;
+
         this.vue = this.ui();
         if (this.vue) {
-            this.log("Mounting Vue");
             this.vue.$mount();
             document.getElementById("app").appendChild(this.vue.$el);
         }
