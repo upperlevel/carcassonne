@@ -85,6 +85,7 @@ export class GamePhase extends Phase {
 
         let card = this.bag.draw(); // The first card of the un-shuffled bag is the root.
         this.bag.onCardDraw = this.onDraw.bind(this);
+        this.bag.canCardBePlaced = (x) => this.board.getPossiblePlacements(x).length > 0;
         return card;
     }
 

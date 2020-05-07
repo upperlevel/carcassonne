@@ -12,6 +12,7 @@ export class Bag extends PIXI.Container {
     sprite: PIXI.Sprite;
     text: PIXI.Text;
 
+    canCardBePlaced: (card: Card) => boolean = (x) => true;
     onCardDraw: (card: Card) => void;
 
     bagOpenedFrame: PIXI.Rectangle;
@@ -63,7 +64,11 @@ export class Bag extends PIXI.Container {
 
 
     draw(): Card {
-        return this.cards.shift();
+        let card: Card;
+        do {
+            card = this.cards.shift();
+        } while (!this.canCardBePlaced(card));
+        return card;
     }
 
     size() {

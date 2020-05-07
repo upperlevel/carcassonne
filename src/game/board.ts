@@ -7,6 +7,7 @@ import InteractionEvent = PIXI.interaction.InteractionEvent;
 import {Card} from "./card";
 import {GamePhase} from "../phase/gamePhase";
 import {PathCloseParticle} from "./particles/pathClose";
+import {TileDB, TilePlacement} from "./tileDB";
 
 export class Board extends PIXI.Container {
     readonly phase: GamePhase;
@@ -16,6 +17,8 @@ export class Board extends PIXI.Container {
     readonly bag: Bag;
     readonly cardConnector: CardConnector;
     readonly rootCardTile: CardTile;
+
+    private tileDb: TileDB;
 
     static TILE_SIZE = 120;
 
@@ -42,8 +45,9 @@ export class Board extends PIXI.Container {
         this.cardConnector = new CardConnector(this);
 
         this.rootCardTile = new CardTile(initialCard);
-        this.set(Math.floor(this.gridSide / 2), Math.floor(this.gridSide / 2), this.rootCardTile, true);
+        this.tileDb = new TileDB(this);
 
+        this.set(Math.floor(this.gridSide / 2), Math.floor(this.gridSide / 2), this.rootCardTile, true);
         this.initPixi();
     }
 
@@ -124,6 +128,10 @@ export class Board extends PIXI.Container {
         return hasNeighbour;
     }
 
+    getPossiblePlacements(card: Card): Array<TilePlacement> {
+        return this.tileDb.getPossiblePlacements(card)
+    }
+
     scorePennant(x: number, y: number): number {
         let score = 1;
         for (let dx of [-1, 0, 1]) {
@@ -165,6 +173,7 @@ export class Board extends PIXI.Container {
         if (!this.canSet(x, y, tile) && force !== true)
             return false;
         this.grid[this.flatIndex(x, y)] = tile;
+        this.tileDb.onTileAdd(x, y);
         // Let's hope the caller already checked if he can.
         this.cardConnector.addCard(undefined, x, y, undefined);
 
