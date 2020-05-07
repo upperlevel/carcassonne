@@ -137,10 +137,10 @@ export class Board extends PIXI.Container {
 
     updatePennant(x: number, y: number) {
         let tile = this.get(x, y);
-        if (tile === undefined || tile.pennantOwner === undefined) return;
+        if (tile === undefined || tile.monasteryOwner === undefined) return;
         let score = this.scorePennant(x, y);
         if (score == 9) {
-            this.phase.awardScore(tile.pennantOwner, 9)
+            this.phase.awardScore(tile.monasteryOwner, 9)
             let tiles = new Array<[number, number]>();
             for (let dx of [-1, 0, 1]) {
                 for (let dy of [-1, 0, 1]) {
@@ -148,7 +148,7 @@ export class Board extends PIXI.Container {
                 }
             }
             this.addChild(new PathCloseParticle(this, tiles));
-            tile.pennantOwner = undefined;
+            tile.monasteryOwner = undefined;
         }
     }
 

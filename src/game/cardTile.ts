@@ -7,13 +7,13 @@ export class CardTile {
     card: Card;
     rotation: number;// Steps of 90 degrees clockwise
     paths: [number, number, number, number];// Ids of the paths (or 0 if they're not connected/closed).
-    pennantOwner: string | undefined;
+    monasteryOwner: string | undefined;
 
-    constructor(card: Card, rotation?: number, pennantOwner?: string) {
+    constructor(card: Card, rotation?: number, monasteryOwner?: string) {
         this.card = card;
         this.rotation = rotation || 0;
         this.paths = [-1, -1, -1, -1];
-        this.pennantOwner = pennantOwner;
+        this.monasteryOwner = monasteryOwner;
     }
 
     getSideType(side: Side): SideType {
