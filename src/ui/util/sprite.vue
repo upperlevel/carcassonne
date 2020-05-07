@@ -1,6 +1,6 @@
 <template>
     <div :style="getImageStyle()">
-        <div :style="getOverlayStyle()">
+        <div v-if="this.tint" :style="getOverlayStyle()">
         </div>
     </div>
 </template>

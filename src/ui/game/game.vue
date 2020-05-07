@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="game">
         <!-- PlayerBar -->
         <player-bar-component
                 :players="this.players"
@@ -33,6 +33,10 @@
 </script>
 
 <style scoped>
+    .game {
+        user-select: none;
+    }
+
     .game-bar {
         position: absolute;
         bottom: 0;
