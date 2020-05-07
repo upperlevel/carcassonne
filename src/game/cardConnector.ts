@@ -45,15 +45,20 @@ export class CardConnector {
             tile.paths[con] = path;
             let adjSide = SideUtil.invert(con);
             let neighbour = this.board.getNeighbour(x, y, con);
-            if (!reAssign && neighbour === undefined) {
-                pathData.openEndCount++;
+            if (neighbour === undefined) {
+                if (!reAssign) {
+                    pathData.openEndCount++;
+                    //console.log("(" + x.toString() + ", " + y.toString() + ") found open end at " + SideUtil.toStr(con) + " now " + path.toString() + " = " + pathData.openEndCount);
+                }
                 continue;
+            }
+            if (!reAssign) {
+                pathData.openEndCount--;
+                //console.log("(" + x.toString() + ", " + y.toString() + ") found closed end at " + SideUtil.toStr(con) + " now " + path.toString() + " = " + pathData.openEndCount)
             }
 
             let adjPath = neighbour.paths[adjSide];
-
             if (adjPath == path) {
-                pathData.openEndCount--;
                 continue
             }
 
@@ -61,6 +66,7 @@ export class CardConnector {
             if (!reAssign && adjPath != oldVal) {
                 // Merge!
                 pathData.merge(this.pathData.get(adjPath));
+                //console.log("MERGING: " + path.toString() + " <= " + adjPath.toString() + " new: " + pathData.openEndCount);
                 this.pathData.delete(adjPath);
                 // By the end of the next recursive call no other tile should have the original path.
                 // (they should all have been replaced with `path`).
@@ -86,7 +92,7 @@ export class CardConnector {
         }
 
         if (!reAssign && pathData.openEndCount <= 0) {
-            console.warn("CLOSING " + path.toString())
+            //console.warn("CLOSING " + path.toString())
             this.closePath(x, y, side, false, true);
         }
     }
@@ -206,7 +212,7 @@ export class CardConnector {
         if (chosenSide !== undefined && !this.canPlaceWithChosenSide(tile, x, y, chosenSide)) return false;
 
         this.initializePaths(x, y);
-        //console.log("CARD INITIALIZED: ", tile.paths);
+        //console.log("card (" + x.toString() + "," + y.toString() + ") initialized: ", tile.paths);
 
         if (chosenSide !== undefined) {
             this.pathData.get(chosenSide).addFollower(player);
