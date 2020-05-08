@@ -1,7 +1,7 @@
 import {Phase} from "./phase";
 import {app, channel, me} from "../index";
 import * as PIXI from "pixi.js";
-import {PlayerDraw, PlayerPlace, RandomSeed} from "../protocol/game";
+import {PlayerDraw, PlayerPlace, PlayerPlacePreview, RandomSeed} from "../protocol/game";
 import {Bag} from "../game/bag";
 import {Board} from "../game/board";
 import {CardTile} from "../game/cardTile";
@@ -30,6 +30,7 @@ export class GamePhase extends Phase {
     roundOf: GamePlayer = undefined;
 
     drawnCard: CardTile;
+    drawnCardPreview: CardPreviewManager;
 
     lastMouseDownTime?: number;
     lastMouseDownPos?: PIXI.IPoint;
@@ -57,6 +58,7 @@ export class GamePhase extends Phase {
         );
 
         // UI
+        this.drawnCardPreview = new CardPreviewManager();
         this.gameBar = new GameBar();
         let card = this.setupBag();
         this.setupBoard(card);
@@ -234,8 +236,8 @@ export class GamePhase extends Phase {
     /** Function called when the cursor moves around the map. */
     onCursorMove(event: PIXI.interaction.InteractionEvent) {
         //console.log("[Stage] onCursorMove");
-        if (this.drawnCardSprite) {
-            this.updateDrawnCard(event)
+        if (this.drawnCardSprite && this.isMyRound()) {
+            this.updateDrawnCardWithMouse(event)
         }
     }
 
@@ -272,18 +274,22 @@ export class GamePhase extends Phase {
     onCursorRightClick(event: PIXI.interaction.InteractionEvent) {
         if (this.drawnCard && this.isMyRound()) {
             this.drawnCard.rotation = (this.drawnCard.rotation + 1) % 4;
-            this.updateDrawnCard(event)
+            this.updateDrawnCardWithMouse(event)
             // TODO: Send out event: card rotation
         }
     }
 
-    updateDrawnCard(event: PIXI.interaction.InteractionEvent) {
+    updateDrawnCardWithMouse(event: PIXI.interaction.InteractionEvent) {
         let pos = event.data.getLocalPosition(this.board, null, event.data.global);
         this.board.containerCoordsToTileCoords(pos, pos);
+        this.drawnCardPreview.onUpdate(pos.x, pos.y, this.drawnCard.rotation);
+        this.updateDrawnCard(pos.x, pos.y);
+    }
 
-        let canSet = this.board.canSet(pos.x, pos.y, this.drawnCard);
-
-        this.board.cardCoordToRelPos(pos.x, pos.y, pos);
+    updateDrawnCard(posX: number, posY: number) {
+        let canSet = this.board.canSet(posX, posY, this.drawnCard);
+        let pos = new PIXI.Point();
+        this.board.cardCoordToRelPos(posX, posY, pos);
         this.drawnCardSprite.position.set(pos.x, pos.y);
         this.drawnCardSprite.tint = canSet ? 0xFFFFFF : 0xFFAAAA;
         this.drawnCardSprite.rotation = -this.drawnCard.rotation * Math.PI / 2;
@@ -327,9 +333,24 @@ export class GamePhase extends Phase {
     /** Function called when another player (that is not me) places a card.*/
     onPlayerPlace(event: CustomEvent) {
         const packet = event.detail as PlayerPlace;
+        if (!this.playersById.get(packet.sender).isMyRound()) {
+            console.error("Wrong message sender");
+            return;
+        }
         if (!this.onPlace(packet.x, packet.y, packet.rotation)) {
             console.error("Invalid tile set!")// TODO: better error management
         }
+    }
+
+    /** Function called when another player (that is not me) is moving the card to place.*/
+    onPlayerPlacePreview(event: CustomEvent) {
+        const packet = event.detail as PlayerPlacePreview;
+        if (!this.playersById.get(packet.sender).isMyRound()) {
+            console.error("Wrong message sender");
+            return;
+        }
+        this.drawnCard.rotation = packet.rotation;
+        this.updateDrawnCard(packet.x, packet.y);
     }
 
     /**
@@ -384,6 +405,7 @@ export class GamePhase extends Phase {
         channel.eventManager.addEventListener("random_seed",  this.onRandomSeed.bind(this));
         channel.eventManager.addEventListener("player_draw",  this.onPlayerDraw.bind(this));
         channel.eventManager.addEventListener("player_place", this.onPlayerPlace.bind(this));
+        channel.eventManager.addEventListener("player_place_preview", this.onPlayerPlacePreview.bind(this));
 
         app.stage.on("mousemove", this.onCursorMove.bind(this));
         app.stage.on("mousedown", this.onCursorDown.bind(this));
@@ -411,5 +433,56 @@ export class GamePhase extends Phase {
 
         window.removeEventListener("wheel", this.onMouseWheel.bind(this));
         window.removeEventListener("resize", this.onResize.bind(this));
+    }
+}
+
+class CardPreviewManager {
+    phase: GamePhase;
+
+    private lastX: number = 0;
+    private lastY: number = 0;
+    private lastRot: number = 0;
+
+    private nextX: number = 0;
+    private nextY: number = 0;
+    private nextRot: number = 0;
+
+    private timeoutId?: number;
+
+    static PACKET_UPDATE_FREQ = 50;
+
+    onUpdate(x: number, y: number, rot: number) {
+        this.nextX = x;
+        this.nextY = y;
+        this.nextRot = rot;
+        this.trySend();
+    }
+
+    onPlace() {
+        clearTimeout(this.timeoutId)
+    }
+
+    private startTimer() {
+        this.timeoutId = setTimeout(this.onTimerEnd.bind(this), CardPreviewManager.PACKET_UPDATE_FREQ);
+    }
+
+    private onTimerEnd() {
+        this.timeoutId = undefined;
+        this.trySend();
+    }
+
+    private trySend() {
+        if (this.timeoutId !== undefined) return;
+        if (this.lastX === this.nextX && this.lastY === this.nextY && this.lastRot === this.nextRot) return;
+        channel.send({
+            type: "player_place_preview",
+            x: this.nextX,
+            y: this.nextY,
+            rotation: this.nextRot,
+        });
+        this.lastX = this.nextX;
+        this.lastY = this.nextY;
+        this.lastRot = this.nextRot;
+        this.startTimer();
     }
 }
