@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js";
 import {GamePhase} from "../phase/gamePhase";
 
 export class GamePlayer {
@@ -30,5 +31,17 @@ export class GamePlayer {
 
     isMyRound() {
         return this.phase.isRoundOf(this);
+    }
+
+    createPawn(): PIXI.Sprite {
+        const spritesheet = PIXI.Loader.shared.resources["pawns"].spritesheet;
+        const texture = spritesheet.textures["pawn_" + this.avatar + ".png"];
+
+        const sprite = new PIXI.Sprite(texture);
+        sprite.width = 28;
+        sprite.height = 70;
+        sprite.anchor.set(0.5, 1);
+        sprite.tint = this.color;
+        return sprite;
     }
 }

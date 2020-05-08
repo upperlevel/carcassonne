@@ -1,3 +1,5 @@
+import {Side} from "../game/side";
+
 export interface Packet {
     sender: string,
 }
@@ -41,3 +43,20 @@ export interface PlayerPlacePreview extends Packet {
     rotation: number,
 }
 
+
+/**
+ * [Player]
+ * Packet sent when the player places a pawn on the placed card.
+ */
+export interface PlayerPlacePawn {
+    type: "player_place_pawn",
+    side: Side;
+}
+
+/**
+ * [Player]
+ * Packet sent when the player decides to skip its round.
+ */
+export interface PlayerSkipRound {
+    type: "player_skip_round",
+}

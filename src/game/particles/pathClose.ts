@@ -43,7 +43,6 @@ export class PathCloseParticle extends PIXI.Container {
         let lifePerc = this.life / PathCloseParticle.LIFETIME;
 
         this.alpha = Math.sin(lifePerc * Math.PI);
-        console.log(lifePerc, this.alpha);
     }
 
     onTick(time: number) {

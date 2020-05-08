@@ -40,7 +40,7 @@
             },
 
             colorToHex(color: number) {
-                return "#" + color.toString(16);
+                return color ? "#" + color.toString(16) : "#000000";
             },
 
             onClick() {

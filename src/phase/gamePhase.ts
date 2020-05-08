@@ -12,6 +12,7 @@ import GameComponent from "../ui/game/game.vue";
 import {GamePlayer} from "../game/gamePlayer";
 import {ScoreVisualizer} from "../game/particles/scoreVisualizer";
 import {GameBar} from "../game/gameBar";
+import {PawnPlacer} from "../game/pawnPlacer";
 
 export class GamePhase extends Phase {
     seed: number;
@@ -31,6 +32,11 @@ export class GamePhase extends Phase {
 
     drawnCard: CardTile;
     drawnCardPreview: CardPreviewManager;
+
+    placedCard: {x: number, y: number, card: CardTile};
+
+    pawnPicked: PIXI.Sprite;
+    pawnPlacer: PawnPlacer;
 
     lastMouseDownTime?: number;
     lastMouseDownPos?: PIXI.IPoint;
@@ -63,6 +69,8 @@ export class GamePhase extends Phase {
         let card = this.setupBag();
         this.setupBoard(card);
         this.scoreVisualizer = new ScoreVisualizer(this.orderedPlayers);
+
+        this.pawnPlacer = new PawnPlacer();
     }
 
     ui() {
@@ -307,9 +315,12 @@ export class GamePhase extends Phase {
         if (!this.board.set(x, y, this.drawnCard))
             return false; // Can't place the card here.
         this.board.removeChild(this.drawnCardSprite);
+
+        this.placedCard = {x: x,  y: y, card: this.drawnCard};
+
         this.drawnCard = null;
         this.drawnCardSprite = null;
-        this.nextRound();
+
         return true;
     }
 
@@ -351,6 +362,62 @@ export class GamePhase extends Phase {
         }
         this.drawnCard.rotation = packet.rotation;
         this.updateDrawnCard(packet.x, packet.y);
+    }
+
+    // ================================================================================================================================
+    // After-place
+    // ================================================================================================================================
+
+    undoPawnPick() {
+        this.board.removeChild(this.pawnPicked);
+        this.pawnPicked = undefined;
+        this.me.pawns++; // This will place back the pawn on the HTML container.
+
+        this.board.removeChild(this.pawnPlacer);
+    }
+
+    pickPawn(event: MouseEvent) {
+        if (this.me.pawns <= 0)
+            return;
+        this.me.pawns--;
+
+        // Spawns the PIXI pawn to attach to the cursor.
+        const pawn = this.me.createPawn();
+        pawn.zIndex = 101;
+        pawn.position.set(event.clientX, event.clientY);
+        this.board.addChild(pawn);
+
+        // Spawns the grid that helps during pawn placement.
+        const placer = this.pawnPlacer;
+        placer.zIndex = 100;
+        this.board.cardCoordToRelPos(this.placedCard.x, this.placedCard.y, placer.position);
+        this.board.addChild(placer);
+
+        this.pawnPicked = pawn;
+    }
+
+    onPawnMove(event: PIXI.interaction.InteractionEvent) {
+        const pawn = this.pawnPicked;
+        if (pawn) {
+            const cursor = event.data.getLocalPosition(this.board, null, event.data.global);
+            pawn.position.set(cursor.x, cursor.y);
+        }
+    }
+
+    /**
+     * Function issued when a pawn is picked from the HTML container.
+     */
+    onPawnInteract(event: MouseEvent) {
+        // If it's my round and I've already placed the card I can interact with pawns.
+        if (!this.placedCard || !this.isMyRound())
+            return;
+
+        if (this.pawnPicked) this.undoPawnPick();
+        else this.pickPawn(event);
+    }
+
+    showPawnPlacer(x: number, y: number) {
+
     }
 
     /**
@@ -400,6 +467,7 @@ export class GamePhase extends Phase {
         }
 
         this.bag.listen();
+        this.pawnPlacer.listen();
         this.scoreVisualizer.enable();
 
         channel.eventManager.addEventListener("random_seed",  this.onRandomSeed.bind(this));
@@ -414,6 +482,9 @@ export class GamePhase extends Phase {
 
         window.addEventListener("wheel", this.onMouseWheel.bind(this));
         window.addEventListener("resize", this.onResize.bind(this));
+
+        this.vEventHandler.$on("pawn-interact", this.onPawnInteract.bind(this));
+        app.stage.on("mousemove", this.onPawnMove.bind(this));
     }
 
     disable() {
@@ -425,6 +496,7 @@ export class GamePhase extends Phase {
         app.stage.off("rightdown", this.onCursorRightClick.bind(this));
 
         this.scoreVisualizer.disable();
+        this.pawnPlacer.unlisten();
         this.bag.unlisten();
 
         channel.eventManager.removeEventListener("random_seed",  this.onRandomSeed.bind(this));
@@ -433,6 +505,8 @@ export class GamePhase extends Phase {
 
         window.removeEventListener("wheel", this.onMouseWheel.bind(this));
         window.removeEventListener("resize", this.onResize.bind(this));
+
+        this.vEventHandler.$off("pawn-interact", this.onPawnInteract.bind(this));
     }
 }
 

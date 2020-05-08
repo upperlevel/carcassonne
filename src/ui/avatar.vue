@@ -20,7 +20,7 @@
         },
         methods: {
             colorToString() {
-                return "#" + this.color.toString(16);
+                return this.color ? "#" + this.color.toString(16) : "#000000";
             },
 
             /**

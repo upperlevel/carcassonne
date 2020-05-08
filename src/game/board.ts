@@ -61,7 +61,7 @@ export class Board extends PIXI.Container {
 
         // Drag
         this.interactive = true;
-        this.interactiveChildren = false;
+        this.interactiveChildren = true;
         this.isDragging = false;
 
         let thus = this;

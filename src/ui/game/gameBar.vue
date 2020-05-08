@@ -11,7 +11,7 @@
                 :cards="gamePhase.bag.cards"
         >
         </bag-component>
-        <div class="pawn-container">
+        <div class="pawn-container" v-on:click="onPawnInteract">
             <pawn-component v-for="pawn in pawns" :key="pawn"
                             class="pawn"
 
@@ -38,6 +38,11 @@
             "pawns",
             "player",
         ],
+        methods: {
+            onPawnInteract(event: MouseEvent) {
+                this.$eventHub.$emit("pawn-interact", event);
+            }
+        },
         components: {
             BagComponent,
             PawnComponent
