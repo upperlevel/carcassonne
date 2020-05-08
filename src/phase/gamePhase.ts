@@ -69,6 +69,7 @@ export class GamePhase extends Phase {
         return new GameComponent({
             data() {
                 return {
+                    gamePhase: self,
                     myPlayer: self.me,
                     players: self.orderedPlayers,
                 }

@@ -1,17 +1,22 @@
 <template>
-    <sprite-component
-            class="bag"
+    <div>
+        <sprite-component
+                class="bag-sprite"
 
-            :frame="this.frame"
-            :atlas-url="this.getAtlasUrl()"
-            :atlas-size="this.getAtlasSize()"
-            :tint="undefined"
+                :frame="this.frame"
+                :atlas-url="this.getAtlasUrl()"
+                :atlas-size="this.getAtlasSize()"
+                tint="transparent"
 
-            v-on:mouseover.native="onOver"
-            v-on:click.native="onClick"
-            v-on:mouseleave.native="onLeave"
-    >
-    </sprite-component>
+                v-on:mouseover.native="onOver"
+                v-on:click.native="onClick"
+                v-on:mouseleave.native="onLeave"
+        >
+        </sprite-component>
+        <div class="bag-text">
+            {{ this.cards.length }}
+        </div>
+    </div>
 </template>
 
 <script lang="ts">
@@ -21,6 +26,9 @@
     import SpriteComponent from "../util/sprite.vue";
 
     export default Vue.extend({
+        props: [
+            'cards'
+        ],
         data() {
             return {
                 frame: "",
@@ -69,8 +77,17 @@
 </script>
 
 <style scoped>
-    .bag {
-        width: 100%;
-        height: 100%;
+    .bag-sprite {
+        width: 250px;
+        height: 250px;
     }
+
+    .bag-text {
+        text-align: center;
+
+        font-weight: bold;
+        color: white;
+        margin-top: -52px;
+    }
+
 </style>

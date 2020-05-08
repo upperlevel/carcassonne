@@ -5,13 +5,17 @@
         that is where we'll place the pawns and the bag,
         and a part which is fixed.
         -->
-        <bag-component class="bag">
+        <bag-component
+                class="bag"
 
+                :cards="gamePhase.bag.cards"
+        >
         </bag-component>
         <div class="pawn-container">
             <pawn-component v-for="pawn in pawns" :key="pawn"
                             class="pawn"
 
+                            :game-phase="gamePhase"
                             :pawn-id="player.details.avatar"
                             :color="player.details.color"
             >
@@ -30,6 +34,7 @@
 
     export default Vue.extend({
         props: [
+            "gamePhase",
             "pawns",
             "player",
         ],
@@ -47,9 +52,6 @@
 
     .bag {
         display: inline-block;
-
-        width: 250px;
-        height: 250px;
 
         margin-bottom: -30px;
 

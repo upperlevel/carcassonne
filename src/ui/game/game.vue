@@ -2,8 +2,9 @@
     <div class="game">
         <!-- PlayerBar -->
         <player-bar-component
-                :players="this.players"
                 class="player-bar"
+
+                :players="this.players"
         >
         </player-bar-component>
 
@@ -11,6 +12,7 @@
         <game-bar-component
                 class="game-bar"
 
+                :game-phase="this.gamePhase"
                 :pawns="this.myPlayer.pawns"
                 :player="this.myPlayer"
         >
@@ -25,6 +27,15 @@
     import GameBarComponent from "./gameBar.vue";
 
     export default Vue.extend({
+        /* Passed on initialization.
+        data() {
+            return {
+                gamePhase,
+                myPlayer,
+                players,
+            }
+        },
+         */
         components: {
             PlayerBarComponent,
             GameBarComponent
