@@ -11,12 +11,12 @@ import {Card} from "../game/card";
 import GameComponent from "../ui/game/game.vue";
 import {GamePlayer} from "../game/gamePlayer";
 import {ScoreVisualizer} from "../game/particles/scoreVisualizer";
-
-import Vue from "vue";
+import {GameBar} from "../game/gameBar";
 
 export class GamePhase extends Phase {
     seed: number;
 
+    gameBar: GameBar;
     bag: Bag;
     board: Board;
     scoreVisualizer: ScoreVisualizer;
@@ -33,8 +33,6 @@ export class GamePhase extends Phase {
 
     lastMouseDownTime?: number;
     lastMouseDownPos?: PIXI.IPoint;
-
-    readonly eventTarget: EventTarget = new EventTarget();
 
     constructor(playersById: {[id: string]: PlayerObject}) {
         super("game");
@@ -59,6 +57,7 @@ export class GamePhase extends Phase {
         );
 
         // UI
+        this.gameBar = new GameBar();
         let card = this.setupBag();
         this.setupBoard(card);
         this.scoreVisualizer = new ScoreVisualizer(this.orderedPlayers);
@@ -81,11 +80,14 @@ export class GamePhase extends Phase {
     // UI
     // ================================================================================================
 
+    onResize() {
+        this.gameBar.redraw();
+    }
+
     setupBag() {
         this.bag = Bag.fromModality(this,"classical");
 
         let card = this.bag.draw(); // The first card of the un-shuffled bag is the root.
-        this.bag.onCardDraw = this.onDraw.bind(this);
         this.bag.canCardBePlaced = (x) => this.board.getPossiblePlacements(x).length > 0;
         return card;
     }
@@ -358,10 +360,14 @@ export class GamePhase extends Phase {
 
         app.renderer.backgroundColor = 0x3e2723; // dark brown
 
+        // PIXI
         app.stage = new PIXI.Container();
-        app.stage.addChild(this.bag);
+
         app.stage.addChild(this.board);
         app.stage.interactive = true;
+
+        this.gameBar.zIndex = 1;
+        app.stage.addChild(this.gameBar);
 
         if (this.me.details.isHost) {
             this.setSeed(Math.random());
@@ -371,8 +377,6 @@ export class GamePhase extends Phase {
                 seed: this.seed,
             } as RandomSeed);
         }
-
-        app.stage.addChild(this.bag);
 
         this.bag.listen();
         this.scoreVisualizer.enable();
@@ -387,6 +391,7 @@ export class GamePhase extends Phase {
         app.stage.on("rightdown", this.onCursorRightClick.bind(this));
 
         window.addEventListener("wheel", this.onMouseWheel.bind(this));
+        window.addEventListener("resize", this.onResize.bind(this));
     }
 
     disable() {
@@ -405,5 +410,6 @@ export class GamePhase extends Phase {
         channel.eventManager.removeEventListener("player_place", this.onPlayerPlace.bind(this));
 
         window.removeEventListener("wheel", this.onMouseWheel.bind(this));
+        window.removeEventListener("resize", this.onResize.bind(this));
     }
 }

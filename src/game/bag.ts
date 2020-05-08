@@ -3,23 +3,18 @@ import Vue from "vue";
 import {Card} from "./card";
 import {GamePhase} from "../phase/gamePhase";
 
-export class Bag extends PIXI.Container {
+export class Bag {
     gamePhase: GamePhase;
     vPool: Vue;
 
     cards: Array<Card>;
 
-    sprite: PIXI.Sprite;
-    text: PIXI.Text;
-
     canCardBePlaced: (card: Card) => boolean = (x) => true;
-    onCardDraw: (card: Card) => void;
 
     bagOpenedFrame: PIXI.Rectangle;
     bagClosedFrame: PIXI.Rectangle;
 
     constructor(gamePhase: GamePhase, cards: Array<Card>) {
-        super();
         this.cards = cards;
 
         this.gamePhase = gamePhase;
