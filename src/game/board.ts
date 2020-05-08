@@ -132,7 +132,10 @@ export class Board extends PIXI.Container {
         return this.tileDb.getPossiblePlacements(card)
     }
 
-    scorePennant(x: number, y: number): number {
+    monasteryInit(x: number, y: number) {
+        let tile = this.get(x, y);
+        if (tile === undefined || tile.monasteryData === undefined) return;
+
         let score = 1;
         for (let dx of [-1, 0, 1]) {
             for (let dy of [-1, 0, 1]) {
@@ -140,15 +143,17 @@ export class Board extends PIXI.Container {
                 if (this.get(x + dx, y + dy) !== undefined) score += 1;
             }
         }
-        return score;
+
+        tile.monasteryData.completedTiles = score;
     }
 
-    updatePennant(x: number, y: number) {
+    monasteryPlaceNeighbour(x: number, y: number) {
         let tile = this.get(x, y);
-        if (tile === undefined || tile.monasteryOwner === undefined) return;
-        let score = this.scorePennant(x, y);
-        if (score == 9) {
-            this.phase.awardScore(tile.monasteryOwner, 9)
+        if (tile === undefined || tile.monasteryData === undefined) return;
+        let data = tile.monasteryData;
+
+        if (++data.completedTiles >= 9) {
+            // Create animation
             let tiles = new Array<[number, number]>();
             for (let dx of [-1, 0, 1]) {
                 for (let dy of [-1, 0, 1]) {
@@ -156,7 +161,10 @@ export class Board extends PIXI.Container {
                 }
             }
             this.addChild(new PathCloseParticle(this, tiles));
-            tile.monasteryOwner = undefined;
+
+            if (data.owner !== undefined) {
+                this.phase.awardScore(data.owner, 9);
+            }
         }
     }
 
@@ -177,10 +185,14 @@ export class Board extends PIXI.Container {
         // Let's hope the caller already checked if he can.
         this.cardConnector.addCard(undefined, x, y, undefined);
 
-        // Update nearby pennants
+        // If monastery: initialize data
+        this.monasteryInit(x, y);
+
+        // Update nearby monasteries
         for (let dx of [-1, 0, 1]) {
             for (let dy of [-1, 0, 1]) {
-                this.updatePennant(x + dx, y + dy);
+                if (dx == 0 && dy == 0) continue;
+                this.monasteryPlaceNeighbour(x + dx, y + dy);
             }
         }
 

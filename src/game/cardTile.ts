@@ -7,13 +7,15 @@ export class CardTile {
     card: Card;
     rotation: number;// Steps of 90 degrees clockwise
     paths: [number, number, number, number];// Ids of the paths (or 0 if they're not connected/closed).
-    monasteryOwner: string | undefined;
+    monasteryData?: MonasteryData;
 
-    constructor(card: Card, rotation?: number, monasteryOwner?: string) {
+    constructor(card: Card, rotation?: number) {
         this.card = card;
         this.rotation = rotation || 0;
         this.paths = [-1, -1, -1, -1];
-        this.monasteryOwner = monasteryOwner;
+        if (card.flags.indexOf("monastery") >= 0) {
+            this.monasteryData = new MonasteryData();
+        }
     }
 
     getSideType(side: Side): SideType {
@@ -49,4 +51,9 @@ export class CardTile {
         res.rotation = -this.rotation * Math.PI / 2;
         return res;
     }
+}
+
+export class MonasteryData {
+    owner?: string;
+    completedTiles: number = 1;
 }
