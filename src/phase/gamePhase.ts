@@ -1,7 +1,14 @@
 import {Phase} from "./phase";
 import {app, channel, me} from "../index";
 import * as PIXI from "pixi.js";
-import {PlayerDraw, PlayerPlaceCard, PlayerPlaceCardPreview, PlayerPlacePawn, RandomSeed} from "../protocol/game";
+import {
+    NextRound,
+    PlayerDraw,
+    PlayerPlaceCard,
+    PlayerPlaceCardPreview,
+    PlayerPlacePawn,
+    RandomSeed
+} from "../protocol/game";
 import {Bag} from "../game/bag";
 import {Board} from "../game/board";
 import {CardTile} from "../game/cardTile";
@@ -88,6 +95,7 @@ export class GamePhase extends Phase {
                     gamePhase: self,
                     myPlayer: self.me,
                     players: self.orderedPlayers,
+                    roundState: self.roundState,
                 }
             },
         })
@@ -104,9 +112,7 @@ export class GamePhase extends Phase {
     setupBag() {
         this.bag = Bag.fromModality(this,"classical");
 
-        let card = this.bag.draw(); // The first card of the un-shuffled bag is the root.
-        this.bag.canCardBePlaced = (x) => this.board.getPossiblePlacements(x).length > 0;
-        return card;
+        return this.bag.draw(); // The first card of the un-shuffled bag is the root.
     }
 
     setupBoard(initialCard: Card) {
@@ -149,12 +155,30 @@ export class GamePhase extends Phase {
         return this.roundOf && this.roundOf.id == player.id;
     }
 
+    canSkipRound(): boolean {
+        switch (this.roundState) {
+            case RoundState.CardDraw:
+            case RoundState.CardPlace:
+                return false;
+            case RoundState.PawnPick:
+            case RoundState.PawnPlace:
+                return true;
+        }
+    }
+
     hasDrawn() {
         return this.drawnCard !== undefined;
     }
 
     hasPlaced() {
         return this.placedCard !== undefined;
+    }
+
+    onNextRoundClick() {
+        if (this.isMyRound() && this.canSkipRound()) {
+            channel.send({ type: "next_round" } as NextRound);
+            this.nextRound();
+        }
     }
 
     nextRound() {
@@ -422,6 +446,20 @@ export class GamePhase extends Phase {
         }
     }
 
+    onNextRoundPacket(event: CustomEvent) {
+        const packet = event.detail as PlayerPlacePawn;
+        let player = this.playersById.get(packet.sender);
+        if (!player.isMyRound()) {
+            console.error("Wrong message sender");
+            return;
+        }
+        if (!this.canSkipRound()) {
+            console.error("Invalid round state: " + this.roundState);
+            return;
+        }
+        this.nextRound();
+    }
+
 
     // ================================================================================================================================
     // After-place
@@ -550,6 +588,7 @@ export class GamePhase extends Phase {
         channel.eventManager.addEventListener("player_place_card", this.onPlayerPlaceCard.bind(this));
         channel.eventManager.addEventListener("player_place_card_preview", this.onPlayerPlaceCardPreview.bind(this));
         channel.eventManager.addEventListener("player_place_pawn", this.onPlayerPlacePawn.bind(this));
+        channel.eventManager.addEventListener("next_round", this.onNextRoundPacket.bind(this));
 
         app.stage.on("mousemove", this.onCursorMove.bind(this));
         app.stage.on("mousedown", this.onCursorDown.bind(this));
@@ -560,7 +599,7 @@ export class GamePhase extends Phase {
         window.addEventListener("resize", this.onResize.bind(this));
 
         this.vEventHandler.$on("pawn-interact", this.onPawnInteract.bind(this));
-        this.vEventHandler.$on("next-round", this.nextRound.bind(this));
+        this.vEventHandler.$on("next-round", this.onNextRoundClick.bind(this));
         app.stage.on("mousemove", this.onPawnMove.bind(this));
     }
 
@@ -580,12 +619,13 @@ export class GamePhase extends Phase {
         channel.eventManager.removeEventListener("player_place_card", this.onPlayerPlaceCard.bind(this));
         channel.eventManager.removeEventListener("player_place_card_preview", this.onPlayerPlaceCardPreview.bind(this));
         channel.eventManager.removeEventListener("player_place_pawn", this.onPlayerPlacePawn.bind(this));
+        channel.eventManager.removeEventListener("next_round", this.onNextRoundPacket.bind(this));
 
         window.removeEventListener("wheel", this.onMouseWheel.bind(this));
         window.removeEventListener("resize", this.onResize.bind(this));
 
         this.vEventHandler.$off("pawn-interact", this.onPawnInteract.bind(this));
-        this.vEventHandler.$off("next-round", this.nextRound.bind(this));
+        this.vEventHandler.$off("next-round", this.onNextRoundClick.bind(this));
     }
 }
 

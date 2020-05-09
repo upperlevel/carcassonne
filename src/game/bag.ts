@@ -9,8 +9,6 @@ export class Bag {
 
     cards: Array<Card>;
 
-    canCardBePlaced: (card: Card) => boolean = (x) => true;
-
     bagOpenedFrame: PIXI.Rectangle;
     bagClosedFrame: PIXI.Rectangle;
 
@@ -61,11 +59,7 @@ export class Bag {
 
 
     draw(): Card {
-        let card: Card;
-        do {
-            card = this.cards.shift();
-        } while (!this.canCardBePlaced(card));
-        return card;
+        return this.cards.shift();
     }
 
     size() {

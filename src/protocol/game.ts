@@ -58,4 +58,12 @@ export interface PlayerPlacePawn extends Packet {
     }
 }
 
+/**
+ * [Player]
+ * Goes to the next round (can only be sent from the player of the current round).
+ */
+export interface NextRound extends Packet {
+    type: "next_round"
+}
+
 // TODO: pawn preview.

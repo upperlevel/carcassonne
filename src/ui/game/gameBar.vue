@@ -42,6 +42,7 @@
             "gamePhase",
             "pawns",
             "player",
+            "roundState",
         ],
         methods: {
             onPawnInteract(event: MouseEvent) {
@@ -49,7 +50,7 @@
             },
 
             canNextRound() {
-                const res = this.gamePhase.isMyRound() && this.gamePhase.hasPlaced();
+                const res = this.gamePhase.isMyRound() && this.gamePhase.canSkipRound();
                 console.log("canNextRound?", res);
                 return res;
             },
