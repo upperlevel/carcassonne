@@ -1,7 +1,7 @@
 import {Phase} from "./phase";
 import {app, channel, me} from "../index";
 import * as PIXI from "pixi.js";
-import {PlayerDraw, PlayerPlace, PlayerPlacePreview, RandomSeed} from "../protocol/game";
+import {PlayerDraw, PlayerPlaceCard, PlayerPlaceCardPreview, PlayerPlacePawn, RandomSeed} from "../protocol/game";
 import {Bag} from "../game/bag";
 import {Board} from "../game/board";
 import {CardTile} from "../game/cardTile";
@@ -12,7 +12,7 @@ import GameComponent from "../ui/game/game.vue";
 import {GamePlayer} from "../game/gamePlayer";
 import {ScoreVisualizer} from "../game/particles/scoreVisualizer";
 import {GameBar} from "../game/gameBar";
-import {PawnPlacer} from "../game/pawnPlacer";
+import {PawnPlacer, PawnOwner} from "../game/pawnPlacer";
 import {PathAnimationScheduler} from "../game/particles/pathAnimationScheduler";
 
 export class GamePhase extends Phase {
@@ -30,6 +30,7 @@ export class GamePhase extends Phase {
     avatars: Array<PIXI.Container>;
     roundOfIdx: number = -1;
     roundOf: GamePlayer = undefined;
+    roundState: RoundState = RoundState.CardDraw;
 
     pathAnimationScheduler: PathAnimationScheduler;
     drawnCard: CardTile;
@@ -151,7 +152,15 @@ export class GamePhase extends Phase {
 
     /** Goes on with the next round. */
     nextRound() {
-        if (this.bag.size() == 0) { // If the bag's empty ends the game.
+        let hasNextRound = this.bag.size() != 0;// If the bag's empty ends the game.
+
+        // Process paths closes.
+        if (this.placedCard !== undefined) {
+            this.board.onRoundEnd(this.placedCard.x, this.placedCard.y, !hasNextRound);
+        }
+
+
+        if (!hasNextRound) {
             this.onEnd();
             return;
         }
@@ -161,6 +170,7 @@ export class GamePhase extends Phase {
         this.vue.$forceUpdate();
 
         this.drawnCard = undefined;
+        this.roundState = RoundState.CardDraw;
 
         if (this.roundOf.id == this.me.id) {
             console.log("It's your round!");
@@ -188,6 +198,7 @@ export class GamePhase extends Phase {
             } as PlayerDraw);
         }
 
+        this.roundState = RoundState.CardPlace;
         this.drawnCard = new CardTile(card);
 
         this.drawnCardSprite = this.drawnCard.createSprite();
@@ -286,7 +297,6 @@ export class GamePhase extends Phase {
         if (this.drawnCard && this.isMyRound()) {
             this.drawnCard.rotation = (this.drawnCard.rotation + 1) % 4;
             this.updateDrawnCardWithMouse(event)
-            // TODO: Send out event: card rotation
         }
     }
 
@@ -317,6 +327,8 @@ export class GamePhase extends Phase {
         this.drawnCard.rotation = rotation;
         if (!this.board.set(x, y, this.drawnCard))
             return false; // Can't place the card here.
+
+        this.roundState = RoundState.PawnPick;
         this.board.removeChild(this.drawnCardSprite);
 
         this.placedCard = {x: x,  y: y, tile: this.drawnCard};
@@ -336,17 +348,17 @@ export class GamePhase extends Phase {
             return false;
         }
         channel.send({
-            type: "player_place",
+            type: "player_place_card",
             x: x,
             y: y,
             rotation: rotation,
-        } as PlayerPlace);
+        } as PlayerPlaceCard);
         return true;
     }
 
     /** Function called when another player (that is not me) places a card.*/
-    onPlayerPlace(event: CustomEvent) {
-        const packet = event.detail as PlayerPlace;
+    onPlayerPlaceCard(event: CustomEvent) {
+        const packet = event.detail as PlayerPlaceCard;
         if (!this.playersById.get(packet.sender).isMyRound()) {
             console.error("Wrong message sender");
             return;
@@ -357,8 +369,8 @@ export class GamePhase extends Phase {
     }
 
     /** Function called when another player (that is not me) is moving the card to place.*/
-    onPlayerPlacePreview(event: CustomEvent) {
-        const packet = event.detail as PlayerPlacePreview;
+    onPlayerPlaceCardPreview(event: CustomEvent) {
+        const packet = event.detail as PlayerPlaceCardPreview;
         if (!this.playersById.get(packet.sender).isMyRound()) {
             console.error("Wrong message sender");
             return;
@@ -366,6 +378,28 @@ export class GamePhase extends Phase {
         this.drawnCard.rotation = packet.rotation;
         this.updateDrawnCard(packet.x, packet.y);
     }
+
+    /** Function called when another player (that is not me) places a card.*/
+    onPlayerPlacePawn(event: CustomEvent) {
+        const packet = event.detail as PlayerPlacePawn;
+        let player = this.playersById.get(packet.sender);
+        if (!player.isMyRound()) {
+            console.error("Wrong message sender");
+            return;
+        }
+
+        player.pawns--;
+        this.createPawn(this.placedCard.x, this.placedCard.y);
+
+        let pos = new PIXI.Point(packet.pos.x, packet.pos.y);
+
+        if (packet.side == "monastery") {
+            this.pawnPlacer.placeMonastery(player, this.placedCard, pos);
+        } else {
+            this.pawnPlacer.placeSide(player, this.placedCard, pos, packet.side);
+        }
+    }
+
 
     // ================================================================================================================================
     // After-place
@@ -380,22 +414,32 @@ export class GamePhase extends Phase {
     }
 
     pickPawn(event: MouseEvent) {
-        if (this.me.pawns <= 0)
+        if (this.roundState != RoundState.PawnPick || this.me.pawns <= 0)
             return;
+
+        this.roundState = RoundState.PawnPlace;
         this.me.pawns--;
 
-        // Spawns the PIXI pawn to attach to the cursor.
-        const pawn = this.me.createPawn();
-        pawn.zIndex = 101;
-        pawn.position.set(event.clientX, event.clientY);
-        this.board.addChild(pawn);
+        this.createPawn(event.clientX, event.clientY);
 
         // Spawns the grid that helps during pawn placement.
         this.pawnPlacer.serveTo(this.placedCard, this.me);
         this.pawnPlacer.zIndex = 10000;
         this.board.addChild(this.pawnPlacer);
+    }
+
+    createPawn(x: number, y: number) {
+        // Spawns the PIXI pawn to attach to the cursor.
+        const pawn = this.roundOf.createPawn();
+        pawn.zIndex = 101;
+        pawn.position.set(x, y);
+        this.board.addChild(pawn);
 
         this.pawnPicked = pawn;
+    }
+
+    returnPawn(player: string, count?: number) {
+        this.playersById.get(player).pawns += count || 1;
     }
 
     onPawnMove(event: PIXI.interaction.InteractionEvent) {
@@ -406,10 +450,16 @@ export class GamePhase extends Phase {
         }
     }
 
-    onPawnPlace(emplacement: PIXI.Point) {
-        this.pawnPicked.position = emplacement;
+    onPawnPlace(emplacement: PIXI.Point, owner: PawnOwner) {
+        this.pawnPicked.position.copyFrom(emplacement);
+        owner.addPawn(this.pawnPicked);
         this.pawnPicked = undefined;
+
         this.board.removeChild(this.pawnPlacer);
+
+        // TURN END
+        // TODO: send packet
+        this.nextRound();
     }
 
     /**
@@ -475,8 +525,9 @@ export class GamePhase extends Phase {
 
         channel.eventManager.addEventListener("random_seed",  this.onRandomSeed.bind(this));
         channel.eventManager.addEventListener("player_draw",  this.onPlayerDraw.bind(this));
-        channel.eventManager.addEventListener("player_place", this.onPlayerPlace.bind(this));
-        channel.eventManager.addEventListener("player_place_preview", this.onPlayerPlacePreview.bind(this));
+        channel.eventManager.addEventListener("player_place_card", this.onPlayerPlaceCard.bind(this));
+        channel.eventManager.addEventListener("player_place_card_preview", this.onPlayerPlaceCardPreview.bind(this));
+        channel.eventManager.addEventListener("player_place_pawn", this.onPlayerPlacePawn.bind(this));
 
         app.stage.on("mousemove", this.onCursorMove.bind(this));
         app.stage.on("mousedown", this.onCursorDown.bind(this));
@@ -503,13 +554,22 @@ export class GamePhase extends Phase {
 
         channel.eventManager.removeEventListener("random_seed",  this.onRandomSeed.bind(this));
         channel.eventManager.removeEventListener("player_draw",  this.onPlayerDraw.bind(this));
-        channel.eventManager.removeEventListener("player_place", this.onPlayerPlace.bind(this));
+        channel.eventManager.removeEventListener("player_place_card", this.onPlayerPlaceCard.bind(this));
+        channel.eventManager.removeEventListener("player_place_card_preview", this.onPlayerPlaceCardPreview.bind(this));
+        channel.eventManager.removeEventListener("player_place_pawn", this.onPlayerPlacePawn.bind(this));
 
         window.removeEventListener("wheel", this.onMouseWheel.bind(this));
         window.removeEventListener("resize", this.onResize.bind(this));
 
         this.vEventHandler.$off("pawn-interact", this.onPawnInteract.bind(this));
     }
+}
+
+enum RoundState {
+    CardDraw,
+    CardPlace,
+    PawnPick,
+    PawnPlace,
 }
 
 class CardPreviewManager {
@@ -551,11 +611,11 @@ class CardPreviewManager {
         if (this.timeoutId !== undefined) return;
         if (this.lastX === this.nextX && this.lastY === this.nextY && this.lastRot === this.nextRot) return;
         channel.send({
-            type: "player_place_preview",
+            type: "player_place_card_preview",
             x: this.nextX,
             y: this.nextY,
             rotation: this.nextRot,
-        });
+        } as PlayerPlaceCardPreview);
         this.lastX = this.nextX;
         this.lastY = this.nextY;
         this.lastRot = this.nextRot;

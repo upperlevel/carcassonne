@@ -5,7 +5,7 @@ import {app} from "../../index";
 export class ScoreVisualizer {
     orderedPlayers: GamePlayer[];
     playerBar?: Element;
-    animations: Map<number, ScoreParticle>
+    animations = new Map<number, ScoreParticle>();
 
     constructor(orderedPlayers: GamePlayer[]) {
         this.orderedPlayers = orderedPlayers;

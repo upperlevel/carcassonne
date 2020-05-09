@@ -6,12 +6,21 @@ import {GamePhase} from "../phase/gamePhase";
 import {GamePlayer} from "./gamePlayer";
 import {CardTile} from "./cardTile";
 import {SideTypeUtil} from "./card";
+import {channel} from "../index";
+import {PlayerPlacePawn} from "../protocol/game";
 
 export class PawnPlacer extends PIXI.Container {
     phase: GamePhase;
 
     sideOverlay: PIXI.Graphics[] = [];
     monasteryOverlay?: PIXI.Graphics;
+
+    constructor(phase: GamePhase) {
+        super();
+        this.phase = phase;
+
+        this.initPixi();
+    }
 
     createTriangle(points: PIXI.Point[], color: number, alpha: number, interactive: boolean): PIXI.Graphics {
         const g = new PIXI.Graphics();
@@ -126,13 +135,6 @@ export class PawnPlacer extends PIXI.Container {
         this.pivot.set(Board.TILE_SIZE / 2, Board.TILE_SIZE / 2);
     }
 
-    constructor(phase: GamePhase) {
-        super();
-        this.phase = phase;
-
-        this.initPixi();
-    }
-
     serveTo(placedCard: {x: number, y: number, tile: CardTile}, player: GamePlayer) {
         this.phase.board.cardCoordToRelPos(placedCard.x, placedCard.y, this.position);
 
@@ -146,8 +148,7 @@ export class PawnPlacer extends PIXI.Container {
                 this.sideOverlay[side]
                     .off("pointerdown")
                     .on("pointerdown", () => {
-                        // TODO set the pawn within the card side
-                        this.phase.onPawnPlace((this.sideOverlay[side] as any).getEmplacement());
+                        this.placeSide(player, placedCard, (this.sideOverlay[side] as any).getEmplacement(), side);
                     });
             }
         }
@@ -159,9 +160,35 @@ export class PawnPlacer extends PIXI.Container {
             this.monasteryOverlay
                 .off("pointerdown")
                 .on("pointerdown", () => {
-                    placedCard.tile.monasteryData!.owner = player.id; // TODO check if ok
-                    this.phase.onPawnPlace((this.monasteryOverlay as any).getEmplacement());
+                    this.placeMonastery(player, placedCard, (this.monasteryOverlay as any).getEmplacement());
                 });
         }
     }
+
+    placeSide(player: GamePlayer, card: {x: number, y: number, tile: CardTile}, pos: PIXI.Point, side: Side) {
+        let conn = this.phase.board.cardConnector;
+        this.sendPacket(side, pos);
+        conn.ownPath(card.x, card.y, player.id, side);
+        this.phase.onPawnPlace(pos, conn.getPathData(card.x, card.y, side));
+    }
+
+    placeMonastery(player: GamePlayer, card: {x: number, y: number, tile: CardTile}, pos: PIXI.Point) {
+        let monastery = card.tile.monasteryData!;
+        this.sendPacket("monastery", pos);
+        monastery.owner = player.id; // TODO check if ok
+        this.phase.onPawnPlace(pos, monastery);
+    }
+
+    private sendPacket(side: Side | "monastery", pos?: PIXI.IPoint) {
+        if (!this.phase.isMyRound()) return;
+        channel.send({
+            type: "player_place_pawn",
+            side: side,
+            pos: { x: pos.x, y: pos.y },
+        } as PlayerPlacePawn);
+    }
+}
+
+export interface PawnOwner {
+    addPawn(g: PIXI.Container): void;
 }

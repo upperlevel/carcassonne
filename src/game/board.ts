@@ -162,7 +162,9 @@ export class Board extends PIXI.Container {
             this.phase.pathAnimationScheduler.addAnimation(tiles);
 
             if (data.owner !== undefined) {
+                this.phase.returnPawn(data.owner);
                 this.phase.awardScore(data.owner, 9);
+                data.pawn.parent.removeChild(data.pawn);
             }
         }
     }
@@ -181,19 +183,8 @@ export class Board extends PIXI.Container {
             return false;
         this.grid[this.flatIndex(x, y)] = tile;
         this.tileDb.onTileAdd(x, y);
-        // Let's hope the caller already checked if he can.
-        this.cardConnector.addCard(undefined, x, y, undefined);
 
-        // If monastery: initialize data
-        this.monasteryInit(x, y);
-
-        // Update nearby monasteries
-        for (let dx of [-1, 0, 1]) {
-            for (let dy of [-1, 0, 1]) {
-                if (dx == 0 && dy == 0) continue;
-                this.monasteryPlaceNeighbour(x + dx, y + dy);
-            }
-        }
+        this.cardConnector.addCard(x, y);
 
         // Graphics
         let sprite = tile.createSprite();
@@ -205,6 +196,27 @@ export class Board extends PIXI.Container {
         this.addChild(sprite);
 
         return true;
+    }
+
+    onRoundEnd(placedX: number, placedY: number, endGame: boolean) {
+        // Why are we doing this now?
+        // We need to wait for the end of the turn before updating monasteries
+        // otherwise we wouldn't know if the player has chosen to own it or not.
+        // Same thing goes with roads but they have to do a 2-way step (first initialize, then close) as the
+        // pawn placements requires initialization data.
+
+        // If monastery: initialize data
+        this.monasteryInit(placedX, placedY);
+
+        // Update nearby monasteries
+        for (let dx of [-1, 0, 1]) {
+            for (let dy of [-1, 0, 1]) {
+                if (dx == 0 && dy == 0) continue;
+                this.monasteryPlaceNeighbour(placedX + dx, placedY + dy);
+            }
+        }
+
+        this.cardConnector.onTurnEnd(endGame);
     }
 
     cardCoordToRelPos(x: number, y: number, target: PIXI.IPoint) {

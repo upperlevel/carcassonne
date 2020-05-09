@@ -25,8 +25,8 @@ export interface PlayerDraw extends Packet {
  * [Player]
  * Packet sent when the player places a card on the board.
  */
-export interface PlayerPlace extends Packet {
-    type: "player_place",
+export interface PlayerPlaceCard extends Packet {
+    type: "player_place_card",
     x: number,
     y: number,
     rotation: number,
@@ -36,8 +36,8 @@ export interface PlayerPlace extends Packet {
  * [Player]
  * Packet sent when the player moves the card to place around.
  */
-export interface PlayerPlacePreview extends Packet {
-    type: "player_place_preview",
+export interface PlayerPlaceCardPreview extends Packet {
+    type: "player_place_card_preview",
     x: number,
     y: number,
     rotation: number,
@@ -47,16 +47,15 @@ export interface PlayerPlacePreview extends Packet {
 /**
  * [Player]
  * Packet sent when the player places a pawn on the placed card.
+ * When a monastery is chosen "monastery" will be reported.
  */
-export interface PlayerPlacePawn {
+export interface PlayerPlacePawn extends Packet {
     type: "player_place_pawn",
-    side: Side;
+    side: Side | "monastery";
+    pos: {// TODO: remove
+        x: number,
+        y: number,
+    }
 }
 
-/**
- * [Player]
- * Packet sent when the player decides to skip its round.
- */
-export interface PlayerSkipRound {
-    type: "player_skip_round",
-}
+// TODO: pawn preview.

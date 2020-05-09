@@ -1,12 +1,14 @@
 import {Board} from "./board";
-import {CardTile} from "./cardTile";
 import {Side, SideUtil} from "./side";
 import {SideTypeUtil} from "./card";
+import {PawnOwner} from "./pawnPlacer";
 
 export class CardConnector {
     readonly board: Board;
     private pathData: Map<number, PathData>;
     private nextId: number;
+    // Array of path entry points (expressed as [x, y, side])
+    private pathsToClose = new Array<[number, number, Side]>();
 
     constructor(board: Board) {
         this.board = board;
@@ -14,19 +16,13 @@ export class CardConnector {
         this.nextId = 0;
     }
 
-    canPlaceWithChosenSide(tile: CardTile, x: number, y: number, chosenSide: Side) {
-        let cons = tile.getSideConnections(chosenSide);
-
-        for (let con of cons) {
-            let neighbour = this.board.getNeighbour(x, y, con);
-            if (neighbour === undefined) continue;
-            let adjSide = SideUtil.invert(chosenSide);
-            if (!SideTypeUtil.isOwnable(neighbour.getSideType(adjSide))) continue
-            let f = neighbour.paths[adjSide];
-            if (this.pathData.get(f).followers.size != 0) return false;
-        }
-
-        return true;
+    canOwnPath(x: number, y: number, chosenSide: Side): boolean {
+        let tile = this.board.get(x, y);
+        if (tile === undefined) return false;
+        if (!SideTypeUtil.isOwnable(tile.getSideType(chosenSide))) return false;
+        let path = tile.paths[chosenSide];
+        if (path < 0) return false;
+        return this.pathData.get(path).followers.size == 0;
     }
 
     assignPath(x: number, y: number, side: Side, path: number, reAssign?: boolean) {
@@ -92,7 +88,7 @@ export class CardConnector {
 
         if (!reAssign && pathData.openEndCount <= 0) {
             //console.warn("CLOSING " + path.toString())
-            this.closePath(x, y, side, false, true);
+            this.pathsToClose.push([x, y, side])
         }
     }
 
@@ -142,19 +138,25 @@ export class CardConnector {
         return score;
     }
 
-    closePath(x: number, y: number, side: Side, gameEnd: boolean, animate: boolean) {
+    closePath(x: number, y: number, side: Side, gameEnd: boolean) {
         let path = this.board.get(x, y).paths[side];
+        let pathData = this.pathData.get(path);
 
         let tiles = new Array<[number, number]>();
         let score = this.assignScore(x, y, side, gameEnd, tiles);
 
-        if (animate) {
-            this.board.phase.pathAnimationScheduler.addAnimation(tiles);
-        }
+        pathData.followers.forEach((count, player) => {
+            this.board.phase.returnPawn(player, count);
+        });
+        pathData.pawns.forEach(x => {
+            x.parent.removeChild(x);
+        });
+
+        this.board.phase.pathAnimationScheduler.addAnimation(tiles);
 
         // Uncommment to test +score animations (this will give the score to the first player).
         //this.board.phase.awardScore(this.board.phase.orderedPlayers[0].id, score);
-        this.pathData.get(path).getScoreWinners().forEach((x) => {
+        pathData.getScoreWinners().forEach((x) => {
             this.board.phase.awardScore(x, score);
         });
         //console.log("ADD SCORE " + score.toString());
@@ -205,30 +207,40 @@ export class CardConnector {
         }
     }
 
-    addCard(player: string | undefined, x: number, y: number, chosenSide: Side | undefined): boolean {
-        let tile = this.board.get(x, y);
-
-        if (chosenSide !== undefined && !this.canPlaceWithChosenSide(tile, x, y, chosenSide)) return false;
-
+    addCard(x: number, y: number) {
         this.initializePaths(x, y);
-        //console.log("card (" + x.toString() + "," + y.toString() + ") initialized: ", tile.paths);
-
-        if (chosenSide !== undefined) {
-            this.pathData.get(chosenSide).addFollower(player);
-        }
 
         return true;
     }
+
+    onTurnEnd(endGame: boolean) {
+        while (this.pathsToClose.length > 0) {
+            let path = this.pathsToClose.pop();
+            this.closePath(path[0], path[1], path[2], endGame);
+        }
+    }
+
+    ownPath(x: number, y: number, player: string, chosenSide: Side): boolean {
+        if (!this.canOwnPath(x, y, chosenSide)) return false;
+
+        let path = this.board.get(x, y).paths[chosenSide];
+        this.pathData.get(path).addFollower(player);
+        return true;
+    }
+
+    getPathData(x: number, y: number, side: Side): PathData | undefined {
+        let tile = this.board.get(x, y);
+        if (tile === undefined) return undefined;
+        let pathId = tile.paths[side];
+        if (pathId < 0) return undefined;
+        return this.pathData.get(pathId);
+    }
 }
 
-class PathData {
-    followers: Map<string, number>;
-    openEndCount: number;
-
-    constructor() {
-        this.followers = new Map();
-        this.openEndCount = 0;
-    }
+class PathData implements PawnOwner {
+    followers = new Map<string, number>();
+    openEndCount: number = 0;
+    pawns = new Array<PIXI.Container>();
 
     addFollower(playerId: string, times?: number) {
         let x = this.followers.get(playerId) || 0;
@@ -256,5 +268,9 @@ class PathData {
         });
 
         return res;
+    }
+
+    addPawn(g: PIXI.Container): void {
+        this.pawns.push(g);
     }
 }

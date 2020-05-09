@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
 import Vue from "vue";
-import {Card} from "./card";
+import {Card, CardFlag} from "./card";
 import {GamePhase} from "../phase/gamePhase";
 
 export class Bag {
@@ -89,12 +89,16 @@ export class Bag {
         return res;
     }
 
-    static findFirstInitialCard(cards: Array<Card>): number {
+    static findFirstCardFlag(cards: Array<Card>, start: number, flag: CardFlag): number {
         let cardsLen = cards.length;
-        for (let i = 0; i < cardsLen; i++) {
-            if (cards[i].flags.indexOf("root") >= 0) {
+        for (let i = start; i < cardsLen; i++) {
+            if (cards[i].flags.indexOf(flag) >= 0) {
                 return i;
             }
         }
+    }
+
+    static findFirstInitialCard(cards: Array<Card>): number {
+        return this.findFirstCardFlag(cards, 0, "root")
     }
 }
