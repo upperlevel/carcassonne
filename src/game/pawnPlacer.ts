@@ -61,7 +61,8 @@ export class PawnPlacer extends PIXI.Container {
             res.y /= 3;
             res.x += this.position.x - size / 2;
             res.y += this.position.y - size / 2;
-            console.log(res);
+
+            console.log("Side emplacement", this.position);
             return res;
         };
 
@@ -85,7 +86,8 @@ export class PawnPlacer extends PIXI.Container {
         g.on("mouseout", () => g.alpha = alpha);
 
         (g as any).getEmplacement = () => {
-            return this.position; // The position of the Placer is centered.
+            console.log("Pennant emplacement", this.position);
+            return this.position;
         };
 
         return g;
@@ -133,35 +135,32 @@ export class PawnPlacer extends PIXI.Container {
 
     serveTo(placedCard: {x: number, y: number, tile: CardTile}, player: GamePlayer) {
         this.phase.board.cardCoordToRelPos(placedCard.x, placedCard.y, this.position);
-        let overlay: PIXI.Graphics;
 
         // Side
         for (let side = 0; side < 4; side++) {
-            overlay = this.sideOverlay[side];
-            this.removeChild(overlay);
+            this.removeChild(this.sideOverlay[side]);
 
             const ownable = SideTypeUtil.isOwnable(placedCard.tile.getSideType(side));
             if (ownable) {
-                this.addChild(overlay);
-                overlay
+                this.addChild(this.sideOverlay[side]);
+                this.sideOverlay[side]
                     .off("pointerdown")
                     .on("pointerdown", () => {
                         // TODO set the pawn within the card side
-                        this.phase.onPawnPlace((overlay as any).getEmplacement());
+                        this.phase.onPawnPlace((this.sideOverlay[side] as any).getEmplacement());
                     });
             }
         }
 
         // Monastery
-        overlay = this.monasteryOverlay;
-        this.removeChild(overlay);
+        this.removeChild(this.monasteryOverlay);
         if (placedCard.tile.card.flags.indexOf("monastery") >= 0) {
-            this.addChild(overlay);
-            overlay
+            this.addChild(this.monasteryOverlay);
+            this.monasteryOverlay
                 .off("pointerdown")
                 .on("pointerdown", () => {
                     placedCard.tile.monasteryData!.owner = player.id; // TODO check if ok
-                    this.phase.onPawnPlace((overlay as any).getEmplacement());
+                    this.phase.onPawnPlace((this.monasteryOverlay as any).getEmplacement());
                 });
         }
     }
