@@ -13,6 +13,7 @@ import {GamePlayer} from "../game/gamePlayer";
 import {ScoreVisualizer} from "../game/particles/scoreVisualizer";
 import {GameBar} from "../game/gameBar";
 import {PawnPlacer} from "../game/pawnPlacer";
+import {PathAnimationScheduler} from "../game/particles/pathAnimationScheduler";
 
 export class GamePhase extends Phase {
     seed: number;
@@ -30,6 +31,7 @@ export class GamePhase extends Phase {
     roundOfIdx: number = -1;
     roundOf: GamePlayer = undefined;
 
+    pathAnimationScheduler: PathAnimationScheduler;
     drawnCard: CardTile;
     drawnCardPreview: CardPreviewManager;
 
@@ -66,6 +68,7 @@ export class GamePhase extends Phase {
         this.pawnPlacer = new PawnPlacer(this);
 
         // UI
+        this.pathAnimationScheduler = new PathAnimationScheduler(this);
         this.drawnCardPreview = new CardPreviewManager();
         this.gameBar = new GameBar();
         let card = this.setupBag();

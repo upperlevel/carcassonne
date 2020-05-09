@@ -2,7 +2,6 @@ import {Board} from "./board";
 import {CardTile} from "./cardTile";
 import {Side, SideUtil} from "./side";
 import {SideTypeUtil} from "./card";
-import {PathCloseParticle} from "./particles/pathClose";
 
 export class CardConnector {
     readonly board: Board;
@@ -150,7 +149,7 @@ export class CardConnector {
         let score = this.assignScore(x, y, side, gameEnd, tiles);
 
         if (animate) {
-            this.board.addChild(new PathCloseParticle(this.board, tiles));
+            this.board.phase.pathAnimationScheduler.addAnimation(tiles);
         }
 
         // Uncommment to test +score animations (this will give the score to the first player).

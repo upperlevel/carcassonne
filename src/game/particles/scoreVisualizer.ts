@@ -1,11 +1,11 @@
 import * as PIXI from "pixi.js";
-import {GamePhase} from "../../phase/gamePhase";
 import {GamePlayer} from "../gamePlayer";
 import {app} from "../../index";
 
 export class ScoreVisualizer {
     orderedPlayers: GamePlayer[];
     playerBar?: Element;
+    animations: Map<number, ScoreParticle>
 
     constructor(orderedPlayers: GamePlayer[]) {
         this.orderedPlayers = orderedPlayers;
@@ -37,6 +37,18 @@ export class ScoreVisualizer {
     animateScore(playerId: string, score: number): PIXI.Text {
         let playerIndex = this.playerIdToIndex(playerId);
 
+        let oldParticle = this.animations.get(playerIndex);
+        if (oldParticle !== undefined) {
+            oldParticle.addScore(score);
+            return;
+        }
+
+        let particle = this.createParticle(playerIndex, score);
+        this.animations.set(playerIndex, particle);
+        return particle.display;
+    }
+
+    private createParticle(playerIndex: number, score: number): ScoreParticle {
         let endY;
         let posX;
 
@@ -49,12 +61,16 @@ export class ScoreVisualizer {
             posX = app.view.width / 2;
         }
 
-        return new ScoreToken(posX, endY, score).display;
+        return new ScoreParticle(this, playerIndex, posX, endY, score);
     }
 }
 
-class ScoreToken {
+class ScoreParticle {
+    parent: ScoreVisualizer;
+    playerIndex: number;
+
     display: PIXI.Text;
+    score: number;
     life: number;
     x: number;
     endY: number;
@@ -63,7 +79,11 @@ class ScoreToken {
     static TRAVEL_H = 20;
 
 
-    constructor(x: number, endY: number, score: number) {
+    constructor(parent: ScoreVisualizer, pid: number, x: number, endY: number, score: number) {
+        this.parent = parent;
+        this.playerIndex = pid;
+
+        this.score = score;
         this.x = x;
         this.endY = endY;
         this.life = 0;
@@ -83,19 +103,26 @@ class ScoreToken {
         app.ticker.add(this.onTick, this);
     }
 
-    update() {
-        if (this.life > ScoreToken.LIFETIME) {
+    addScore(score: number) {
+        this.score += score;
+        this.display.text = "+" + this.score.toString();
+        this.life = 0;
+    }
+
+    private update() {
+        if (this.life > ScoreParticle.LIFETIME) {
             app.ticker.remove(this.onTick, this);
             this.display.parent.removeChild(this.display);
+            this.parent.animations.delete(this.playerIndex);
             return;
         }
-        let perc = this.life / ScoreToken.LIFETIME;
+        let perc = this.life / ScoreParticle.LIFETIME;
 
-        this.display.position.set(this.x, this.endY + (1 - perc) * ScoreToken.TRAVEL_H);
+        this.display.position.set(this.x, this.endY + (1 - perc) * ScoreParticle.TRAVEL_H);
         this.display.alpha = 1 - perc;
     }
 
-    onTick(time: number) {
+    private onTick(time: number) {
         this.life += time;
         this.update();
     }

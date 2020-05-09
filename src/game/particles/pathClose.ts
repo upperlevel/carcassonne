@@ -7,6 +7,8 @@ export class PathCloseParticle extends PIXI.Container {
     private board: Board;
     private life: number;
 
+    onEnd: () => void = () => {};
+
     static LIFETIME = 40;
 
     constructor(board: Board, tiles: Array<[number, number]>) {
@@ -38,6 +40,7 @@ export class PathCloseParticle extends PIXI.Container {
         if (this.life > PathCloseParticle.LIFETIME) {
             app.ticker.remove(this.onTick, this);
             this.parent.removeChild(this);
+            this.onEnd();
             return;
         }
         let lifePerc = this.life / PathCloseParticle.LIFETIME;

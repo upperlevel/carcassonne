@@ -6,7 +6,6 @@ import {CardConnector} from "./cardConnector";
 import InteractionEvent = PIXI.interaction.InteractionEvent;
 import {Card} from "./card";
 import {GamePhase} from "../phase/gamePhase";
-import {PathCloseParticle} from "./particles/pathClose";
 import {TileDB, TilePlacement} from "./tileDB";
 
 export class Board extends PIXI.Container {
@@ -160,7 +159,7 @@ export class Board extends PIXI.Container {
                     tiles.push([x + dx, y + dy]);
                 }
             }
-            this.addChild(new PathCloseParticle(this, tiles));
+            this.phase.pathAnimationScheduler.addAnimation(tiles);
 
             if (data.owner !== undefined) {
                 this.phase.awardScore(data.owner, 9);
