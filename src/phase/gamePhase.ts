@@ -150,7 +150,10 @@ export class GamePhase extends Phase {
         return this.drawnCard !== undefined;
     }
 
-    /** Goes on with the next round. */
+    hasPlaced() {
+        return this.placedCard !== undefined;
+    }
+
     nextRound() {
         let hasNextRound = this.bag.size() != 0;// If the bag's empty ends the game.
 
@@ -159,22 +162,28 @@ export class GamePhase extends Phase {
             this.board.onRoundEnd(this.placedCard.x, this.placedCard.y, !hasNextRound);
         }
 
+        // Reset all of the round-relative variables.
+        this.drawnCard = undefined;
+        this.placedCard = undefined;
 
         if (!hasNextRound) {
             this.onEnd();
             return;
         }
 
+        // Update the round to the next player.
         this.roundOfIdx = (this.roundOfIdx + 1) % this.orderedPlayers.length;
         this.roundOf = this.orderedPlayers[this.roundOfIdx];
-        this.vue.$forceUpdate();
 
-        this.drawnCard = undefined;
+        console.log("Round of:", this.roundOf.username);
+
         this.roundState = RoundState.CardDraw;
 
-        if (this.roundOf.id == this.me.id) {
+        if (this.isMyRound()) {
             console.log("It's your round!");
         }
+
+        this.vue.$forceUpdate();
     }
 
     /** Function called when the game finishes (the bag goes out of cards). */
@@ -333,8 +342,10 @@ export class GamePhase extends Phase {
 
         this.placedCard = {x: x,  y: y, tile: this.drawnCard};
 
-        this.drawnCard = null;
-        this.drawnCardSprite = null;
+        this.drawnCard = undefined;
+        this.drawnCardSprite = undefined;
+
+        this.vue.$forceUpdate();
 
         return true;
     }
@@ -538,6 +549,7 @@ export class GamePhase extends Phase {
         window.addEventListener("resize", this.onResize.bind(this));
 
         this.vEventHandler.$on("pawn-interact", this.onPawnInteract.bind(this));
+        this.vEventHandler.$on("next-round", this.nextRound.bind(this));
         app.stage.on("mousemove", this.onPawnMove.bind(this));
     }
 
@@ -562,6 +574,7 @@ export class GamePhase extends Phase {
         window.removeEventListener("resize", this.onResize.bind(this));
 
         this.vEventHandler.$off("pawn-interact", this.onPawnInteract.bind(this));
+        this.vEventHandler.$off("next-round", this.nextRound.bind(this));
     }
 }
 

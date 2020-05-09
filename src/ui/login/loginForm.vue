@@ -8,7 +8,7 @@
             <avatar-editor ref="editor"></avatar-editor>
         </div>
         <div>
-            <button v-on:click="submit()" :disabled="!canSubmit()">Submit</button>
+            <button l v-on:click="submit()" :disabled="!canSubmit()">Submit</button>
             <div>{{ errorMessage }}</div>
         </div>
     </div>

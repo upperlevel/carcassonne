@@ -22,6 +22,11 @@
             </pawn-component>
         </div>
         <div class="fixed">
+            <button
+                    v-on:click="onNextRound"
+                    :disabled="!canNextRound()">
+                Done!
+            </button>
         </div>
     </div>
 </template>
@@ -41,6 +46,16 @@
         methods: {
             onPawnInteract(event: MouseEvent) {
                 this.$eventHub.$emit("pawn-interact", event);
+            },
+
+            canNextRound() {
+                const res = this.gamePhase.isMyRound() && this.gamePhase.hasPlaced();
+                console.log("canNextRound?", res);
+                return res;
+            },
+
+            onNextRound() {
+                this.$eventHub.$emit("next-round");
             }
         },
         components: {
@@ -84,5 +99,8 @@
         background-color: #6d4c41;
 
         pointer-events: auto;
+
+        text-align: center;
+        padding-right: 12px;
     }
 </style>

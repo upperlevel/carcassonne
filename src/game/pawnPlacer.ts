@@ -139,11 +139,11 @@ export class PawnPlacer extends PIXI.Container {
         this.phase.board.cardCoordToRelPos(placedCard.x, placedCard.y, this.position);
 
         // Side
+        let connector = this.phase.board.cardConnector;
         for (let side = 0; side < 4; side++) {
             this.removeChild(this.sideOverlay[side]);
 
-            const ownable = SideTypeUtil.isOwnable(placedCard.tile.getSideType(side));
-            if (ownable) {
+            if (connector.canOwnPath(placedCard.x, placedCard.y, side)) {
                 this.addChild(this.sideOverlay[side]);
                 this.sideOverlay[side]
                     .off("pointerdown")
