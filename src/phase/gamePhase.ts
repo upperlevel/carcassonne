@@ -33,7 +33,7 @@ export class GamePhase extends Phase {
     drawnCard: CardTile;
     drawnCardPreview: CardPreviewManager;
 
-    placedCard: {x: number, y: number, card: CardTile};
+    placedCard: {x: number, y: number, tile: CardTile};
 
     pawnPicked: PIXI.Sprite;
     pawnPlacer: PawnPlacer;
@@ -63,14 +63,14 @@ export class GamePhase extends Phase {
             }
         );
 
+        this.pawnPlacer = new PawnPlacer(this);
+
         // UI
         this.drawnCardPreview = new CardPreviewManager();
         this.gameBar = new GameBar();
         let card = this.setupBag();
         this.setupBoard(card);
         this.scoreVisualizer = new ScoreVisualizer(this.orderedPlayers);
-
-        this.pawnPlacer = new PawnPlacer();
     }
 
     ui() {
@@ -316,7 +316,7 @@ export class GamePhase extends Phase {
             return false; // Can't place the card here.
         this.board.removeChild(this.drawnCardSprite);
 
-        this.placedCard = {x: x,  y: y, card: this.drawnCard};
+        this.placedCard = {x: x,  y: y, tile: this.drawnCard};
 
         this.drawnCard = null;
         this.drawnCardSprite = null;
@@ -388,10 +388,9 @@ export class GamePhase extends Phase {
         this.board.addChild(pawn);
 
         // Spawns the grid that helps during pawn placement.
-        const placer = this.pawnPlacer;
-        placer.zIndex = 100;
-        this.board.cardCoordToRelPos(this.placedCard.x, this.placedCard.y, placer.position);
-        this.board.addChild(placer);
+        this.pawnPlacer.serveTo(this.placedCard, this.me);
+        this.pawnPlacer.zIndex = 10000;
+        this.board.addChild(this.pawnPlacer);
 
         this.pawnPicked = pawn;
     }
@@ -404,6 +403,12 @@ export class GamePhase extends Phase {
         }
     }
 
+    onPawnPlace(emplacement: PIXI.Point) {
+        this.pawnPicked.position = emplacement;
+        this.pawnPicked = undefined;
+        this.board.removeChild(this.pawnPlacer);
+    }
+
     /**
      * Function issued when a pawn is picked from the HTML container.
      */
@@ -414,10 +419,6 @@ export class GamePhase extends Phase {
 
         if (this.pawnPicked) this.undoPawnPick();
         else this.pickPawn(event);
-    }
-
-    showPawnPlacer(x: number, y: number) {
-
     }
 
     /**
@@ -467,7 +468,6 @@ export class GamePhase extends Phase {
         }
 
         this.bag.listen();
-        this.pawnPlacer.listen();
         this.scoreVisualizer.enable();
 
         channel.eventManager.addEventListener("random_seed",  this.onRandomSeed.bind(this));
@@ -496,7 +496,6 @@ export class GamePhase extends Phase {
         app.stage.off("rightdown", this.onCursorRightClick.bind(this));
 
         this.scoreVisualizer.disable();
-        this.pawnPlacer.unlisten();
         this.bag.unlisten();
 
         channel.eventManager.removeEventListener("random_seed",  this.onRandomSeed.bind(this));
