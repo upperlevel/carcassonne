@@ -41,7 +41,7 @@
                 const editor = this.$refs.editor;
                 this.$emit("submit", {
                     username: this.name,
-                    color: parseInt(editor.color.substr(1), 16),
+                    color: editor.color,
                     avatar: editor.avatarId,
                 });
             }

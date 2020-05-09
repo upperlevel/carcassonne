@@ -11,7 +11,9 @@
                     <avatar-component
                             style="height: 250px"
                             class="avatar form-control"
-                            :avatar-id="avatarId" :color="parseInt(color.substr(1), 16)">
+                            :avatar-id="avatarId"
+                            :color="this.color"
+                    >
                     </avatar-component>
                     <div class="input-group-append">
                         <button v-on:click="nextAvatar()">
@@ -23,8 +25,7 @@
         </div>
         <div class="row">
             <div class="col form-group">
-                <label>Color:</label>
-                <input class="form-control" type="color" v-on:input="color = $event.target.value">
+                <color-pool-component v-model="color"></color-pool-component>
             </div>
         </div>
     </div>
@@ -33,6 +34,7 @@
 <script lang="ts">
     import Vue from "vue"
     import AvatarComponent from "../avatar.vue";
+    import ColorPoolComponent from "./colorPool.vue"
 
     import * as PIXI from "pixi.js"
 
@@ -40,11 +42,12 @@
         data() {
             return {
                 avatarId: 1,
-                color: "#000000",
+                color: 0xd50000,
             }
         },
         components: {
-            AvatarComponent
+            AvatarComponent,
+            ColorPoolComponent
         },
         methods: {
             verifyAvatarId(id: number) {

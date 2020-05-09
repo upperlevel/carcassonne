@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="w-100 h-100 text-center" :style="{
-            backgroundColor: this.colorToString(),
+            backgroundColor: colorToStr(this.color),
             zIndex: -1
         }">
             <div ref="sprite" class="d-inline-block h-100" :style="getSpriteStyle()"></div>
@@ -19,8 +19,14 @@
             color: Number,
         },
         methods: {
-            colorToString() {
-                return this.color ? "#" + this.color.toString(16) : "#000000";
+            colorToStr(color: number) {
+                return `
+                    rgb(
+                        ${(color >> 16) & 0xff},
+                        ${(color >> 8) & 0xff},
+                        ${color & 0xff}
+                    )
+                `;
             },
 
             /**
