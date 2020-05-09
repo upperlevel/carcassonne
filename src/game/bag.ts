@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 import Vue from "vue";
 import {Card, CardFlag} from "./card";
-import {GamePhase} from "../phase/gamePhase";
+import {GamePhase, RoundState} from "../phase/gamePhase";
 
 export class Bag {
     gamePhase: GamePhase;
@@ -25,18 +25,20 @@ export class Bag {
         this.bagClosedFrame = atlas.textures["bag_closed.png"].orig;
     }
 
+    canPlaceCard(): boolean {
+        return this.gamePhase.isMyRound() && this.gamePhase.roundState == RoundState.CardDraw;
+    }
+
     onBagOver(vBag: any) {
-        if (this.gamePhase.isMyRound()) {
+        if (this.canPlaceCard()) {
             vBag.frame = this.bagOpenedFrame;
             vBag.$el.style.cursor = "pointer";
         }
     }
 
     onBagClick(vBag: any) {
-        if (this.gamePhase.isMyRound() && !this.gamePhase.hasDrawn()) {
-            const card = this.draw();
-            this.gamePhase.onDraw(card);
-            // TODO update number of cards on graphics!
+        if (this.canPlaceCard()) {
+            this.gamePhase.onDraw();
         }
     }
 

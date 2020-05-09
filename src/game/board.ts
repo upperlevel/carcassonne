@@ -82,7 +82,7 @@ export class Board extends PIXI.Container {
         });
     }
 
-    private flatIndex(x: number, y: number): number {
+    flatIndex(x: number, y: number): number {
         if (0 <= x  && x < this.gridSide && 0 <= y && y < this.gridSide) {
             return x * this.gridSide + y;
         } else {

@@ -14,6 +14,7 @@ import {ScoreVisualizer} from "../game/particles/scoreVisualizer";
 import {GameBar} from "../game/gameBar";
 import {PawnPlacer, PawnOwner} from "../game/pawnPlacer";
 import {PathAnimationScheduler} from "../game/particles/pathAnimationScheduler";
+import {CardPlaceAssistant} from "../game/particles/cardPlaceAssistant";
 
 export class GamePhase extends Phase {
     seed: number;
@@ -22,6 +23,7 @@ export class GamePhase extends Phase {
     bag: Bag;
     board: Board;
     scoreVisualizer: ScoreVisualizer;
+    cardPlaceAssistant: CardPlaceAssistant;
 
     me: GamePlayer;
     playersById: Map<string, GamePlayer> = new Map();
@@ -75,6 +77,7 @@ export class GamePhase extends Phase {
         let card = this.setupBag();
         this.setupBoard(card);
         this.scoreVisualizer = new ScoreVisualizer(this.orderedPlayers);
+        this.cardPlaceAssistant = new CardPlaceAssistant(this);
     }
 
     ui() {
@@ -199,13 +202,20 @@ export class GamePhase extends Phase {
     // ================================================================================================
 
     /** Function issued when any player draws a card. */
-    onDraw(card: Card) {
+    onDraw() {
         if (this.isMyRound()) {
             // Notify the other players that a card has been drawn.
             channel.send({
                 type: "player_draw",
             } as PlayerDraw);
         }
+
+        let card, tiles;
+
+        do {
+            card = this.bag.draw();
+            tiles = this.board.getPossiblePlacements(card);
+        } while (tiles.length == 0);
 
         this.roundState = RoundState.CardPlace;
         this.drawnCard = new CardTile(card);
@@ -215,13 +225,13 @@ export class GamePhase extends Phase {
         this.drawnCardSprite.width = Board.TILE_SIZE;
         this.drawnCardSprite.height = Board.TILE_SIZE;
         this.board.addChild(this.drawnCardSprite);
+        this.cardPlaceAssistant.enable(tiles);
     }
 
     /** Function called when another player (that is not me) draws a card. */
     onPlayerDraw(event: CustomEvent) {
         //const packet = event.detail as PlayerDraw;
-        const card = this.bag.draw();
-        this.onDraw(card);
+        this.onDraw();
     }
 
     // ================================================================================================
@@ -337,6 +347,7 @@ export class GamePhase extends Phase {
         if (!this.board.set(x, y, this.drawnCard))
             return false; // Can't place the card here.
 
+        this.cardPlaceAssistant.disable();
         this.roundState = RoundState.PawnPick;
         this.board.removeChild(this.drawnCardSprite);
 
@@ -578,7 +589,7 @@ export class GamePhase extends Phase {
     }
 }
 
-enum RoundState {
+export enum RoundState {
     CardDraw,
     CardPlace,
     PawnPick,
