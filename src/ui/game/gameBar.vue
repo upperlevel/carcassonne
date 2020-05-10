@@ -82,6 +82,9 @@
 
         width: 140px;
         height: 70px;
+        border-bottom: 1px solid black;
+
+        pointer-events: auto;
     }
 
     .pawn {
@@ -89,8 +92,6 @@
 
         width: 28px;
         height: 70px;
-
-        pointer-events: auto;
     }
 
     .game-bar .fixed {
