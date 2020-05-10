@@ -50,9 +50,7 @@
             },
 
             canNextRound() {
-                const res = this.gamePhase.isMyRound() && this.gamePhase.canSkipRound();
-                console.log("canNextRound?", res);
-                return res;
+                return this.gamePhase.isMyRound() && this.gamePhase.canSkipRound();
             },
 
             onNextRound() {

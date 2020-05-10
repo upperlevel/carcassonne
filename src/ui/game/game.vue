@@ -72,8 +72,15 @@ import {RoundState} from "../../phase/gamePhase";
                     }
                 }
                 const roundOf = this.gamePhase.roundOf;
-                const roundOfColor = this.colorToStr(roundOf.color);
-                return `<h4 style="color: red">It's the turn of: <span style="color: ${roundOfColor}">${roundOf.username}</span>.</h4>`;
+
+                // roundOf can be undefined as soon as the game-phase starts.
+                // However, the hint-bar is filled when the first nextRound() is called.
+                if (roundOf !== undefined) {
+                    const roundOfColor = this.colorToStr(roundOf.color);
+                    return `<h4 style="color: red">It's the turn of: <span style="color: ${roundOfColor}">${roundOf.username}</span>.</h4>`;
+                }
+
+                return "";
             }
         }
     });

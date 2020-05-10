@@ -471,6 +471,8 @@ export class GamePhase extends Phase {
         this.me.pawns++; // This will place back the pawn on the HTML container.
 
         this.board.removeChild(this.pawnPlacer);
+
+        this.roundState = RoundState.PawnPick;
     }
 
     pickPawn(event: MouseEvent) {
@@ -530,8 +532,11 @@ export class GamePhase extends Phase {
         if (!this.placedCard || !this.isMyRound())
             return;
 
-        if (this.pawnPicked) this.undoPawnPick();
-        else this.pickPawn(event);
+        if (this.pawnPicked) {
+            this.undoPawnPick();
+        } else {
+            this.pickPawn(event);
+        }
     }
 
     /**
