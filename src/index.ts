@@ -53,11 +53,11 @@ async function wsConnect(address: string, port: number, path: string): Promise<W
 
 (async function () {
     app = new PIXI.Application({resizeTo: window});
-    document.body.appendChild(app.view);
+    // The app.view (canvas) is only appended when the game-phase starts.
 
     app.view.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-    })
+    });
 
     stage.setPhase(new LoadingPhase());
 

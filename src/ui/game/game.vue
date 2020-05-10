@@ -1,20 +1,13 @@
-import {RoundState} from "../../phase/gamePhase";
-import {RoundState} from "../../phase/gamePhase";
+
 <template>
     <div class="game">
-        <!-- PlayerBar -->
-        <player-bar-component
-                class="player-bar"
+        <!------------------------------------------------------------------------------------------------ player-bar -->
+        <player-bar-component class="player-bar" :players="this.players"></player-bar-component>
 
-                :players="this.players"
-        >
-        </player-bar-component>
+        <!------------------------------------------------------------------------------------------------ hint-bar -->
+        <div class="hint-bar" v-html="getRoundStateHint()"></div>
 
-        <!-- ActionBar -->
-        <div class="hint-bar" v-html="getRoundStateHint()">
-        </div>
-
-        <!-- GameBar -->
+        <!------------------------------------------------------------------------------------------------ game-bar -->
         <game-bar-component
                 class="game-bar"
 
@@ -23,6 +16,29 @@ import {RoundState} from "../../phase/gamePhase";
                 :player="this.myPlayer"
         >
         </game-bar-component>
+
+
+        <!------------------------------------------------------------------------------------------------ scoreboard -->
+        <div class="scoreboard"
+            :style="{display: this.gamePhase.isScoreBoardVisible ? 'block' : 'none'}"
+        >
+            <table>
+                <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Score</th>
+                </tr>
+                <tr v-for="(player, rank) in this.gamePhase.getScoreBoard()">
+                    <th :style="getRankColor(rank + 1)">
+                        {{ rank + 1 }}.
+                    </th>
+                    <td class="username" :style="{color: colorToStr(player.color)}">
+                        {{ player.username }}
+                    </td>
+                    <td>{{ player.score }}</td>
+                </tr>
+            </table>
+        </div>
     </div>
 </template>
 
@@ -58,6 +74,19 @@ import {RoundState} from "../../phase/gamePhase";
                 `;
             },
 
+            getRankColor(rank: number) {
+                switch (rank) {
+                    case 1:
+                        return {color: "#fdd835"};
+                    case 2:
+                        return {color: "#bdbdbd"};
+                    case 3:
+                        return {color: "#a30000"};
+                    default:
+                        return {color: "white"};
+                }
+            },
+
             getRoundStateHint() {
                 if (this.gamePhase.isMyRound()) {
                     switch (this.gamePhase.roundState) {
@@ -69,6 +98,8 @@ import {RoundState} from "../../phase/gamePhase";
                             return `<h4 style="color: yellow"><u>Skip</u> the round or <u>pick a pawn</u>.</h4>`;
                         case RoundState.PawnPlace:
                             return `<h4 style="color: yellow"><u>Place the pawn</u> within the card you've placed.</h4>`;
+                        default:
+                            return "";
                     }
                 }
                 const roundOf = this.gamePhase.roundOf;
@@ -81,8 +112,8 @@ import {RoundState} from "../../phase/gamePhase";
                 }
 
                 return "";
-            }
-        }
+            },
+        },
     });
 </script>
 
@@ -117,5 +148,47 @@ import {RoundState} from "../../phase/gamePhase";
         top: 0;
         width: 100%;
         z-index: 1;
+    }
+
+    .scoreboard {
+        position: absolute;
+
+        top: 35%;
+        width: 100%;
+        text-align: center;
+
+        z-index: 50;
+    }
+
+    .scoreboard {
+        pointer-events: none;
+    }
+
+    .scoreboard table {
+        display: inline-block;
+
+        padding: 25px;
+
+        color: white;
+        background-color: rgba(0, 10, 18, 0.7);
+
+        border-radius: 15px;
+        border: 1px solid #263238;
+
+        pointer-events: none;
+    }
+
+    .scoreboard table tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+        pointer-events: none;
+    }
+
+    .scoreboard table tr th {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .scoreboard .username {
     }
 </style>

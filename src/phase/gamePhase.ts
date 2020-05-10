@@ -53,6 +53,8 @@ export class GamePhase extends Phase {
     lastMouseDownTime?: number;
     lastMouseDownPos?: PIXI.IPoint;
 
+    isScoreBoardVisible: boolean;
+
     constructor(playersById: {[id: string]: PlayerObject}) {
         super("game");
 
@@ -96,6 +98,7 @@ export class GamePhase extends Phase {
                     myPlayer: self.me,
                     players: self.orderedPlayers,
                     roundState: self.roundState,
+                    showScoreBoard: false,
                 }
             },
         })
@@ -211,14 +214,6 @@ export class GamePhase extends Phase {
         }
 
         this.vue.$forceUpdate();
-    }
-
-    /** Function called when the game finishes (the bag goes out of cards). */
-    onEnd() {
-        console.log("Game ended.");
-        this.board.cardConnector.onGameEnd();
-        this.board.onGameEnd();
-        // TODO show ranking
     }
 
     drawnCardSprite: PIXI.Sprite; // TODO temp
@@ -562,8 +557,59 @@ export class GamePhase extends Phase {
         this.scoreVisualizer.animateScore(playerId, score, app.stage);
     }
 
+    // ================================================================================================================================
+    // Score-board
+    // ================================================================================================================================
+
+    getScoreBoard() {
+        const players = Object.assign([], this.orderedPlayers);
+        return players.sort((a, b) => {
+            return b.score - a.score;
+        });
+    }
+
+    setScoreBoardVisible(visible: boolean) {
+        this.isScoreBoardVisible = visible;
+        this.vue.$forceUpdate();
+    }
+
+    onScoreBoardKeyDown(event: KeyboardEvent) {
+        if (this.roundState === RoundState.GameEnd)
+            return;
+        if (event.key === "Tab") {
+            this.setScoreBoardVisible(true);
+            event.preventDefault(); // Prevent focusing browser's address bar.
+        }
+    }
+
+    onScoreBoardKeyUp(event: KeyboardEvent) {
+        if (this.roundState === RoundState.GameEnd)
+            return;
+        if (event.key === "Tab") {
+            this.setScoreBoardVisible(false);
+        }
+    }
+
+    // ================================================================================================================================
+    // Ending
+    // ================================================================================================================================
+
+    onEnd() {
+        console.log("End");
+
+        this.roundState = RoundState.GameEnd;
+        this.vue.$forceUpdate();
+
+        this.board.cardConnector.onGameEnd();
+        this.board.onGameEnd();
+
+        this.setScoreBoardVisible(true);
+    }
+
     enable() {
         super.enable();
+
+        document.body.appendChild(app.view);
 
         app.renderer.backgroundColor = 0x3e2723; // dark brown
 
@@ -606,6 +652,9 @@ export class GamePhase extends Phase {
         this.vEventHandler.$on("pawn-interact", this.onPawnInteract.bind(this));
         this.vEventHandler.$on("next-round", this.onNextRoundClick.bind(this));
         app.stage.on("mousemove", this.onPawnMove.bind(this));
+
+        window.addEventListener("keydown", this.onScoreBoardKeyDown.bind(this));
+        window.addEventListener("keyup", this.onScoreBoardKeyUp.bind(this));
     }
 
     disable() {
@@ -631,6 +680,11 @@ export class GamePhase extends Phase {
 
         this.vEventHandler.$off("pawn-interact", this.onPawnInteract.bind(this));
         this.vEventHandler.$off("next-round", this.onNextRoundClick.bind(this));
+
+        document.body.removeChild(app.view);
+
+        window.removeEventListener("keydown", this.onScoreBoardKeyDown.bind(this));
+        window.removeEventListener("keyup", this.onScoreBoardKeyUp.bind(this));
     }
 }
 
@@ -639,6 +693,8 @@ export enum RoundState {
     CardPlace,
     PawnPick,
     PawnPlace,
+
+    GameEnd,
 }
 
 class CardPreviewManager {
