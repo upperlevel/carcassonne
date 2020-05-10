@@ -5,10 +5,24 @@ export class Channel {
     eventManager: EventTarget = new EventTarget();
 
     onMessage(event: MessageEvent) {
-        const packet = JSON.parse(event.data);
+        let raw = event.data;
+
+        let special = false;
+        if (raw.startsWith("#")) {
+            special = true;
+            raw = raw.substr(1);
+        }
+        const packet = JSON.parse(raw);
+
+        let packetType = packet.type;
+        if (special) {
+            packetType = "special_" + packetType;
+        }
+
+
         console.log("Read", packet);
         this.eventManager.dispatchEvent(new CustomEvent("any", {detail: packet}));
-        this.eventManager.dispatchEvent(new CustomEvent(packet.type, {detail: packet}));
+        this.eventManager.dispatchEvent(new CustomEvent(packetType, {detail: packet}));
     }
 
     constructor(socket: WebSocket) {
@@ -16,13 +30,19 @@ export class Channel {
         this.socket.onmessage = (event: MessageEvent) => this.onMessage(event);
     }
 
-    send(packet: any) {
+    send(packet: any, special?: boolean) {
         const wrapped = {
             id: this.packetId,
             ...packet
         };
         console.log("Sent", wrapped);
-        this.socket.send(JSON.stringify(wrapped));
+
+        let raw = JSON.stringify(wrapped);
+        if (special === true) {
+            raw = "#" + raw;
+        }
+
+        this.socket.send(raw);
         this.packetId++;
     }
 

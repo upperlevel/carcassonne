@@ -83,6 +83,6 @@ export class RoomPhase extends Phase {
         } as EventRoomStartAck);
 
         console.log("The game can start!");
-        stage.setPhase(new GamePhase(this.playersById));
+        stage.setPhase(new GamePhase(this.roomId, this.playersById));
     }
 }

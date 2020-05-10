@@ -1,7 +1,8 @@
 import {Phase} from "./phase";
-import {app, channel, me} from "../index";
+import {app, channel, me, stage} from "../index";
 import * as PIXI from "pixi.js";
 import {
+    EndGameAck,
     NextRound,
     PlayerDraw,
     PlayerPlaceCard,
@@ -22,6 +23,7 @@ import {GameBar} from "../game/gameBar";
 import {PawnPlacer, PawnOwner} from "../game/pawnPlacer";
 import {PathAnimationScheduler} from "../game/particles/pathAnimationScheduler";
 import {CardPlaceAssistant} from "../game/particles/cardPlaceAssistant";
+import {RoomPhase} from "./roomPhase";
 
 export class GamePhase extends Phase {
     seed: number;
@@ -32,6 +34,7 @@ export class GamePhase extends Phase {
     scoreVisualizer: ScoreVisualizer;
     cardPlaceAssistant: CardPlaceAssistant;
 
+    roomId: string;
     me: GamePlayer;
     playersById: Map<string, GamePlayer> = new Map();
     orderedPlayers: GamePlayer[] = [];
@@ -55,8 +58,9 @@ export class GamePhase extends Phase {
 
     isScoreBoardVisible: boolean;
 
-    constructor(playersById: {[id: string]: PlayerObject}) {
+    constructor(roomId: string, playersById: {[id: string]: PlayerObject}) {
         super("game");
+        this.roomId = roomId;
 
         // Prepare Map of GamePlayers by id.
         Object
@@ -235,6 +239,10 @@ export class GamePhase extends Phase {
 
         do {
             card = this.bag.draw();
+            if (card === undefined) {
+                this.onEnd();
+                return;
+            }
             tiles = this.board.getPossiblePlacements(card);
         } while (tiles.length == 0);
 
@@ -604,6 +612,15 @@ export class GamePhase extends Phase {
         this.board.onGameEnd();
 
         this.setScoreBoardVisible(true);
+
+        setTimeout(() => {
+            channel.send({
+                "type": "end_game"
+            }, true);
+            channel.readOnce("special_end_game_ack", (packet: EndGameAck) => {
+                stage.setPhase(new RoomPhase(this.roomId, packet.players));
+            });
+        }, 10000);
     }
 
     enable() {

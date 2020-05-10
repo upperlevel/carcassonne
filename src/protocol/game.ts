@@ -67,3 +67,10 @@ export interface NextRound extends Packet {
 }
 
 // TODO: pawn preview.
+
+// Special packets
+
+export interface EndGameAck {
+    type: "special_end_game",
+    players: PlayerObject[],
+}
