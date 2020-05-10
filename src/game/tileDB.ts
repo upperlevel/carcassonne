@@ -1,9 +1,11 @@
+import * as PIXI from "pixi.js";
 import {Board} from "./board";
 import {Card} from "./card";
 import {CardTile} from "./cardTile";
 
 export class TileDB {
-    board: Board;
+    readonly board: Board;
+    private monasteries = new Array<PIXI.Point>();
 
     constructor(board: Board) {
         this.board = board;
@@ -11,6 +13,10 @@ export class TileDB {
 
 
     onTileAdd(x: number, y: number) {
+        let tile = this.board.get(x, y);
+        if (tile.monasteryData !== undefined) {
+            this.monasteries.push(new PIXI.Point(x, y));
+        }
     }
 
     getPossiblePlacements(card: Card): Array<TilePlacement> {
@@ -59,6 +65,10 @@ export class TileDB {
         // of tiles present in the map.
 
         return res;
+    }
+
+    getAllMonasteries(): Array<PIXI.Point> {
+        return this.monasteries
     }
 }
 

@@ -216,6 +216,8 @@ export class GamePhase extends Phase {
     /** Function called when the game finishes (the bag goes out of cards). */
     onEnd() {
         console.log("Game ended.");
+        this.board.cardConnector.onGameEnd();
+        this.board.onGameEnd();
         // TODO show ranking
     }
 
@@ -557,9 +559,7 @@ export class GamePhase extends Phase {
 
     awardScore(playerId: string, score: number) {
         this.playersById.get(playerId).score += score;
-        let anim = this.scoreVisualizer.animateScore(playerId, score);
-        anim.zIndex = 50;
-        app.stage.addChild(anim);
+        this.scoreVisualizer.animateScore(playerId, score, app.stage);
     }
 
     enable() {

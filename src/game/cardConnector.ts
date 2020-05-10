@@ -7,8 +7,8 @@ export class CardConnector {
     readonly board: Board;
     private pathData: Map<number, PathData>;
     private nextId: number;
-    // Array of path entry points (expressed as [x, y, side])
-    private pathsToClose = new Array<[number, number, Side]>();
+    // Array of path ids to close
+    private pathsToClose = new Array<number>();
 
     constructor(board: Board) {
         this.board = board;
@@ -88,7 +88,7 @@ export class CardConnector {
 
         if (!reAssign && pathData.openEndCount <= 0) {
             //console.warn("CLOSING " + path.toString())
-            this.pathsToClose.push([x, y, side])
+            this.pathsToClose.push(path)
         }
     }
 
@@ -138,9 +138,11 @@ export class CardConnector {
         return score;
     }
 
-    closePath(x: number, y: number, side: Side, gameEnd: boolean) {
-        let path = this.board.get(x, y).paths[side];
+    closePath(path: number, gameEnd: boolean) {
         let pathData = this.pathData.get(path);
+        let x = pathData.entryPoint.x;
+        let y = pathData.entryPoint.y;
+        let side = pathData.entryPoint.side;
 
         let tiles = new Array<[number, number]>();
         let score = this.assignScore(x, y, side, gameEnd, tiles);
@@ -152,7 +154,9 @@ export class CardConnector {
             x.parent.removeChild(x);
         });
 
-        this.board.phase.pathAnimationScheduler.addAnimation(tiles);
+        if (pathData.pawns.length > 0) {
+            this.board.phase.pathAnimationScheduler.addAnimation(tiles);
+        }
 
         // Uncommment to test +score animations (this will give the score to the first player).
         //this.board.phase.awardScore(this.board.phase.orderedPlayers[0].id, score);
@@ -164,10 +168,10 @@ export class CardConnector {
         this.pathData.delete(path);
     }
 
-    createPath(): number {
+    createPath(entryPoint: TileSide): number {
         let id = this.nextId;
         this.nextId++;
-        this.pathData.set(id, new PathData())
+        this.pathData.set(id, new PathData(entryPoint))
         return id;
     }
 
@@ -198,9 +202,8 @@ export class CardConnector {
                 break;
             }
 
-
             if (path == -1) {
-                path = this.createPath();
+                path = this.createPath(new TileSide(x, y, side));
             }
 
             this.assignPath(x, y, side, path);
@@ -216,8 +219,14 @@ export class CardConnector {
     onTurnEnd(endGame: boolean) {
         while (this.pathsToClose.length > 0) {
             let path = this.pathsToClose.pop();
-            this.closePath(path[0], path[1], path[2], endGame);
+            this.closePath(path, endGame);
         }
+    }
+
+    onGameEnd() {
+        this.pathData.forEach((data, id) => {
+            this.closePath(id, true);
+        })
     }
 
     ownPath(x: number, y: number, player: string, chosenSide: Side): boolean {
@@ -237,10 +246,27 @@ export class CardConnector {
     }
 }
 
+class TileSide {
+    x: number;
+    y: number;
+    side: Side;
+
+    constructor(x: number, y: number, side: Side) {
+        this.x = x;
+        this.y = y;
+        this.side = side;
+    }
+}
+
 class PathData implements PawnOwner {
+    entryPoint: TileSide;
     followers = new Map<string, number>();
     openEndCount: number = 0;
     pawns = new Array<PIXI.Container>();
+
+    constructor(entryPoint: TileSide) {
+        this.entryPoint = entryPoint;
+    }
 
     addFollower(playerId: string, times?: number) {
         let x = this.followers.get(playerId) || 0;
@@ -251,6 +277,7 @@ class PathData implements PawnOwner {
         other.followers.forEach((val, key) => {
             this.addFollower(key, val);
         })
+        this.pawns.push(...other.pawns);
 
         this.openEndCount += other.openEndCount;
     }

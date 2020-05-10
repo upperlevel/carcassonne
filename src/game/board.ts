@@ -151,7 +151,7 @@ export class Board extends PIXI.Container {
         if (tile === undefined || tile.monasteryData === undefined) return;
         let data = tile.monasteryData;
 
-        if (++data.completedTiles >= 9) {
+        if (++data.completedTiles >= 9 && data.owner !== undefined) {
             // Create animation
             let tiles = new Array<[number, number]>();
             for (let dx of [-1, 0, 1]) {
@@ -159,13 +159,12 @@ export class Board extends PIXI.Container {
                     tiles.push([x + dx, y + dy]);
                 }
             }
+
             this.phase.pathAnimationScheduler.addAnimation(tiles);
 
-            if (data.owner !== undefined) {
-                this.phase.returnPawn(data.owner);
-                this.phase.awardScore(data.owner, 9);
-                data.pawn.parent.removeChild(data.pawn);
-            }
+            this.phase.returnPawn(data.owner);
+            this.phase.awardScore(data.owner, 9);
+            data.pawn.parent.removeChild(data.pawn);
         }
     }
 
@@ -217,6 +216,20 @@ export class Board extends PIXI.Container {
         }
 
         this.cardConnector.onTurnEnd(endGame);
+    }
+
+    onGameEnd() {
+        this.cardConnector.onGameEnd();
+
+        this.tileDb.getAllMonasteries().forEach(x => {
+            let tile = this.get(x.x, x.y);
+            let data = tile.monasteryData!!;
+            if (data.owner !== undefined && data.completedTiles < 9) {
+                this.phase.awardScore(data.owner, data.completedTiles);
+                this.phase.returnPawn(data.owner);
+                data.pawn.parent.removeChild(data.pawn);
+            }
+        });
     }
 
     cardCoordToRelPos(x: number, y: number, target: PIXI.IPoint) {

@@ -34,7 +34,7 @@ export class ScoreVisualizer {
         this.playerBar = undefined;
     }
 
-    animateScore(playerId: string, score: number): PIXI.Text {
+    animateScore(playerId: string, score: number, target: PIXI.Container) {
         let playerIndex = this.playerIdToIndex(playerId);
 
         let oldParticle = this.animations.get(playerIndex);
@@ -45,7 +45,8 @@ export class ScoreVisualizer {
 
         let particle = this.createParticle(playerIndex, score);
         this.animations.set(playerIndex, particle);
-        return particle.display;
+        particle.display.zIndex = 50;
+        target.addChild(particle.display);
     }
 
     private createParticle(playerIndex: number, score: number): ScoreParticle {
