@@ -3,7 +3,7 @@
             :frame="this.getFrame()"
             :atlas-url="this.getAtlasUrl()"
             :atlas-size="this.getAtlasSize()"
-            :tint="this.colorToHex(this.color)"
+            :tint="this.colorToStr(this.color)"
 
             v-on:click.native="onClick"
 
@@ -39,8 +39,14 @@
                 return this.getAtlas().baseTexture;
             },
 
-            colorToHex(color: number) {
-                return color ? "#" + color.toString(16) : "#000000";
+            colorToStr(color: number) {
+                return `
+                    rgb(
+                        ${(color >> 16) & 0xff},
+                        ${(color >> 8) & 0xff},
+                        ${color & 0xff}
+                    )
+                `;
             },
 
             onClick() {
