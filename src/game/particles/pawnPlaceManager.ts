@@ -86,7 +86,7 @@ export class PawnPlaceManager {
     createPawn(x: number, y: number) {
         // Spawns the PIXI pawn to attach to the cursor.
         const pawn = this.phase.roundOf.createPawn();
-        pawn.zIndex = 101;
+        pawn.zIndex = 10001;
         pawn.position.set(x, y);
         this.phase.board.addChild(pawn);
 
