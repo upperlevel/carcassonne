@@ -1,22 +1,24 @@
 import * as PIXI from "pixi.js";
 
 import {Board} from "./board";
-import {Side, SideUtil} from "./side";
+import {Side} from "./side";
 import {GamePhase} from "../phase/gamePhase";
 import {GamePlayer} from "./gamePlayer";
 import {CardTile} from "./cardTile";
-import {SideTypeUtil} from "./card";
 import {channel} from "../index";
-import {PlayerPlacePawn} from "../protocol/game";
+import {PlayerPawnPlace} from "../protocol/game";
+import {PawnPlaceManager} from "./particles/pawnPlaceManager";
 
 export class PawnPlacer extends PIXI.Container {
-    phase: GamePhase;
+    readonly par: PawnPlaceManager;
+    readonly phase: GamePhase;
 
     sideOverlay: PIXI.Graphics[] = [];
     monasteryOverlay?: PIXI.Graphics;
 
-    constructor(phase: GamePhase) {
+    constructor(parent: PawnPlaceManager, phase: GamePhase) {
         super();
+        this.par = parent;
         this.phase = phase;
 
         this.initPixi();
@@ -169,23 +171,23 @@ export class PawnPlacer extends PIXI.Container {
         let conn = this.phase.board.cardConnector;
         this.sendPacket(side, pos);
         conn.ownPath(card.x, card.y, player.id, side);
-        this.phase.onPawnPlace(pos, conn.getPathData(card.x, card.y, side));
+        this.par.onPawnPlace(pos, conn.getPathData(card.x, card.y, side));
     }
 
     placeMonastery(player: GamePlayer, card: {x: number, y: number, tile: CardTile}, pos: PIXI.Point) {
         let monastery = card.tile.monasteryData!;
         this.sendPacket("monastery", pos);
         monastery.owner = player.id; // TODO check if ok
-        this.phase.onPawnPlace(pos, monastery);
+        this.par.onPawnPlace(pos, monastery);
     }
 
     private sendPacket(side: Side | "monastery", pos?: PIXI.IPoint) {
         if (!this.phase.isMyRound()) return;
         channel.send({
-            type: "player_place_pawn",
+            type: "player_pawn_place",
             side: side,
             pos: { x: pos.x, y: pos.y },
-        } as PlayerPlacePawn);
+        } as PlayerPawnPlace);
     }
 }
 

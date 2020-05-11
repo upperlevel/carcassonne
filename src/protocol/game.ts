@@ -49,13 +49,34 @@ export interface PlayerPlaceCardPreview extends Packet {
  * Packet sent when the player places a pawn on the placed card.
  * When a monastery is chosen "monastery" will be reported.
  */
-export interface PlayerPlacePawn extends Packet {
-    type: "player_place_pawn",
+export interface PlayerPawnPlace extends Packet {
+    type: "player_pawn_place",
     side: Side | "monastery";
     pos: {// TODO: remove
         x: number,
         y: number,
     }
+}
+
+/**
+ * [Player]
+ * Packet sent when the player moves the pawn to place around.
+ */
+export interface PlayerPawnInteract extends Packet {
+    type: "player_pawn_interact",
+    pickUp: boolean,// true = up, false = place
+    x: number,
+    y: number,
+}
+
+/**
+ * [Player]
+ * Packet sent when the player moves the pawn to place around.
+ */
+export interface PlayerPawnPreview extends Packet {
+    type: "player_pawn_preview",
+    x: number,
+    y: number,
 }
 
 /**

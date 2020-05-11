@@ -1,4 +1,6 @@
 
+const DEBUG_PRINT_PACKETS = false;
+
 export class Channel {
     socket: WebSocket;
     packetId: number = 0;
@@ -19,8 +21,9 @@ export class Channel {
             packetType = "special_" + packetType;
         }
 
-
-        console.log("Read", packet);
+        if (DEBUG_PRINT_PACKETS) {
+            console.log("Read", packet);
+        }
         this.eventManager.dispatchEvent(new CustomEvent("any", {detail: packet}));
         this.eventManager.dispatchEvent(new CustomEvent(packetType, {detail: packet}));
     }
@@ -35,7 +38,9 @@ export class Channel {
             id: this.packetId,
             ...packet
         };
-        console.log("Sent", wrapped);
+        if (DEBUG_PRINT_PACKETS) {
+            console.log("Sent", wrapped);
+        }
 
         let raw = JSON.stringify(wrapped);
         if (special === true) {
