@@ -1,10 +1,8 @@
 const path = require('path');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
-module.exports = {
+const config = {
     entry: './src/index.ts',
-    devtool: 'inline-source-map',
-    mode: "development",
     module: {
         rules: [
             {
@@ -47,4 +45,12 @@ module.exports = {
     plugins: [
         new VueLoaderPlugin(),
     ]
+};
+
+module.exports = (env, argv) => {
+    if (argv.mode === "development") {
+        // https://webpack.js.org/configuration/devtool/
+        config.devtool = "inline-source-map";
+    }
+    return config;
 };
