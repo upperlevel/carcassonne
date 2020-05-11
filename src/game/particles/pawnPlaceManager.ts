@@ -120,6 +120,7 @@ export class PawnPlaceManager {
         this.pawn = undefined;
         this.phase.board.removeChild(this.placer);
         this.previewClient.onPlace();
+        this.previewServer.cancel();
 
         // TURN END
         this.phase.nextRound();

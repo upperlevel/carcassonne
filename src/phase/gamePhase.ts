@@ -56,6 +56,7 @@ export class GamePhase extends Phase {
     lastMouseDownPos?: PIXI.IPoint;
 
     isScoreBoardVisible: boolean;
+    lobbyCountdown: number;
 
 
     constructor(roomId: string, me: PlayerObject, playersById: { [id: string]: PlayerObject }) {
@@ -532,14 +533,21 @@ export class GamePhase extends Phase {
 
         this.setScoreBoardVisible(true);
 
-        setTimeout(() => {
-            channel.send({
-                "type": "end_game"
-            }, true);
-            channel.eventEmitter.once("special_end_game_ack", (packet: EndGameAck) => {
-                stage.setPhase(new RoomPhase(this.roomId, this.me.details, packet.players));
-            });
-        }, 10000);
+        this.lobbyCountdown = 10;
+        let handle = setInterval(() => {
+            if (--this.lobbyCountdown <= 0) {
+                clearInterval(handle);
+
+                channel.send({
+                    "type": "end_game"
+                }, true);
+                channel.eventEmitter.once("special_end_game_ack", (packet: EndGameAck) => {
+                    stage.setPhase(new RoomPhase(this.roomId, this.me.details, packet.players));
+                });
+            }
+            this.vue.$forceUpdate();
+
+        }, 1000);
     }
 
     generateSeed() {

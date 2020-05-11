@@ -22,6 +22,7 @@
         <div class="scoreboard"
             :style="{display: this.gamePhase.isScoreBoardVisible ? 'block' : 'none'}"
         >
+            <div class="scoreboard-countdown">Returning to Lobby in: {{ this.gamePhase.lobbyCountdown }}</div>
             <table>
                 <tr>
                     <th>Rank</th>
@@ -148,6 +149,12 @@
         top: 0;
         width: 100%;
         z-index: 1;
+    }
+
+    .scoreboard-countdown {
+        text-shadow: 0 0 2px #CCC;
+        font-size: 3rem;
+        font-weight: bolder;
     }
 
     .scoreboard {
