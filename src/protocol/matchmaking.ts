@@ -50,7 +50,8 @@ interface EventPlayerJoin {
 interface EventPlayerLeft {
     id: number,
     type: "event_player_left",
-    player: string
+    player: string,
+    newHost?: string,
 }
 
 interface RoomStart {

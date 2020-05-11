@@ -24,8 +24,12 @@ export class RoomPhase extends Phase {
         Vue.set(this.playersById, player.id, player);
     }
 
-    removePlayer(playerId: string) {
+    removePlayer(playerId: string, newHost?: string) {
         Vue.delete(this.playersById, playerId);
+
+        if (newHost !== undefined) {
+            this.playersById[newHost].isHost = true;
+        }
     }
 
     ui() {
@@ -67,7 +71,7 @@ export class RoomPhase extends Phase {
 
     onPlayerLeft(packet: EventPlayerLeft) {
         const playerId = packet.player;
-        this.removePlayer(playerId);
+        this.removePlayer(playerId, packet.newHost);
     }
 
     onStart() {

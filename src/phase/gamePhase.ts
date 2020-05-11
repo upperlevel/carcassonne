@@ -1,7 +1,15 @@
 import {Phase} from "./phase";
 import {app, channel, me, stage, windowEventEmitter} from "../index";
 import * as PIXI from "pixi.js";
-import {EndGameAck, NextRound, PlayerDraw, PlayerPlaceCard, PlayerPlaceCardPreview, RandomSeed} from "../protocol/game";
+import {
+    EndGameAck,
+    NextRound,
+    PlayerDraw,
+    PlayerLeft,
+    PlayerPlaceCard,
+    PlayerPlaceCardPreview,
+    RandomSeed
+} from "../protocol/game";
 import {Bag} from "../game/bag";
 import {Board} from "../game/board";
 import {CardTile} from "../game/cardTile";
@@ -137,6 +145,16 @@ export class GamePhase extends Phase {
             return;
         }
         console.error("Seed received but there was already another seed set.");
+    }
+
+    onPlayerLeft(packet: PlayerLeft) {
+        if (packet.newHost !== undefined) {
+            this.playersById.get(packet.newHost).details.isHost = true;
+            if (packet.newHost == this.me.id && !this.seed) {
+                // Well, it's my job now
+                this.generateSeed();
+            }
+        }
     }
 
     /** Function called when the game is ready to start. */
@@ -524,6 +542,15 @@ export class GamePhase extends Phase {
         }, 10000);
     }
 
+    generateSeed() {
+        this.setSeed(Math.random());
+
+        channel.send({
+            type: "random_seed",
+            seed: this.seed,
+        } as RandomSeed);
+    }
+
     enable() {
         super.enable();
 
@@ -541,12 +568,7 @@ export class GamePhase extends Phase {
         app.stage.addChild(this.gameBar);
 
         if (this.me.details.isHost) {
-            this.setSeed(Math.random());
-
-            channel.send({
-                type: "random_seed",
-                seed: this.seed,
-            } as RandomSeed);
+            this.generateSeed();
         }
 
         this.bag.listen();
@@ -557,6 +579,7 @@ export class GamePhase extends Phase {
         channel.eventEmitter.on("player_draw", this.onPlayerDraw, this);
         channel.eventEmitter.on("player_place_card", this.onPlayerPlaceCard, this);
         channel.eventEmitter.on("player_place_card_preview", this.onPlayerPlaceCardPreview, this);
+        channel.eventEmitter.on("special_player_left", this.onPlayerPlaceCardPreview, this);
         channel.eventEmitter.on("next_round", this.onNextRoundPacket, this);
 
         app.stage.on("mousemove", this.onCursorMove, this);

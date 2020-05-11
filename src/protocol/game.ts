@@ -95,3 +95,9 @@ export interface EndGameAck {
     type: "special_end_game",
     players: PlayerObject[],
 }
+
+export interface PlayerLeft {
+    type: "special_player_left",
+    player: string,
+    newHost?: string,
+}
