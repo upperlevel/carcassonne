@@ -1,5 +1,5 @@
 import {Phase} from "./phase";
-import {app, channel, me, stage, windowEventEmitter} from "../index";
+import {app, channel, stage, windowEventEmitter} from "../index";
 import * as PIXI from "pixi.js";
 import {
     EndGameAck,
@@ -58,7 +58,7 @@ export class GamePhase extends Phase {
     isScoreBoardVisible: boolean;
 
 
-    constructor(roomId: string, playersById: { [id: string]: PlayerObject }) {
+    constructor(roomId: string, me: PlayerObject, playersById: { [id: string]: PlayerObject }) {
         super("game");
         this.roomId = roomId;
 
@@ -537,7 +537,7 @@ export class GamePhase extends Phase {
                 "type": "end_game"
             }, true);
             channel.eventEmitter.once("special_end_game_ack", (packet: EndGameAck) => {
-                stage.setPhase(new RoomPhase(this.roomId, packet.players));
+                stage.setPhase(new RoomPhase(this.roomId, this.me.details, packet.players));
             });
         }, 10000);
     }

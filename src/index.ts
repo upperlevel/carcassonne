@@ -19,13 +19,7 @@ export let app: PIXI.Application;
 export let channel: Channel;
 
 // Main
-export let me: PlayerObject = undefined;
-
 export const stage = new Stage("main");
-
-export function setMe(details: PlayerObject) {
-    me = details;
-}
 
 async function loadResources() {
     return new Promise(

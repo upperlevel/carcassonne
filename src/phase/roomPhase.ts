@@ -1,5 +1,5 @@
 import {Phase} from "./phase";
-import {channel, me, stage} from "../index";
+import {channel, stage} from "../index";
 
 import RoomComponent from "../ui/room/room.vue";
 import {GamePhase} from "./gamePhase";
@@ -11,12 +11,14 @@ import Vue from "vue";
  */
 export class RoomPhase extends Phase {
     roomId: string;
+    me: PlayerObject;
     playersById: {[id: string]: PlayerObject} = {};
 
-    constructor(roomId: string, players: PlayerObject[]) {
+    constructor(roomId: string, me: PlayerObject, players: PlayerObject[]) {
         super("room");
 
         this.roomId = roomId;
+        this.me = me;
         players.forEach(player => this.addPlayer(player));
     }
 
@@ -29,6 +31,7 @@ export class RoomPhase extends Phase {
 
         if (newHost !== undefined) {
             this.playersById[newHost].isHost = true;
+            this.vue.$forceUpdate();
         }
     }
 
@@ -38,6 +41,7 @@ export class RoomPhase extends Phase {
             data() {
                 return {
                     roomId: self.roomId,
+                    me: self.me,
                     playersById: self.playersById
                 }
             }
@@ -87,6 +91,6 @@ export class RoomPhase extends Phase {
             requestId: packet.id
         } as EventRoomStartAck);
 
-        stage.setPhase(new GamePhase(this.roomId, this.playersById));
+        stage.setPhase(new GamePhase(this.roomId, this.me, this.playersById));
     }
 }

@@ -1,10 +1,12 @@
 import {Phase} from "./phase";
-import {channel, me, setMe, stage} from "../index"
+import {channel, stage} from "../index"
 
 import LoginComponent from "../ui/login/login.vue";
 import {RoomPhase} from "./roomPhase";
 
 export class LoginPhase extends Phase {
+    myId: string;
+
     form: any;
 
     constructor() {
@@ -35,8 +37,7 @@ export class LoginPhase extends Phase {
                 this.form.errorMessage = packet.result;
                 return;
             }
-            setMe(details);
-            me.id = packet.playerId;
+            this.myId = packet.playerId;
             this.onLogin();
         });
         channel.send({
@@ -48,10 +49,8 @@ export class LoginPhase extends Phase {
     onLogin() {
         if (window.location.hash) {
             const roomId = window.location.hash.substr(1);
-            me.isHost = false;
             this.joinRoom(roomId);
         } else {
-            me.isHost = true;
             this.createRoom();
         }
     }
@@ -87,6 +86,11 @@ export class LoginPhase extends Phase {
     }
 
     goToRoom(roomId: string, players: PlayerObject[]) {
-        stage.setPhase(new RoomPhase(roomId, players));
+        const me = players.find(player => player.id === this.myId);
+        if (!me) {
+            console.error("Your ID couldn't be found within the room's player list.");
+            return;
+        }
+        stage.setPhase(new RoomPhase(roomId, me, players));
     }
 }

@@ -33,7 +33,6 @@
 <script lang="ts">
     import Vue from "vue";
     import AvatarComponent from "../avatar.vue";
-    import {me} from "../../index";
 
     export default Vue.extend({
         components: {
@@ -45,7 +44,7 @@
             },
 
             getNameStyle(player: PlayerObject) {
-                const isMe = player.id === me.id;
+                const isMe = player.id === this.me.id;
                 return {
                     color: isMe ? 'yellow' : 'white',
                     textShadow: `
@@ -59,11 +58,11 @@
             },
 
             getName(player: PlayerObject) {
-                return player.username + (player.id === me.id ? " (You)" : "");
+                return player.username + (player.id === this.me.id ? " (You)" : "");
             },
 
             canStart() {
-                return me.isHost && this.playersCount() > 1;
+                return this.me.isHost && this.playersCount() > 1;
             },
 
             onStart() {
