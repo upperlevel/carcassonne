@@ -43,6 +43,8 @@ export class PawnPlaceManager {
     }
 
     undoPawnPick() {
+        if (this.pawn === undefined) return;
+
         this.phase.board.removeChild(this.pawn);
         this.pawn = undefined;
         this.phase.roundOf.pawns++; // This will place back the pawn on the HTML container.

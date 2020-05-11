@@ -193,6 +193,7 @@ export class GamePhase extends Phase {
 
     onNextRoundClick() {
         if (this.isMyRound() && this.canSkipRound()) {
+            this.pawnManager.undoPawnPick();
             channel.send({type: "next_round"} as NextRound);
             this.nextRound();
         }
