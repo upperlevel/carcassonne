@@ -20,17 +20,17 @@ export class LoginPhase extends Phase {
 
         this.form = this.vue.$refs.form;
 
-        this.form.$on('submit', this.requestLogin.bind(this));
+        this.uiEventEmitter.on('submit', this.requestLogin, this);
     }
 
     disable() {
         super.disable();
 
-        this.form.$off('submit', this.requestLogin.bind(this));
+        this.uiEventEmitter.off('submit', this.requestLogin, this);
     }
 
     requestLogin(details: PlayerObject) {
-        channel.readOnce("login_response", (packet: LoginResponse) => {
+        channel.eventEmitter.once("login_response", (packet: LoginResponse) => {
             if (packet.result !== "ok") {
                 this.form.errorMessage = packet.result;
                 return;
@@ -57,7 +57,7 @@ export class LoginPhase extends Phase {
     }
 
     joinRoom(roomId: string) {
-        channel.readOnce("room_join_response", (packet: RoomJoinResponse) => {
+        channel.eventEmitter.once("room_join_response", (packet: RoomJoinResponse) => {
             if (packet.result !== "ok") {
                 console.error("Error: " + packet.result);
                 return;
@@ -71,7 +71,7 @@ export class LoginPhase extends Phase {
     }
 
     createRoom() {
-        channel.readOnce("room_create_response", (packet: RoomCreateResponse) => {
+        channel.eventEmitter.once("room_create_response", (packet: RoomCreateResponse) => {
             if (packet.result !== "ok") {
                 console.error("Error: " + packet.result);
                 return;
@@ -87,7 +87,6 @@ export class LoginPhase extends Phase {
     }
 
     goToRoom(roomId: string, players: PlayerObject[]) {
-        console.log("Going to room: " + roomId);
         stage.setPhase(new RoomPhase(roomId, players));
     }
 }

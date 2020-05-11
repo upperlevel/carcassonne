@@ -46,7 +46,7 @@
         ],
         methods: {
             onPawnInteract(event: MouseEvent) {
-                this.$eventHub.$emit("pawn-interact", event);
+                this.eventEmitter.emit("pawn-interact", event);
             },
 
             canNextRound() {
@@ -54,7 +54,7 @@
             },
 
             onNextRound() {
-                this.$eventHub.$emit("next-round");
+                this.eventEmitter.emit("next-round");
             }
         },
         components: {

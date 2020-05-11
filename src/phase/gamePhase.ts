@@ -1,5 +1,5 @@
 import {Phase} from "./phase";
-import {app, channel, me, stage} from "../index";
+import {app, channel, me, stage, windowEventEmitter} from "../index";
 import * as PIXI from "pixi.js";
 import {EndGameAck, NextRound, PlayerDraw, PlayerPlaceCard, PlayerPlaceCardPreview, RandomSeed} from "../protocol/game";
 import {Bag} from "../game/bag";
@@ -41,7 +41,7 @@ export class GamePhase extends Phase {
     drawnCard: CardTile;
     drawnCardPreview: CardPreviewManager;
 
-    placedCard: {x: number, y: number, tile: CardTile};
+    placedCard: { x: number, y: number, tile: CardTile };
     pawnManager: PawnPlaceManager;
 
     lastMouseDownTime?: number;
@@ -49,7 +49,8 @@ export class GamePhase extends Phase {
 
     isScoreBoardVisible: boolean;
 
-    constructor(roomId: string, playersById: {[id: string]: PlayerObject}) {
+
+    constructor(roomId: string, playersById: { [id: string]: PlayerObject }) {
         super("game");
         this.roomId = roomId;
 
@@ -66,11 +67,11 @@ export class GamePhase extends Phase {
         // The players are sorted by id to make sure all clients has the same list.
         this.orderedPlayers = Array.from(this.playersById.values())
             .sort((a, b) => {
-                if (a.id < b.id) return -1;
-                if (a.id > b.id) return  1;
-                return 0;
-            }
-        );
+                    if (a.id < b.id) return -1;
+                    if (a.id > b.id) return 1;
+                    return 0;
+                }
+            );
 
         this.pawnManager = new PawnPlaceManager(this);
 
@@ -108,7 +109,7 @@ export class GamePhase extends Phase {
     }
 
     setupBag() {
-        this.bag = Bag.fromModality(this,"classical");
+        this.bag = Bag.fromModality(this, "classical");
 
         return this.bag.draw(); // The first card of the un-shuffled bag is the root.
     }
@@ -130,8 +131,7 @@ export class GamePhase extends Phase {
         this.onStart();
     }
 
-    onRandomSeed(event: CustomEvent) {
-        const packet = event.detail as RandomSeed;
+    onRandomSeed(packet: RandomSeed) {
         if (!this.seed) {
             this.setSeed(packet.seed);
             return;
@@ -174,7 +174,7 @@ export class GamePhase extends Phase {
 
     onNextRoundClick() {
         if (this.isMyRound() && this.canSkipRound()) {
-            channel.send({ type: "next_round" } as NextRound);
+            channel.send({type: "next_round"} as NextRound);
             this.nextRound();
         }
     }
@@ -249,8 +249,7 @@ export class GamePhase extends Phase {
     }
 
     /** Function called when another player (that is not me) draws a card. */
-    onPlayerDraw(event: CustomEvent) {
-        //const packet = event.detail as PlayerDraw;
+    onPlayerDraw(packet: PlayerDraw) {
         this.onDraw();
     }
 
@@ -321,7 +320,7 @@ export class GamePhase extends Phase {
 
         let diffX = Math.abs(event.data.global.x - this.lastMouseDownPos.x);
         let diffY = Math.abs(event.data.global.y - this.lastMouseDownPos.y);
-        let diffPos = Math.sqrt(diffX*diffX + diffY*diffY);
+        let diffPos = Math.sqrt(diffX * diffX + diffY * diffY);
 
         let isClick = diffPos < 5 && timeDiff < 500;
         if (isClick) this.onCursorClick(event);
@@ -376,7 +375,7 @@ export class GamePhase extends Phase {
         this.roundState = RoundState.PawnPick;
         this.board.removeChild(this.drawnCardSprite);
 
-        this.placedCard = {x: x,  y: y, tile: this.drawnCard};
+        this.placedCard = {x: x, y: y, tile: this.drawnCard};
 
         this.drawnCard = undefined;
         this.drawnCardSprite = undefined;
@@ -404,8 +403,7 @@ export class GamePhase extends Phase {
     }
 
     /** Function called when another player (that is not me) places a card.*/
-    onPlayerPlaceCard(event: CustomEvent) {
-        const packet = event.detail as PlayerPlaceCard;
+    onPlayerPlaceCard(packet: PlayerPlaceCard) {
         if (!this.playersById.get(packet.sender).isMyRound()) {
             console.error("Wrong message sender");
             return;
@@ -416,8 +414,7 @@ export class GamePhase extends Phase {
     }
 
     /** Function called when another player (that is not me) is moving the card to place.*/
-    onPlayerPlaceCardPreview(event: CustomEvent) {
-        const packet = event.detail as PlayerPlaceCardPreview;
+    onPlayerPlaceCardPreview(packet: PlayerPlaceCardPreview) {
         if (!this.playersById.get(packet.sender).isMyRound()) {
             console.error("Wrong message sender");
             return;
@@ -426,8 +423,7 @@ export class GamePhase extends Phase {
         this.updateDrawnCard(packet.x, packet.y);
     }
 
-    onNextRoundPacket(event: CustomEvent) {
-        const packet = event.detail as NextRound;
+    onNextRoundPacket(packet: NextRound) {
         let player = this.playersById.get(packet.sender);
         if (!player.isMyRound()) {
             console.error("Wrong message sender");
@@ -522,7 +518,7 @@ export class GamePhase extends Phase {
             channel.send({
                 "type": "end_game"
             }, true);
-            channel.readOnce("special_end_game_ack", (packet: EndGameAck) => {
+            channel.eventEmitter.once("special_end_game_ack", (packet: EndGameAck) => {
                 stage.setPhase(new RoomPhase(this.roomId, packet.players));
             });
         }, 10000);
@@ -557,53 +553,51 @@ export class GamePhase extends Phase {
         this.scoreVisualizer.enable();
         this.pawnManager.enable();
 
-        channel.eventManager.addEventListener("random_seed",  this.onRandomSeed.bind(this));
-        channel.eventManager.addEventListener("player_draw",  this.onPlayerDraw.bind(this));
-        channel.eventManager.addEventListener("player_place_card", this.onPlayerPlaceCard.bind(this));
-        channel.eventManager.addEventListener("player_place_card_preview", this.onPlayerPlaceCardPreview.bind(this));
-        channel.eventManager.addEventListener("next_round", this.onNextRoundPacket.bind(this));
+        channel.eventEmitter.on("random_seed", this.onRandomSeed, this);
+        channel.eventEmitter.on("player_draw", this.onPlayerDraw, this);
+        channel.eventEmitter.on("player_place_card", this.onPlayerPlaceCard, this);
+        channel.eventEmitter.on("player_place_card_preview", this.onPlayerPlaceCardPreview, this);
+        channel.eventEmitter.on("next_round", this.onNextRoundPacket, this);
 
-        app.stage.on("mousemove", this.onCursorMove.bind(this));
-        app.stage.on("mousedown", this.onCursorDown.bind(this));
-        app.stage.on("mouseup", this.onCursorUp.bind(this));
-        app.stage.on("rightdown", this.onCursorRightClick.bind(this));
+        app.stage.on("mousemove", this.onCursorMove, this);
+        app.stage.on("mousedown", this.onCursorDown, this);
+        app.stage.on("mouseup", this.onCursorUp, this);
+        app.stage.on("rightdown", this.onCursorRightClick, this);
 
-        window.addEventListener("wheel", this.onMouseWheel.bind(this));
-        window.addEventListener("resize", this.onResize.bind(this));
+        windowEventEmitter.on("wheel", this.onMouseWheel, this);
+        windowEventEmitter.on("resize", this.onResize, this);
+        windowEventEmitter.on("keydown", this.onScoreBoardKeyDown, this);
+        windowEventEmitter.on("keyup", this.onScoreBoardKeyUp, this);
 
-        this.vEventHandler.$on("next-round", this.onNextRoundClick.bind(this));
-
-        window.addEventListener("keydown", this.onScoreBoardKeyDown.bind(this));
-        window.addEventListener("keyup", this.onScoreBoardKeyUp.bind(this));
+        this.uiEventEmitter.on("next-round", this.onNextRoundClick, this);
     }
 
     disable() {
         super.disable();
 
-        app.stage.off("mousemove", this.onCursorMove.bind(this));
-        app.stage.off("mousedown", this.onCursorDown.bind(this));
-        app.stage.off("mouseup", this.onCursorUp.bind(this));
-        app.stage.off("rightdown", this.onCursorRightClick.bind(this));
+        app.stage.off("mousemove", this.onCursorMove, this);
+        app.stage.off("mousedown", this.onCursorDown, this);
+        app.stage.off("mouseup", this.onCursorUp, this);
+        app.stage.off("rightdown", this.onCursorRightClick, this);
 
         this.pawnManager.disable();
         this.scoreVisualizer.disable();
         this.bag.unlisten();
 
-        channel.eventManager.removeEventListener("random_seed",  this.onRandomSeed.bind(this));
-        channel.eventManager.removeEventListener("player_draw",  this.onPlayerDraw.bind(this));
-        channel.eventManager.removeEventListener("player_place_card", this.onPlayerPlaceCard.bind(this));
-        channel.eventManager.removeEventListener("player_place_card_preview", this.onPlayerPlaceCardPreview.bind(this));
-        channel.eventManager.removeEventListener("next_round", this.onNextRoundPacket.bind(this));
+        channel.eventEmitter.off("random_seed", this.onRandomSeed, this);
+        channel.eventEmitter.off("player_draw", this.onPlayerDraw, this);
+        channel.eventEmitter.off("player_place_card", this.onPlayerPlaceCard, this);
+        channel.eventEmitter.off("player_place_card_preview", this.onPlayerPlaceCardPreview, this);
+        channel.eventEmitter.off("next_round", this.onNextRoundPacket, this);
 
-        window.removeEventListener("wheel", this.onMouseWheel.bind(this));
-        window.removeEventListener("resize", this.onResize.bind(this));
+        windowEventEmitter.off("wheel", this.onMouseWheel, this);
+        windowEventEmitter.off("resize", this.onResize, this);
+        windowEventEmitter.off("keydown", this.onScoreBoardKeyDown, this);
+        windowEventEmitter.off("keyup", this.onScoreBoardKeyUp, this);
 
-        this.vEventHandler.$off("next-round", this.onNextRoundClick.bind(this));
+        this.uiEventEmitter.off("next-round", this.onNextRoundClick, this);
 
         document.body.removeChild(app.view);
-
-        window.removeEventListener("keydown", this.onScoreBoardKeyDown.bind(this));
-        window.removeEventListener("keyup", this.onScoreBoardKeyUp.bind(this));
     }
 }
 

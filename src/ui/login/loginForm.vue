@@ -39,7 +39,7 @@
                 if (!this.canSubmit())
                     return;
                 const editor = this.$refs.editor;
-                this.$emit("submit", {
+                this.eventEmitter.emit("submit", {
                     username: this.name,
                     color: editor.color,
                     avatar: editor.avatarId,

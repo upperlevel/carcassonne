@@ -56,15 +56,15 @@
             },
 
             onOver() {
-                this.$eventHub.$emit("bag-over", this);
+                this.eventEmitter.emit("bag-over", this);
             },
 
             onClick() {
-                this.$eventHub.$emit("bag-click", this);
+                this.eventEmitter.emit("bag-click", this);
             },
 
             onLeave() {
-                this.$eventHub.$emit("bag-leave", this);
+                this.eventEmitter.emit("bag-leave", this);
             }
         },
         components: {

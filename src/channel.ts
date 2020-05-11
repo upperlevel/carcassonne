@@ -1,10 +1,13 @@
 
+import * as EventEmitter from "eventemitter3"
+
 const DEBUG_PRINT_PACKETS = false;
 
 export class Channel {
     socket: WebSocket;
     packetId: number = 0;
-    eventManager: EventTarget = new EventTarget();
+
+    eventEmitter: EventEmitter = new EventEmitter();
 
     onMessage(event: MessageEvent) {
         let raw = event.data;
@@ -24,8 +27,8 @@ export class Channel {
         if (DEBUG_PRINT_PACKETS) {
             console.log("Read", packet);
         }
-        this.eventManager.dispatchEvent(new CustomEvent("any", {detail: packet}));
-        this.eventManager.dispatchEvent(new CustomEvent(packetType, {detail: packet}));
+        this.eventEmitter.emit("any", packet);
+        this.eventEmitter.emit(packetType, packet);
     }
 
     constructor(socket: WebSocket) {
@@ -49,14 +52,6 @@ export class Channel {
 
         this.socket.send(raw);
         this.packetId++;
-    }
-
-    readOnce(type: string | "any", callback: (packet: any) => void) {
-        const self = this;
-        self.eventManager.addEventListener(type, function (event: CustomEvent)  {
-            callback(event.detail);
-            self.eventManager.removeEventListener(type, this);
-        });
     }
 }
 

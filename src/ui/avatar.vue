@@ -12,6 +12,7 @@
 <script lang="ts">
     import Vue from "vue";
     import * as PIXI from "pixi.js";
+    import {windowEventEmitter} from "../index";
 
     export default Vue.extend({
         props: {
@@ -78,13 +79,13 @@
             },
         },
         mounted() {
-            window.addEventListener("resize", this.resizeFrame);
+            windowEventEmitter.on("resize", this.resizeFrame, this);
             this.$nextTick(() => {
                 this.resizeFrame();
             });
         },
         beforeDestroy() {
-            window.removeEventListener("resize", this.resizeFrame);
+            windowEventEmitter.off("resize", this.resizeFrame, this);
         }
     });
 </script>

@@ -50,7 +50,7 @@
             },
 
             onClick() {
-                this.$eventHub.$emit("pawn-pick", this);
+                this.eventEmitter.emit("pawn-pick", this); // TODO Never listened
             }
         },
         components: {

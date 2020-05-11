@@ -43,29 +43,30 @@ export class RoomPhase extends Phase {
     enable() {
         super.enable();
 
-        channel.eventManager.addEventListener("event_player_joined", this.onPlayerJoin.bind(this));
-        channel.eventManager.addEventListener("event_player_left", this.onPlayerLeft.bind(this));
-        channel.eventManager.addEventListener("event_room_start", this.onServerStart.bind(this));
+        channel.eventEmitter.on("event_player_joined", this.onPlayerJoin, this);
+        channel.eventEmitter.on("event_player_left", this.onPlayerLeft, this);
+        channel.eventEmitter.on("event_room_start", this.onServerStart, this);
 
-        this.vue.$on("start", this.onStart.bind(this));
+        this.uiEventEmitter.on("start", this.onStart, this);
     }
 
     disable() {
         super.disable();
 
-        channel.eventManager.removeEventListener("event_player_joined", this.onPlayerJoin.bind(this));
-        channel.eventManager.removeEventListener("event_player_left", this.onPlayerLeft.bind(this));
+        channel.eventEmitter.off("event_player_joined", this.onPlayerJoin, this);
+        channel.eventEmitter.off("event_player_left", this.onPlayerLeft, this);
+        channel.eventEmitter.off("event_room_start", this.onServerStart, this);
 
-        this.vue.$off("start", this.onStart.bind(this));
+        this.uiEventEmitter.off("start", this.onStart, this);
     }
 
-    onPlayerJoin(event: CustomEvent) {
-        const player = (event.detail as EventPlayerJoin).player;
+    onPlayerJoin(packet: EventPlayerJoin) {
+        const player = packet.player;
         this.addPlayer(player);
     }
 
-    onPlayerLeft(event: CustomEvent) {
-        const playerId = (event.detail as EventPlayerLeft).player;
+    onPlayerLeft(packet: EventPlayerLeft) {
+        const playerId = packet.player;
         this.removePlayer(playerId);
     }
 
@@ -76,13 +77,12 @@ export class RoomPhase extends Phase {
         } as RoomStart);
     }
 
-    onServerStart(event: CustomEvent) {
+    onServerStart(packet: EventRoomStart) {
         channel.send({
             type: "event_room_start_ack",
-            requestId: (event.detail as EventRoomStart).id
+            requestId: packet.id
         } as EventRoomStartAck);
 
-        console.log("The game can start!");
         stage.setPhase(new GamePhase(this.roomId, this.playersById));
     }
 }

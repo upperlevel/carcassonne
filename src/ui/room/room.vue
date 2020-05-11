@@ -25,7 +25,7 @@
             </div>
         </div>
         <div style="text-align: center">
-            <button :disabled="!canStart()" v-on:click="$emit('start')">Start</button>
+            <button :disabled="!canStart()" v-on:click="onStart">Start</button>
         </div>
     </div>
 </template>
@@ -64,6 +64,10 @@
 
             canStart() {
                 return me.isHost && this.playersCount() > 1;
+            },
+
+            onStart() {
+                this.eventEmitter.emit('start');
             }
         }
     });

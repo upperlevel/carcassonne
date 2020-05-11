@@ -1,17 +1,18 @@
 import Vue from "vue";
+import * as EventEmitter from "eventemitter3";
 
 export class Phase {
     name: string;
 
     vue: any;
-    vEventHandler: any;
+    uiEventEmitter: any;
 
     constructor(name: string) {
         this.name = name;
 
         // Create Vue instance that is responsible for handling the UI events of the current phase.
         // https://medium.com/vuejobs/create-a-global-event-bus-in-vue-js-838a5d9ab03a
-        this.vEventHandler = new Vue();
+        this.uiEventEmitter = new EventEmitter();
     }
 
     log(message: string) {
@@ -25,7 +26,7 @@ export class Phase {
     enable() {
         this.log("Enabling");
 
-        (Vue.prototype as any).$eventHub = this.vEventHandler;
+        (Vue.prototype as any).eventEmitter = this.uiEventEmitter;
 
         this.vue = this.ui();
         if (this.vue) {

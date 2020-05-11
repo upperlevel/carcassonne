@@ -93,9 +93,7 @@ export class PawnPlaceManager {
         this.pawn = pawn;
     }
 
-    private onPlacePacket(event: CustomEvent) {
-        let packet = event.detail as PlayerPawnPlace;
-
+    private onPlacePacket(packet: PlayerPawnPlace) {
         let player = this.phase.playersById.get(packet.sender);
         if (!player.isMyRound()) {
             console.error("Wrong message sender");
@@ -128,15 +126,19 @@ export class PawnPlaceManager {
     }
 
     enable() {
-        channel.eventManager.addEventListener("player_pawn_place",  this.onPlacePacket.bind(this));
-        this.phase.vEventHandler.$on("pawn-interact", this.onPawnInteract.bind(this));
         this.previewClient.enable();
+
+        channel.eventEmitter.on("player_pawn_place",  this.onPlacePacket, this);
+
+        this.phase.uiEventEmitter.on("pawn-interact", this.onPawnInteract, this);
     }
 
     disable () {
         this.previewClient.disable();
-        this.phase.vEventHandler.$off("pawn-interact", this.onPawnInteract.bind(this));
-        channel.eventManager.removeEventListener("player_pawn_place",  this.onPlacePacket.bind(this));
+
+        channel.eventEmitter.off("player_pawn_place",  this.onPlacePacket, this);
+
+        this.phase.uiEventEmitter.off("pawn-interact", this.onPawnInteract, this);
     }
 }
 
@@ -211,9 +213,7 @@ class PawnPreviewClient {
         app.ticker.remove(this.onTick, this);
     }
 
-    private onPreviewPacket(event: CustomEvent) {
-        const packet = event.detail as PlayerPawnPreview;
-
+    private onPreviewPacket(packet: PlayerPawnPreview) {
         let player = this.phase.playersById.get(packet.sender);
         if (!player.isMyRound()) {
             console.error("Wrong sender");
@@ -234,9 +234,7 @@ class PawnPreviewClient {
         this.nextY = packet.y;
     }
 
-    private onInteractPacket(event: CustomEvent) {
-        const packet = event.detail as PlayerPawnInteract;
-
+    private onInteractPacket(packet: PlayerPawnInteract) {
         let player = this.phase.playersById.get(packet.sender);
         if (!player.isMyRound()) {
             console.error("Wrong sender");
@@ -277,12 +275,12 @@ class PawnPreviewClient {
 
 
     enable() {
-        channel.eventManager.addEventListener("player_pawn_preview",  this.onPreviewPacket.bind(this));
-        channel.eventManager.addEventListener("player_pawn_interact",  this.onInteractPacket.bind(this));
+        channel.eventEmitter.on("player_pawn_preview",  this.onPreviewPacket, this);
+        channel.eventEmitter.on("player_pawn_interact",  this.onInteractPacket, this);
     }
 
     disable () {
-        channel.eventManager.removeEventListener("player_pawn_preview",  this.onPreviewPacket.bind(this));
-        channel.eventManager.removeEventListener("player_pawn_interact",  this.onInteractPacket.bind(this));
+        channel.eventEmitter.off("player_pawn_preview",  this.onPreviewPacket, this);
+        channel.eventEmitter.off("player_pawn_interact",  this.onInteractPacket, this);
     }
 }

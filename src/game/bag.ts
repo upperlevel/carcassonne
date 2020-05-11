@@ -1,11 +1,11 @@
 import * as PIXI from "pixi.js";
-import Vue from "vue";
+import * as EventEmitter from "eventemitter3";
 import {Card, CardFlag} from "./card";
 import {GamePhase, RoundState} from "../phase/gamePhase";
 
 export class Bag {
     gamePhase: GamePhase;
-    vPool: Vue;
+    uiEventEmitter: EventEmitter;
 
     cards: Array<Card>;
 
@@ -16,7 +16,7 @@ export class Bag {
         this.cards = cards;
 
         this.gamePhase = gamePhase;
-        this.vPool = this.gamePhase.vEventHandler;
+        this.uiEventEmitter = this.gamePhase.uiEventEmitter;
 
         const atlas = PIXI.Loader.shared.resources["bag"].spritesheet;
         this.bagOpenedFrame = atlas.textures["bag_opened.png"].orig;
@@ -46,15 +46,15 @@ export class Bag {
     }
 
     listen() {
-        this.vPool.$on("bag-over", this.onBagOver.bind(this));
-        this.vPool.$on("bag-click", this.onBagClick.bind(this));
-        this.vPool.$on("bag-leave", this.onBagLeave.bind(this));
+        this.uiEventEmitter.on("bag-over", this.onBagOver, this);
+        this.uiEventEmitter.on("bag-click", this.onBagClick, this);
+        this.uiEventEmitter.on("bag-leave", this.onBagLeave, this);
     }
 
     unlisten() {
-        this.vPool.$off("bag-over", this.onBagOver.bind(this));
-        this.vPool.$off("bag-click", this.onBagClick.bind(this));
-        this.vPool.$off("bag-leave", this.onBagLeave.bind(this));
+        this.uiEventEmitter.off("bag-over", this.onBagOver, this);
+        this.uiEventEmitter.off("bag-click", this.onBagClick, this);
+        this.uiEventEmitter.off("bag-leave", this.onBagLeave, this);
     }
 
 

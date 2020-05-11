@@ -6,6 +6,13 @@ import * as PIXI from "pixi.js";
 import {LoginPhase} from "./phase/loginPhase";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+import {EventEmitterWrapper} from "./util/eventEmitterWrapper";
+
+export const windowEventEmitter = new EventEmitterWrapper((event, emitter) => {
+    window.addEventListener(event, data => {
+        emitter.emit(event, data);
+    });
+});
 
 // PIXI
 export let app: PIXI.Application;
