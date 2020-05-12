@@ -1,5 +1,7 @@
 const path = require('path');
+
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const DotEnv = require('dotenv-webpack');
 
 const config = {
     entry: './src/index.ts',
@@ -44,6 +46,10 @@ const config = {
     },
     plugins: [
         new VueLoaderPlugin(),
+        new DotEnv({
+            path: './.env',
+            safe: true
+        }),
     ]
 };
 

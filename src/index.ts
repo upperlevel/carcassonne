@@ -38,7 +38,7 @@ async function loadResources() {
 
 async function wsConnect(address: string, port: number, path: string): Promise<WebSocket> {
     return new Promise((resolve, reject) => {
-        const socket = new WebSocket("ws://" + address + ":" + port + "/" + path);
+        const socket = new WebSocket("ws://" + address + ":" + port + path);
 
         socket.onopen = () => {
             console.log("Connection opened");
@@ -63,9 +63,12 @@ async function wsConnect(address: string, port: number, path: string): Promise<W
     stage.setPhase(new LoadingPhase());
 
     await loadResources();
-    console.log("Resources:", PIXI.Loader.shared.resources);
 
-    const socket = await wsConnect("localhost", 8080, "api/matchmaking");
+    const socket = await wsConnect(
+        process.env.WS_HOST,
+        process.env.WS_PORT,
+        process.env.WS_PATH,
+    );
     channel = new Channel(socket);
 
     stage.setPhase(new LoginPhase());

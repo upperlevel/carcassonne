@@ -1,8 +1,6 @@
 
 import * as EventEmitter from "eventemitter3"
 
-const DEBUG_PRINT_PACKETS = false;
-
 export class Channel {
     socket: WebSocket;
     packetId: number = 0;
@@ -24,7 +22,7 @@ export class Channel {
             packetType = "special_" + packetType;
         }
 
-        if (DEBUG_PRINT_PACKETS) {
+        if (process.env.VERBOSE_CHANNEL) {
             console.log("Read", packet);
         }
         this.eventEmitter.emit("any", packet);
@@ -41,7 +39,7 @@ export class Channel {
             id: this.packetId,
             ...packet
         };
-        if (DEBUG_PRINT_PACKETS) {
+        if (process.env.VERBOSE_CHANNEL) {
             console.log("Sent", wrapped);
         }
 
