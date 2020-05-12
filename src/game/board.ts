@@ -7,6 +7,7 @@ import InteractionEvent = PIXI.interaction.InteractionEvent;
 import {Card} from "./card";
 import {GamePhase} from "../phase/gamePhase";
 import {TileDB, TilePlacement} from "./tileDB";
+import {AnimationData} from "./particles/pathAnimationScheduler";
 
 export class Board extends PIXI.Container {
     static TILE_SIZE = 120;
@@ -172,12 +173,12 @@ export class Board extends PIXI.Container {
         tile.monasteryData.completedTiles = score;
     }
 
-    monasteryPlaceNeighbour(x: number, y: number) {
+    private monasteryPlaceNeighbour(x: number, y: number) {
         let tile = this.get(x, y);
         if (tile === undefined || tile.monasteryData === undefined) return;
         let data = tile.monasteryData;
 
-        if (++data.completedTiles >= 9 && data.owner !== undefined) {
+        if (++data.completedTiles >= 9 && data.pawn !== undefined) {
             // Create animation
             let tiles = new Array<[number, number]>();
             for (let dx of [-1, 0, 1]) {
@@ -186,12 +187,10 @@ export class Board extends PIXI.Container {
                 }
             }
 
-            this.phase.pathAnimationScheduler.addAnimation(tiles);
-
-            this.phase.returnPawn(data.owner);
-            this.phase.awardScore(data.owner, 9);
-            data.pawn.parent.removeChild(data.pawn);
-            data.owner = undefined;
+            data.pawn.addScore(9);
+            let animData = new AnimationData(tiles, [data.pawn]);
+            this.phase.pathAnimationScheduler.addAnimation(animData);
+            data.pawn = undefined;
         }
     }
 
@@ -267,13 +266,26 @@ export class Board extends PIXI.Container {
     onGameEnd() {
         this.cardConnector.onGameEnd();
 
-        this.tileDb.getAllMonasteries().forEach(x => {
-            let tile = this.get(x.x, x.y);
+        this.tileDb.getAllMonasteries().forEach(b => {
+            let tile = this.get(b.x, b.y);
             let data = tile.monasteryData!!;
-            if (data.owner !== undefined && data.completedTiles < 9) {
-                this.phase.awardScore(data.owner, data.completedTiles);
-                this.phase.returnPawn(data.owner);
-                data.pawn.parent.removeChild(data.pawn);
+            if (data.pawn !== undefined && data.completedTiles < 9) {
+                // Create animation
+                let tiles = new Array<[number, number]>();
+
+                for (let dx of [-1, 0, 1]) {
+                    for (let dy of [-1, 0, 1]) {
+                        let x = b.x + dx;
+                        let y = b.y + dy;
+                        if (this.get(x, y) !== undefined) {
+                            tiles.push([x, y]);
+                        }
+                    }
+                }
+                data.pawn.addScore(data.completedTiles);
+                let animData = new AnimationData(tiles, [data.pawn]);
+                this.phase.pathAnimationScheduler.addAnimation(animData);
+                data.pawn = undefined;
             }
         });
     }

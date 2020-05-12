@@ -23,7 +23,7 @@ import {GameBar} from "../game/gameBar";
 import {PathAnimationScheduler} from "../game/particles/pathAnimationScheduler";
 import {CardPlaceAssistant} from "../game/particles/cardPlaceAssistant";
 import {RoomPhase} from "./roomPhase";
-import {PawnPlaceManager} from "../game/particles/pawnPlaceManager";
+import {PawnPlaceManager} from "../game/pawns/pawnPlaceManager";
 import {CardPreviewManager} from "../game/particles/cardPreviewManager";
 
 export class GamePhase extends Phase {
@@ -464,10 +464,6 @@ export class GamePhase extends Phase {
     // After-place
     // ================================================================================================================================
 
-    returnPawn(player: string, count?: number) {
-        this.playersById.get(player).pawns += count || 1;
-    }
-
     /**
      * Make the board's center and the window's center overlap.
      * This way the initial board position is centered to the root card.
@@ -484,9 +480,9 @@ export class GamePhase extends Phase {
         this.board.position.set(screenMidPointWidth - boardSize / 2, screenMidPointHeight - boardSize / 2);
     }
 
-    awardScore(playerId: string, score: number) {
+    awardScore(playerId: string, score: number, animDuration: number) {
         this.playersById.get(playerId).score += score;
-        this.scoreVisualizer.animateScore(playerId, score, app.stage);
+        this.scoreVisualizer.animateScore(playerId, score, app.stage, animDuration);
     }
 
     // ================================================================================================================================
@@ -535,23 +531,30 @@ export class GamePhase extends Phase {
         this.board.cardConnector.onGameEnd();
         this.board.onGameEnd();
 
-        this.setScoreBoardVisible(true);
+        let endFunc = () => {
+            this.setScoreBoardVisible(true);
 
-        this.lobbyCountdown = 20;
-        let handle = setInterval(() => {
-            if (--this.lobbyCountdown <= 0) {
-                clearInterval(handle);
+            this.lobbyCountdown = 20;
+            let handle = setInterval(() => {
+                if (--this.lobbyCountdown <= 0) {
+                    clearInterval(handle);
 
-                channel.send({
-                    "type": "end_game"
-                }, true);
-                channel.eventEmitter.once("special_end_game_ack", (packet: EndGameAck) => {
-                    stage.setPhase(new RoomPhase(this.roomId, this.me.details, packet.players));
-                });
-            }
-            this.vue.$forceUpdate();
+                    channel.send({
+                        "type": "end_game"
+                    }, true);
+                    channel.eventEmitter.once("special_end_game_ack", (packet: EndGameAck) => {
+                        stage.setPhase(new RoomPhase(this.roomId, this.me.details, packet.players));
+                    });
+                }
+                this.vue.$forceUpdate();
 
-        }, 1000);
+            }, 1000);
+        }
+        if (this.pathAnimationScheduler.isRunning) {
+            this.pathAnimationScheduler.onQueueEmpty = endFunc;
+        } else {
+            endFunc();
+        }
     }
 
     generateSeed() {

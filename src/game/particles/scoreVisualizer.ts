@@ -34,7 +34,7 @@ export class ScoreVisualizer {
         this.playerBar = undefined;
     }
 
-    animateScore(playerId: string, score: number, target: PIXI.Container) {
+    animateScore(playerId: string, score: number, target: PIXI.Container, animDuration: number) {
         let playerIndex = this.playerIdToIndex(playerId);
 
         let oldParticle = this.animations.get(playerIndex);
@@ -43,13 +43,13 @@ export class ScoreVisualizer {
             return;
         }
 
-        let particle = this.createParticle(playerIndex, score);
+        let particle = this.createParticle(playerIndex, score, animDuration);
         this.animations.set(playerIndex, particle);
         particle.display.zIndex = 50;
         target.addChild(particle.display);
     }
 
-    private createParticle(playerIndex: number, score: number): ScoreParticle {
+    private createParticle(playerIndex: number, score: number, animDuration: number): ScoreParticle {
         let endY;
         let posX;
 
@@ -62,7 +62,7 @@ export class ScoreVisualizer {
             posX = app.view.width / 2;
         }
 
-        return new ScoreParticle(this, playerIndex, posX, endY, score);
+        return new ScoreParticle(this, playerIndex, posX, endY, score, animDuration);
     }
 }
 
@@ -76,11 +76,13 @@ class ScoreParticle {
     x: number;
     endY: number;
 
+    lifetime: number;
+
     static LIFETIME = 40;
     static TRAVEL_H = 20;
 
 
-    constructor(parent: ScoreVisualizer, pid: number, x: number, endY: number, score: number) {
+    constructor(parent: ScoreVisualizer, pid: number, x: number, endY: number, score: number, animDuration: number) {
         this.parent = parent;
         this.playerIndex = pid;
 
@@ -88,6 +90,8 @@ class ScoreParticle {
         this.x = x;
         this.endY = endY;
         this.life = 0;
+
+        this.lifetime = ScoreParticle.LIFETIME * animDuration;
 
         // Text setup
         let text = new PIXI.Text("+" + score.toString(), {
@@ -111,13 +115,13 @@ class ScoreParticle {
     }
 
     private update() {
-        if (this.life > ScoreParticle.LIFETIME) {
+        if (this.life > this.lifetime) {
             app.ticker.remove(this.onTick, this);
             this.display.parent.removeChild(this.display);
             this.parent.animations.delete(this.playerIndex);
             return;
         }
-        let perc = this.life / ScoreParticle.LIFETIME;
+        let perc = this.life / this.lifetime;
 
         this.display.position.set(this.x, this.endY + (1 - perc) * ScoreParticle.TRAVEL_H);
         this.display.alpha = 1 - perc;

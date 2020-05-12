@@ -1,7 +1,8 @@
 import {Board} from "./board";
 import {Side, SideUtil} from "./side";
 import {SideTypeUtil} from "./card";
-import {PawnOwner} from "./pawnPlacer";
+import {AnimationData} from "./particles/pathAnimationScheduler";
+import {Pawn} from "./pawns/pawn";
 
 export class CardConnector {
     readonly board: Board;
@@ -147,22 +148,21 @@ export class CardConnector {
         let tiles = new Array<[number, number]>();
         let score = this.assignScore(x, y, side, gameEnd, tiles);
 
-        pathData.followers.forEach((count, player) => {
-            this.board.phase.returnPawn(player, count);
-        });
-        pathData.pawns.forEach(x => {
-            x.parent.removeChild(x);
-        });
+        let winners = pathData.getScoreWinners();
 
-        if (pathData.pawns.length > 0) {
-            this.board.phase.pathAnimationScheduler.addAnimation(tiles);
+        // Give scores to pawns, we need to be sure to give the score only one time to each player
+        let toScore = new Set(winners);
+        for (let pawn of pathData.pawns) {
+            if (toScore.has(pawn.owner)) {
+                pawn.addScore(score);
+                toScore.delete(pawn.owner);
+            }
         }
 
-        // Uncommment to test +score animations (this will give the score to the first player).
-        //this.board.phase.awardScore(this.board.phase.orderedPlayers[0].id, score);
-        pathData.getScoreWinners().forEach((x) => {
-            this.board.phase.awardScore(x, score);
-        });
+        if (pathData.pawns.length > 0) {
+            let animData = new AnimationData(tiles, pathData.pawns);
+            this.board.phase.pathAnimationScheduler.addAnimation(animData);
+        }
         //console.log("ADD SCORE " + score.toString());
 
         this.pathData.delete(path);
@@ -229,11 +229,11 @@ export class CardConnector {
         })
     }
 
-    ownPath(x: number, y: number, player: string, chosenSide: Side): boolean {
+    ownPath(x: number, y: number, chosenSide: Side, pawn: Pawn): boolean {
         if (!this.canOwnPath(x, y, chosenSide)) return false;
 
         let path = this.board.get(x, y).paths[chosenSide];
-        this.pathData.get(path).addFollower(player);
+        this.pathData.get(path).addPawn(pawn);
         return true;
     }
 
@@ -258,17 +258,17 @@ class TileSide {
     }
 }
 
-class PathData implements PawnOwner {
+class PathData {
     entryPoint: TileSide;
     followers = new Map<string, number>();
     openEndCount: number = 0;
-    pawns = new Array<PIXI.Container>();
+    pawns = new Array<Pawn>();
 
     constructor(entryPoint: TileSide) {
         this.entryPoint = entryPoint;
     }
 
-    addFollower(playerId: string, times?: number) {
+    private addFollower(playerId: string, times?: number) {
         let x = this.followers.get(playerId) || 0;
         this.followers.set(playerId, x + (times || 1));
     }
@@ -297,7 +297,8 @@ class PathData implements PawnOwner {
         return res;
     }
 
-    addPawn(g: PIXI.Container): void {
+    addPawn(g: Pawn): void {
+        this.addFollower(g.owner, 1);
         this.pawns.push(g);
     }
 }

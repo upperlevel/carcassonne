@@ -6,14 +6,16 @@ import {app} from "../../index";
 export class PathCloseParticle extends PIXI.Container {
     private board: Board;
     private life: number;
+    private lifetime: number;
 
     onEnd: () => void = () => {};
 
     static LIFETIME = 40;
 
-    constructor(board: Board, tiles: Array<[number, number]>) {
+    constructor(board: Board, tiles: Array<[number, number]>, duration: number) {
         super();
         this.life = 0;
+        this.lifetime = PathCloseParticle.LIFETIME * duration;
 
         this.board = board;
 
@@ -37,13 +39,13 @@ export class PathCloseParticle extends PIXI.Container {
     }
 
     update() {
-        if (this.life > PathCloseParticle.LIFETIME) {
+        if (this.life > this.lifetime) {
             app.ticker.remove(this.onTick, this);
             this.parent.removeChild(this);
             this.onEnd();
             return;
         }
-        let lifePerc = this.life / PathCloseParticle.LIFETIME;
+        let lifePerc = this.life / this.lifetime;
 
         this.alpha = Math.sin(lifePerc * Math.PI);
     }

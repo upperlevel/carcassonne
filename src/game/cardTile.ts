@@ -1,7 +1,7 @@
 import {Side, SideUtil} from "./side";
 import {Card, SideType} from "./card";
 import * as PIXI from "pixi.js";
-import {PawnOwner} from "./pawnPlacer";
+import {Pawn} from "./pawns/pawn";
 
 
 export class CardTile {
@@ -54,15 +54,16 @@ export class CardTile {
     }
 }
 
-export class MonasteryData implements PawnOwner {
+export class MonasteryData {
     completedTiles: number = 1;
-    owner?: string;
-    pawn?: PIXI.Container;
+    pawn?: Pawn;
 
-    addPawn(g: PIXI.Container): void {
+    setPawn(g: Pawn): boolean {
         if (this.pawn !== undefined) {
             console.error("Monastery cannot have two pawns");
+            return false;
         }
         this.pawn = g;
+        return true;
     }
 }

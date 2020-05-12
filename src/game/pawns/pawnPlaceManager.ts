@@ -2,7 +2,8 @@ import {GamePhase, RoundState} from "../../phase/gamePhase";
 import {app, channel} from "../../index";
 import {PlayerPawnInteract, PlayerPawnPlace, PlayerPawnPreview} from "../../protocol/game";
 import * as PIXI from "pixi.js";
-import {PawnOwner, PawnPlacer} from "../pawnPlacer";
+import {PawnPlacer} from "./pawnPlacer";
+import {Pawn} from "./pawn";
 
 const PACKET_UPDATE_FREQ = 50;
 
@@ -12,7 +13,7 @@ export class PawnPlaceManager {
     readonly previewServer: PawnPreviewServer;
     readonly previewClient: PawnPreviewClient;
 
-    pawn: PIXI.Sprite;
+    pawn: Pawn;
 
     constructor(phase: GamePhase) {
         this.phase = phase;
@@ -37,7 +38,7 @@ export class PawnPlaceManager {
     onPawnMove(event: PIXI.interaction.InteractionEvent) {
         if (this.phase.me.isMyRound() && this.pawn !== undefined) {
             const cursor = event.data.getLocalPosition(this.phase.board, null, event.data.global);
-            this.pawn.position.set(cursor.x, cursor.y);
+            this.pawn.setPosition(cursor.x, cursor.y);
             this.previewServer.onUpdate(cursor.x, cursor.y);
         }
     }
@@ -45,12 +46,10 @@ export class PawnPlaceManager {
     undoPawnPick() {
         if (this.pawn === undefined) return;
 
-        this.phase.board.removeChild(this.pawn);
+        this.pawn.returnToPlayer(1);
         this.pawn = undefined;
-        this.phase.roundOf.pawns++; // This will place back the pawn on the HTML container.
 
         this.phase.board.removeChild(this.placer);
-
         this.phase.roundState = RoundState.PawnPick;
 
         if (this.phase.isMyRound()) {
@@ -62,16 +61,15 @@ export class PawnPlaceManager {
         }
     }
 
-    pawnPick(posX: number, posY: number) {
-        if (this.phase.roundOf.pawns <= 0) return;
+    pawnPick(posX: number, posY: number): boolean {
+        this.createPawn(this.phase.roundOf.id, posX, posY);
+
+        if (this.pawn === undefined) return false;
 
         this.phase.roundState = RoundState.PawnPlace;
-        this.phase.roundOf.pawns--;
-
-        this.createPawn(posX, posY);
 
         // Spawns the grid that helps during pawn placement.
-        this.placer.serveTo(this.phase.placedCard, this.phase.roundOf);
+        this.placer.serveTo(this.phase.placedCard, this.pawn);
         this.placer.zIndex = 10000;
         this.phase.board.addChild(this.placer);
 
@@ -83,16 +81,12 @@ export class PawnPlaceManager {
                 y: posY,
             } as PlayerPawnInteract);
         }
+        return true
     }
 
-    createPawn(x: number, y: number) {
+    createPawn(playerId: string, x: number, y: number) {
         // Spawns the PIXI pawn to attach to the cursor.
-        const pawn = this.phase.roundOf.createPawn();
-        pawn.zIndex = 10001;
-        pawn.position.set(x, y);
-        this.phase.board.addChild(pawn);
-
-        this.pawn = pawn;
+        this.pawn = Pawn.createFor(this.phase, playerId, x, y);
     }
 
     private onPlacePacket(packet: PlayerPawnPlace) {
@@ -103,22 +97,20 @@ export class PawnPlaceManager {
         }
 
         if (this.previewClient.pawn === undefined) {// No preview sent, recreate the pawn
-            player.pawns--;
-            this.createPawn(packet.pos.x, packet.pos.y);
+            this.createPawn(packet.sender, packet.pos.x, packet.pos.y);
         }
 
         let pos = new PIXI.Point(packet.pos.x, packet.pos.y);
 
         if (packet.side == "monastery") {
-            this.placer.placeMonastery(player, this.phase.placedCard, pos);
+            this.placer.placeMonastery(this.pawn, this.phase.placedCard, pos);
         } else {
-            this.placer.placeSide(player, this.phase.placedCard, pos, packet.side);
+            this.placer.placeSide(this.pawn, this.phase.placedCard, pos, packet.side);
         }
     }
 
-    onPawnPlace(emplacement: PIXI.Point, owner: PawnOwner) {
-        this.pawn.position.copyFrom(emplacement);
-        owner.addPawn(this.pawn);
+    onPawnPlace(emplacement: PIXI.Point) {
+        this.pawn.setPosition(emplacement.x, emplacement.y);
         this.pawn = undefined;
         this.phase.board.removeChild(this.placer);
         this.previewClient.onPlace();
@@ -195,7 +187,7 @@ class PawnPreviewClient {
     readonly parent: PawnPlaceManager;
     readonly phase: GamePhase;
 
-    pawn?: PIXI.Sprite = undefined;
+    pawn?: Pawn = undefined;
 
     private lastX: number = 0;
     private lastY: number = 0;
@@ -224,12 +216,13 @@ class PawnPreviewClient {
         }
 
         if (this.receiveTime == 0) {
-            this.pawn.position.set(packet.x, packet.y);
+            this.pawn.setPosition(packet.x, packet.y);
             this.lastX = packet.x;
             this.lastY = packet.y;
         } else {
-            this.lastX = this.pawn.position.x;
-            this.lastY = this.pawn.position.y;
+            let pos = this.pawn.getPosition();
+            this.lastX = pos.x;
+            this.lastY = pos.y;
         }
         this.receiveTime = Date.now();
 
@@ -273,7 +266,7 @@ class PawnPreviewClient {
         let posX = this.lastX * (1 - perc) + this.nextX * perc;
         let posY = this.lastY * (1 - perc) + this.nextY * perc;
 
-        this.pawn.position.set(posX, posY);
+        this.pawn.setPosition(posX, posY);
     }
 
 
