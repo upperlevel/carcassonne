@@ -165,6 +165,7 @@ export class Board extends PIXI.Container {
             this.phase.returnPawn(data.owner);
             this.phase.awardScore(data.owner, 9);
             data.pawn.parent.removeChild(data.pawn);
+            data.owner = undefined;
         }
     }
 

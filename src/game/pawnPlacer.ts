@@ -175,13 +175,20 @@ export class PawnPlacer extends PIXI.Container {
     placeSide(player: GamePlayer, card: {x: number, y: number, tile: CardTile}, pos: PIXI.Point, side: Side) {
         let conn = this.phase.board.cardConnector;
         this.sendPacket(side, pos);
-        conn.ownPath(card.x, card.y, player.id, side);
+        if (!conn.ownPath(card.x, card.y, player.id, side)) {
+            console.error("Error placing pawn at side, path already owned");
+            return
+        }
         this.par.onPawnPlace(pos, conn.getPathData(card.x, card.y, side));
     }
 
     placeMonastery(player: GamePlayer, card: {x: number, y: number, tile: CardTile}, pos: PIXI.Point) {
         let monastery = card.tile.monasteryData!;
         this.sendPacket("monastery", pos);
+        if (monastery.owner !== undefined) {
+            console.error("Error placing pawn at monastery, already owned");
+            return;
+        }
         monastery.owner = player.id; // TODO check if ok
         this.par.onPawnPlace(pos, monastery);
     }
