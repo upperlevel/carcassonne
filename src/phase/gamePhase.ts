@@ -304,13 +304,16 @@ export class GamePhase extends Phase {
         padX *= dScale;
         padY *= dScale;
 
-        this.board.position.x = padX + event.clientX;
-        this.board.position.y = padY + event.clientY;
+        const position = new PIXI.Point(padX + event.clientX, padY + event.clientY);
+        const scale = new PIXI.Point(this.board.scale.x * dScale, this.board.scale.y * dScale);
 
-        // Now we can set the scale.
+        if (this.board.isBoardLost(position, scale)) {
+            //console.log("You can't no more scale in this direction, you're loosing the board!");
+            return;
+        }
 
-        this.board.scale.x *= dScale;
-        this.board.scale.y *= dScale;
+        this.board.position.copyFrom(position);
+        this.board.scale.copyFrom(scale);
     }
 
     /** Function called when the cursor moves around the map. */

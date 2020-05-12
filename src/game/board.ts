@@ -9,6 +9,8 @@ import {GamePhase} from "../phase/gamePhase";
 import {TileDB, TilePlacement} from "./tileDB";
 
 export class Board extends PIXI.Container {
+    static TILE_SIZE = 120;
+
     readonly phase: GamePhase;
     readonly gridSide: number;
     readonly grid: Array<CardTile>;
@@ -19,7 +21,10 @@ export class Board extends PIXI.Container {
 
     private tileDb: TileDB;
 
-    static TILE_SIZE = 120;
+    private left: number = Infinity;
+    private right: number = -Infinity;
+    private bottom: number = Infinity;
+    private top: number = -Infinity;
 
     // Pixie
     isDragging: boolean;
@@ -50,6 +55,19 @@ export class Board extends PIXI.Container {
         this.initPixi();
     }
 
+    /**
+     * Checks if at the given position and scale the board is considered lost.
+     * The board is lost if its cards' bounding-box doesn't intersect with the window.
+     */
+    isBoardLost(position: PIXI.IPoint, scale: PIXI.IPoint) {
+        const rLeft = position.x + (this.left + 1) * Board.TILE_SIZE * scale.x;
+        const rRight = position.x + this.right * Board.TILE_SIZE * scale.x;
+        const rBottom = position.y + (this.bottom + 1) * Board.TILE_SIZE * scale.y;
+        const rTop = position.y + this.top * Board.TILE_SIZE * scale.y;
+
+        return rTop < 0 || rBottom > window.innerHeight || rLeft > window.innerWidth || rRight < 0;
+    }
+
     private initPixi() {
         this.sortableChildren = true;
         this.hitArea = {
@@ -63,21 +81,29 @@ export class Board extends PIXI.Container {
         this.interactiveChildren = true;
         this.isDragging = false;
 
-        let thus = this;
-        this.on("mousedown", function(e: InteractionEvent) {
-            thus.isDragging = true;
+        this.on("mousedown", (e: InteractionEvent) => {
+            this.isDragging = true;
         });
-        this.on("mouseup", function(e: InteractionEvent) {
-            thus.isDragging = false;
+        this.on("mouseup", (e: InteractionEvent) => {
+            this.isDragging = false;
         });
-        this.on("mouseupoutside", function(e: InteractionEvent) {
-            thus.isDragging = false;
+        this.on("mouseupoutside", (e: InteractionEvent) => {
+            this.isDragging = false;
         });
-        this.on("mousemove", function(e: InteractionEvent) {
-            if (thus.isDragging) {
+        this.on("mousemove", (e: InteractionEvent) => {
+            if (this.isDragging) {
                 let event = e.data.originalEvent as MouseEvent;
-                thus.position.x += event.movementX;
-                thus.position.y += event.movementY;
+
+                const newPosX = this.position.x + event.movementX;
+                const newPosY = this.position.y + event.movementY;
+
+                if (this.isBoardLost(new PIXI.Point(newPosX, newPosY), this.scale)) {
+                    //console.log("You can't go further than this, you'll loose the board!");
+                    return;
+                }
+
+                this.position.x = newPosX;
+                this.position.y = newPosY;
             }
         });
     }
@@ -181,7 +207,26 @@ export class Board extends PIXI.Container {
     set(x: number, y: number, tile: CardTile, force?: boolean): boolean {
         if (!this.canSet(x, y, tile) && force !== true)
             return false;
+
         this.grid[this.flatIndex(x, y)] = tile;
+
+        if (x < this.left) {
+            this.left = x;
+            console.log("Left", x);
+        }
+        if (x > this.right) {
+            this.right = x;
+            console.log("Right", x);
+        }
+        if (y < this.bottom) {
+            this.bottom = y;
+            console.log("Bottom", y);
+        }
+        if (y > this.top) {
+            this.top = y;
+            console.log("Top", y);
+        }
+
         this.tileDb.onTileAdd(x, y);
 
         this.cardConnector.addCard(x, y);

@@ -27,7 +27,7 @@
                     0xab47bc, // violet
                     0x4a148c, // purple
                     0xf5f5f5, // white
-                    0x080808, // black
+                    0x1a1a1a, // black
                     0x4e342e, // brown
                 ]
             }
