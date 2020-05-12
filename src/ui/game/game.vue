@@ -22,7 +22,13 @@
         <div class="scoreboard"
             :style="{display: this.gamePhase.isScoreBoardVisible ? 'block' : 'none'}"
         >
-            <div class="scoreboard-countdown">Returning to Lobby in: {{ this.gamePhase.lobbyCountdown }}</div>
+            <div v-if="isGameEnd()" class="end">
+                <h2 class="winner">The winner is: <span :style="{color: this.gamePhase.winner.details.color}">{{ this.gamePhase.winner.details.username }}</span>!</h2>
+                <h6 class="description">Congrats! ฅ^•ﻌ•^ฅ</h6>
+                <br>
+                <h6 class="countdown">Returning to lobby in: {{ this.gamePhase.lobbyCountdown }} seconds.</h6>
+            </div>
+
             <table>
                 <tr>
                     <th>Rank</th>
@@ -33,7 +39,7 @@
                     <th :style="getRankColor(rank + 1)">
                         {{ rank + 1 }}.
                     </th>
-                    <td class="username" :style="{color: colorToStr(player.color)}">
+                    <td class="username">
                         {{ player.username }}
                     </td>
                     <td>{{ player.score }}</td>
@@ -114,6 +120,10 @@
 
                 return "";
             },
+
+            isGameEnd() {
+                return this.gamePhase.roundState === RoundState.GameEnd;
+            }
         },
     });
 </script>
@@ -151,12 +161,6 @@
         z-index: 1;
     }
 
-    .scoreboard-countdown {
-        text-shadow: 0 0 2px #CCC;
-        font-size: 3rem;
-        font-weight: bolder;
-    }
-
     .scoreboard {
         position: absolute;
 
@@ -165,9 +169,7 @@
         text-align: center;
 
         z-index: 50;
-    }
 
-    .scoreboard {
         pointer-events: none;
     }
 
@@ -197,5 +199,32 @@
     }
 
     .scoreboard .username {
+    }
+
+    .end {
+        text-align: center;
+
+        pointer-events: none;
+    }
+
+    .end .winner {
+        color: gold;
+        text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px  1px 0 black, 1px  1px 0 black;
+
+        pointer-events: none;
+    }
+
+    .end .description {
+        color: gold;
+        text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px  1px 0 black, 1px  1px 0 black;
+
+        pointer-events: none;
+    }
+
+    .end .countdown {
+        color: white;
+        text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px  1px 0 black, 1px  1px 0 black;
+
+        pointer-events: none;
     }
 </style>

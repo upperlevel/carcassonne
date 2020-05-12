@@ -57,7 +57,7 @@ export class GamePhase extends Phase {
 
     isScoreBoardVisible: boolean;
     lobbyCountdown: number;
-
+    winner: GamePlayer;
 
     constructor(roomId: string, me: PlayerObject, playersById: { [id: string]: PlayerObject }) {
         super("game");
@@ -524,7 +524,7 @@ export class GamePhase extends Phase {
     // ================================================================================================================================
 
     onEnd() {
-        console.log("End");
+        this.winner = this.getScoreBoard()[0];
 
         this.roundState = RoundState.GameEnd;
         this.vue.$forceUpdate();
@@ -534,7 +534,7 @@ export class GamePhase extends Phase {
 
         this.setScoreBoardVisible(true);
 
-        this.lobbyCountdown = 10;
+        this.lobbyCountdown = 20;
         let handle = setInterval(() => {
             if (--this.lobbyCountdown <= 0) {
                 clearInterval(handle);
