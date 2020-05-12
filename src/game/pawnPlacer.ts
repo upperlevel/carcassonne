@@ -33,7 +33,7 @@ export class PawnPlacer extends PIXI.Container {
             g.lineTo(point.x, point.y);
         }
         g.endFill();
-        g.alpha = 0.3;
+        g.alpha = alpha;
         if (interactive) {
             g.hitArea = new PIXI.Polygon(points);
             g.interactive = interactive;
@@ -41,7 +41,7 @@ export class PawnPlacer extends PIXI.Container {
         return g;
     }
 
-    createSidePlacer(side: Side, size: number, color: number, alpha: number): PIXI.Graphics {
+    createSidePlacer(side: Side, size: number, color: number): PIXI.Graphics {
         const middle = size / 2;
         let points: PIXI.Point[];
         switch (side) {
@@ -58,10 +58,14 @@ export class PawnPlacer extends PIXI.Container {
                 points = [new PIXI.Point(size, 0), new PIXI.Point(middle, middle), new PIXI.Point(size, size)];
                 break;
         }
-        const g = this.createTriangle(points, color, alpha, true);
-        g.on("mouseover", () => g.alpha = Math.min(1, alpha + 0.2));
-        g.on("mouseout", () => g.alpha = alpha);
-
+        const g = this.createTriangle(points, color, 0.5, true);
+        g.on("mouseover", () => {
+            if (this.phase.isMyRound()) {
+                g.alpha = 0.7;
+            }
+        }).on("mouseout", () => {
+            g.alpha = 0.5;
+        });
         (g as any).getEmplacement = () => {
             const res = new PIXI.Point();
             for (let i = 0; i < 3; i++) {
@@ -73,14 +77,12 @@ export class PawnPlacer extends PIXI.Container {
             res.x += this.position.x - size / 2;
             res.y += this.position.y - size / 2;
 
-            console.log("Side emplacement", this.position);
             return res;
         };
-
         return g;
     }
 
-    createPennantPlacer(size: number, color: number, alpha: number): PIXI.Graphics {
+    createPennantPlacer(size: number, color: number): PIXI.Graphics {
         const x = size / 2;
         const y = size / 2;
         const r = size / 3;
@@ -89,27 +91,26 @@ export class PawnPlacer extends PIXI.Container {
         g.beginFill(color);
         g.drawCircle(x, y, r);
         g.endFill();
-        g.alpha = alpha;
+        g.alpha = 0.5;
         g.interactive = true;
         g.hitArea = new PIXI.Circle(x, y, r);
-
-        g.on("mouseover", () => g.alpha = Math.min(1, alpha + 0.2));
-        g.on("mouseout", () => g.alpha = alpha);
-
+        g.on("mouseover", () => {
+            if (this.phase.isMyRound()) {
+                g.alpha = 0.7;
+            }
+        }).on("mouseout", () => {
+            g.alpha = 0.5;
+        });
         (g as any).getEmplacement = () => {
-            console.log("Pennant emplacement", this.position);
             return this.position;
         };
-
         return g;
     }
 
     initPixi() {
-        const alpha = 0.5;
-
         // Side
         for (let side = 0; side < 4; side++) {
-            this.sideOverlay[side] = this.createSidePlacer(
+            const g = this.createSidePlacer(
                 side,
                 Board.TILE_SIZE,
                 [
@@ -117,22 +118,22 @@ export class PawnPlacer extends PIXI.Container {
                     0x00ff00, // green
                     0x0000ff, // blue
                     0xffff00, // yellow
-                ][side],
-                alpha
+                ][side]
             );
-            this.sideOverlay[side].zIndex = 0;
-            this.addChild(this.sideOverlay[side]);
+            g.zIndex = 0;
+            this.addChild(g);
+            this.sideOverlay[side] = g;
         }
 
         // Monastery
-        this.monasteryOverlay = this.createPennantPlacer(
+        const g = this.createPennantPlacer(
             Board.TILE_SIZE,
             0xffffff, // white
-            alpha
         );
-        this.monasteryOverlay.zIndex = 1;
-        this.monasteryOverlay.interactiveChildren = false;
-        this.addChild(this.monasteryOverlay);
+        g.zIndex = 1;
+        g.interactiveChildren = false;
+        this.addChild(g);
+        this.monasteryOverlay = g;
 
         this.pivot.set(Board.TILE_SIZE / 2, Board.TILE_SIZE / 2);
     }
@@ -150,7 +151,9 @@ export class PawnPlacer extends PIXI.Container {
                 this.sideOverlay[side]
                     .off("pointerdown")
                     .on("pointerdown", () => {
-                        this.placeSide(player, placedCard, (this.sideOverlay[side] as any).getEmplacement(), side);
+                        if (this.phase.isMyRound()) {
+                            this.placeSide(player, placedCard, (this.sideOverlay[side] as any).getEmplacement(), side);
+                        }
                     });
             }
         }
@@ -162,7 +165,9 @@ export class PawnPlacer extends PIXI.Container {
             this.monasteryOverlay
                 .off("pointerdown")
                 .on("pointerdown", () => {
-                    this.placeMonastery(player, placedCard, (this.monasteryOverlay as any).getEmplacement());
+                    if (this.phase.isMyRound()) {
+                        this.placeMonastery(player, placedCard, (this.monasteryOverlay as any).getEmplacement());
+                    }
                 });
         }
     }
