@@ -68,7 +68,6 @@ export class Bag {
 
     static fromModality(gamePhase: GamePhase, modality: string): Bag {
         const resource = PIXI.Loader.shared.resources["modalities/" + modality];
-        return new Bag(gamePhase, new Array(...resource.data).splice(0, 10));
         let cards = Bag.duplicateCards(resource.data);
 
         let initialCard = Bag.findFirstInitialCard(cards);
