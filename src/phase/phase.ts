@@ -31,7 +31,7 @@ export class Phase {
         this.vue = this.ui();
         if (this.vue) {
             this.vue.$mount();
-            document.getElementById("app").appendChild(this.vue.$el);
+            document.body.appendChild(this.vue.$el);
         }
 
         // Done ^^
@@ -40,7 +40,7 @@ export class Phase {
     disable() {
         console.log(`[${this.name}] Disabling`);
         if (this.vue) {
-            document.getElementById("app").removeChild(this.vue.$el);
+            document.body.removeChild(this.vue.$el);
         }
     }
 }

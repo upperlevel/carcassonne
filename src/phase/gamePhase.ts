@@ -582,9 +582,17 @@ export class GamePhase extends Phase {
         } as RandomSeed);
     }
 
+    applyCanvasStyle(canvas: HTMLCanvasElement) {
+        const s = canvas.style;
+        s.position = "fixed";
+        s.width = "100%";
+        s.height = "100%";
+    }
+
     enable() {
         super.enable();
 
+        this.applyCanvasStyle(app.view);
         document.body.appendChild(app.view);
 
         app.renderer.backgroundColor = 0x3e2723; // dark brown

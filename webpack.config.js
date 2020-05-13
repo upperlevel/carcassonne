@@ -1,5 +1,8 @@
 const path = require('path');
 
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const DotEnv = require('dotenv-webpack');
 
@@ -41,10 +44,23 @@ const config = {
         }
     },
     output: {
-        filename: 'bundle.js',
+        filename: 'bundle.[contenthash].js',
         path: path.resolve(__dirname, 'dist'),
     },
     plugins: [
+        new CleanWebpackPlugin({
+            cleanOnceBeforeBuildPatterns: [ // Clean the previously generated bundles.
+                '**/*',
+                '!.gitignore',
+                '!images',
+                '!images/**/*',
+                '!modalities',
+                '!modalities/**/*',
+            ]
+        }),
+        new HtmlWebpackPlugin({
+            title: "Carcassonne"
+        }),
         new VueLoaderPlugin(),
         new DotEnv({
             path: './.env',

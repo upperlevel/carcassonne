@@ -3,6 +3,5 @@
 
 # A part from
 !.gitignore
-!index.html
 !./images
 !./modalities
