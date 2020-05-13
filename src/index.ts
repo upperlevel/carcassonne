@@ -36,9 +36,9 @@ async function loadResources() {
     );
 }
 
-async function wsConnect(address: string, port: number, path: string): Promise<WebSocket> {
+async function wsConnect(url: string): Promise<WebSocket> {
     return new Promise((resolve, reject) => {
-        const socket = new WebSocket("ws://" + address + ":" + port + path);
+        const socket = new WebSocket(url);
 
         socket.onopen = () => {
             console.log("Connection opened");
@@ -64,11 +64,7 @@ async function wsConnect(address: string, port: number, path: string): Promise<W
 
     await loadResources();
 
-    const socket = await wsConnect(
-        process.env.WS_HOST,
-        process.env.WS_PORT,
-        process.env.WS_PATH,
-    );
+    const socket = await wsConnect(process.env.WS_URL);
     channel = new Channel(socket);
 
     stage.setPhase(new LoginPhase());
