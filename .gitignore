@@ -1,8 +1,7 @@
-# JetBrains
+
 .idea
 
-# NodeJS
 node_modules
 
-# Webpack
+dist
 .env

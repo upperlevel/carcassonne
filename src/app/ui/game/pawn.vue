@@ -16,6 +16,8 @@
 
     import SpriteComponent from "../util/sprite.vue";
 
+    import PawnsImg from "Public/images/pawns.png";
+
     export default Vue.extend({
         props: [
             "pawnId",
@@ -32,7 +34,7 @@
             },
 
             getAtlasUrl() {
-                return "images/pawns.png";
+                return PawnsImg;
             },
 
             getAtlasSize() {

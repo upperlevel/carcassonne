@@ -14,6 +14,8 @@
     import * as PIXI from "pixi.js";
     import {windowEventEmitter} from "../index";
 
+    import AvatarsImg from "Public/images/avatars.png";
+
     export default Vue.extend({
         props: {
             avatarId: Number,
@@ -72,7 +74,7 @@
                     return {
                         backgroundPosition: `${bgPos.x}% ${bgPos.y}%`,
                         backgroundSize: `${bgSize.x}% ${bgSize.y}%`,
-                        backgroundImage: 'url(images/avatars.png)',
+                        backgroundImage: 'url(' + AvatarsImg + ')',
                         zIndex: 0
                     }
                 }

@@ -7,7 +7,7 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const DotEnv = require('dotenv-webpack');
 
 const config = {
-    entry: './src/index.ts',
+    entry: './src/app/index.ts',
     module: {
         rules: [
             {
@@ -34,13 +34,29 @@ const config = {
                     'vue-style-loader',
                     'css-loader'
                 ]
+            },
+            {
+                test: /\.(png|jpe?g|gif)$/,
+                use: [
+                    'file-loader',
+                ],
+            },
+            {
+                test: /\.json$/,
+                type: 'javascript/auto',
+                use: [
+                    'file-loader'
+                ]
             }
         ],
     },
     resolve: {
-        extensions: [ '.ts', '.js', '.json', '.vue' ],
+        extensions: ['.ts', '.js', '.vue'],
         alias: {
-            'vue$': 'vue/dist/vue.esm.js'
+            'vue$': 'vue/dist/vue.esm.js',
+
+            'App': path.resolve(__dirname, 'src/app/'),
+            'Public': path.resolve(__dirname, 'src/public/'),
         }
     },
     output: {
@@ -48,16 +64,7 @@ const config = {
         path: path.resolve(__dirname, 'dist'),
     },
     plugins: [
-        new CleanWebpackPlugin({
-            cleanOnceBeforeBuildPatterns: [ // Clean the previously generated bundles.
-                '**/*',
-                '!.gitignore',
-                '!images',
-                '!images/**/*',
-                '!modalities',
-                '!modalities/**/*',
-            ]
-        }),
+        new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             title: "Carcassonne"
         }),

@@ -8,6 +8,6 @@
     "module": "es6",
     "downlevelIteration": true,
     "moduleResolution": "node",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
   }
 }

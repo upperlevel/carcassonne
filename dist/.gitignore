@@ -1,7 +1,0 @@
-# Ignore all
-*
-
-# A part from
-!.gitignore
-!./images
-!./modalities

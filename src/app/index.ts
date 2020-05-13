@@ -8,6 +8,27 @@ import {LoginPhase} from "./phase/loginPhase";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {EventEmitterWrapper} from "./util/eventEmitterWrapper";
 
+// ================================================================================================
+// /public
+// ================================================================================================
+
+const _public: string[] = [];
+
+import AvatarsImg from "Public/images/avatars.png";
+import BagImg from "Public/images/bag.png";
+import CardsImg from "Public/images/cards.png";
+import PawnsImg from "Public/images/pawns.png";
+_public.push(AvatarsImg, BagImg, CardsImg, PawnsImg); // This line is needed to force the import of images.
+
+import AvatarsSs from "Public/spritesheets/avatars.json";
+import BagSs from "Public/spritesheets/bag.json";
+import CardsSs from "Public/spritesheets/cards.json";
+import PawnsSs from "Public/spritesheets/pawns.json";
+_public.push(AvatarsSs, BagSs, CardsSs, PawnsSs);
+
+import ClassicalMod from "Public/modalities/classical.json";
+_public.push(ClassicalMod);
+
 export const windowEventEmitter = new EventEmitterWrapper((event, emitter) => {
     window.addEventListener(event, data => {
         emitter.emit(event, data);
@@ -25,12 +46,12 @@ async function loadResources() {
     return new Promise(
         (resolve, reject) =>
             PIXI.Loader.shared
-                .add("cards", "images/cards.json")
-                .add("avatars", "images/avatars.json")
-                .add("bag", "images/bag.json")
-                .add("pawns", "images/pawns.json")
+                .add("avatars", AvatarsSs)
+                .add("bag", BagSs)
+                .add("cards", CardsSs)
+                .add("pawns", PawnsSs)
 
-                .add("modalities/classical", "modalities/classical.json")
+                .add("modalities/classical", ClassicalMod)
 
                 .load(resolve)
     );

@@ -25,6 +25,8 @@
 
     import SpriteComponent from "../util/sprite.vue";
 
+    import BagImg from "Public/images/bag.png";
+
     export default Vue.extend({
         props: [
             'cards'
@@ -40,7 +42,7 @@
             },
 
             getAtlasUrl() {
-                return "images/bag.png";
+                return BagImg;
             },
 
             getAtlasSize() {
