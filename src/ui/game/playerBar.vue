@@ -7,10 +7,10 @@
                     :color="player.details.color"
             ></avatar-component>
             <div :class="player.isMyRound() ? 'round-of-marker' : ''">
-                <div style="font-size: 12px; font-weight: bold">
+                <div class="player-name" :style="{textDecoration: player.online ? 'none' : 'line-through'}">
                     {{ player.username }}
                 </div>
-                <div style="font-size: 10px">
+                <div class="player-description">
                     Score: {{ player.score }} <br>
                     Pawns: {{ player.pawns }}
                 </div>
@@ -43,6 +43,15 @@
 
     .round-of-marker {
         border-bottom: 3px solid red;
+    }
+
+    .player-name {
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .player-description {
+        font-size: 10px;
     }
 
     .player {

@@ -149,13 +149,22 @@ export class GamePhase extends Phase {
     }
 
     onPlayerLeft(packet: PlayerLeft) {
+        const left = this.playersById.get(packet.player);
+        left.online = false;
+
+        if (this.roundOf !== undefined && this.roundOf.id === left.id) {
+            this.nextRound();
+        }
+
         if (packet.newHost !== undefined) {
             this.playersById.get(packet.newHost).details.isHost = true;
             if (packet.newHost == this.me.id && !this.seed) {
-                // Well, it's my job now
+                // Well, it's my job now (aw... shit...!).
                 this.generateSeed();
             }
         }
+
+        this.vue.$forceUpdate();
     }
 
     /** Function called when the game is ready to start. */
@@ -219,6 +228,13 @@ export class GamePhase extends Phase {
         // Update the round to the next player.
         this.roundOfIdx = (this.roundOfIdx + 1) % this.orderedPlayers.length;
         this.roundOf = this.orderedPlayers[this.roundOfIdx];
+
+        if (!this.roundOf.online) {
+            setTimeout(() => {
+                this.nextRound();
+            }, 5000);
+            return;
+        }
 
         console.log("Round of:", this.roundOf.username);
 
@@ -549,7 +565,7 @@ export class GamePhase extends Phase {
                 this.vue.$forceUpdate();
 
             }, 1000);
-        }
+        };
         if (this.pathAnimationScheduler.isRunning) {
             this.pathAnimationScheduler.onQueueEmpty = endFunc;
         } else {
@@ -594,7 +610,7 @@ export class GamePhase extends Phase {
         channel.eventEmitter.on("player_draw", this.onPlayerDraw, this);
         channel.eventEmitter.on("player_place_card", this.onPlayerPlaceCard, this);
         channel.eventEmitter.on("player_place_card_preview", this.onPlayerPlaceCardPreview, this);
-        channel.eventEmitter.on("special_player_left", this.onPlayerPlaceCardPreview, this);
+        channel.eventEmitter.on("special_player_left", this.onPlayerLeft, this);
         channel.eventEmitter.on("next_round", this.onNextRoundPacket, this);
 
         app.stage.on("mousemove", this.onCursorMove, this);
@@ -626,6 +642,7 @@ export class GamePhase extends Phase {
         channel.eventEmitter.off("player_draw", this.onPlayerDraw, this);
         channel.eventEmitter.off("player_place_card", this.onPlayerPlaceCard, this);
         channel.eventEmitter.off("player_place_card_preview", this.onPlayerPlaceCardPreview, this);
+        channel.eventEmitter.off("special_player_left", this.onPlayerLeft, this);
         channel.eventEmitter.off("next_round", this.onNextRoundPacket, this);
 
         windowEventEmitter.off("wheel", this.onMouseWheel, this);

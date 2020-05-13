@@ -8,6 +8,8 @@ export class GamePlayer {
     score: number = 0;
     pawns: number = 5;
 
+    online: boolean = true;
+
     constructor(phase: GamePhase, details: PlayerObject) {
         this.phase = phase;
         this.details = details;

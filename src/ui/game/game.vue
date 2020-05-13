@@ -115,7 +115,11 @@
                 // However, the hint-bar is filled when the first nextRound() is called.
                 if (roundOf !== undefined) {
                     const roundOfColor = this.colorToStr(roundOf.color);
-                    return `<h4 style="color: red">It's the turn of: <span style="color: ${roundOfColor}">${roundOf.username}</span>.</h4>`;
+                    if (roundOf.online) {
+                        return `<h4 style="color: red">It's the turn of: <span style="color: ${roundOfColor}">${roundOf.username}</span>.</h4>`;
+                    } else {
+                        return `<h4 style="color: red">It should be the turn of <span style="color: ${roundOfColor}">${roundOf.username}</span>, but he passed to a better life. .·´¯\`(>▂<)´¯\`·.</h4>`;
+                    }
                 }
 
                 return "";
