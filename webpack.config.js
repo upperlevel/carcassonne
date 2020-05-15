@@ -37,22 +37,16 @@ const config = {
             },
             {
                 test: /\.(png|jpe?g|gif)$/,
-                use: [
-                    'file-loader',
-                ],
+                use: 'file-loader',
             },
             {
                 test: /\.json$/,
                 type: 'javascript/auto',
-                use: [
-                    'file-loader'
-                ]
+                use: 'file-loader'
             },
             {
                 test: /\.(eot|woff|woff2|ttf)$/,
-                use: [
-                    'file-loader',
-                ]
+                use: 'file-loader',
                 /*
                 use: [
                     'file-loader',
@@ -67,6 +61,11 @@ const config = {
             }
         ],
     },
+    optimization: {
+        splitChunks: {
+            chunks: 'all'
+        },
+    },
     resolve: {
         extensions: ['.ts', '.js', '.vue'],
         alias: {
@@ -77,8 +76,12 @@ const config = {
         }
     },
     output: {
-        filename: 'bundle.[contenthash].js',
+        filename: '[name].[contenthash].js',
         path: path.resolve(__dirname, 'dist'),
+    },
+    cache: {
+        type: 'filesystem',
+        cacheLocation: path.resolve(__dirname, '.test_cache')
     },
     plugins: [
         new CleanWebpackPlugin(),
