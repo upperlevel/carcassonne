@@ -1,32 +1,14 @@
 <template>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col">
-                <div class="input-group" style="max-width: 500px">
-                    <div class="input-group-prepend">
-                        <button v-on:click="prevAvatar()">
-                            <
-                        </button>
-                    </div>
-                    <avatar-component
-                            style="height: 250px"
-                            class="avatar form-control"
-                            :avatar-id="avatarId"
-                            :color="this.color"
-                    >
-                    </avatar-component>
-                    <div class="input-group-append">
-                        <button v-on:click="nextAvatar()">
-                            >
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <div>
+        <div class="avatar">
+            <button class="back" v-on:click="prevAvatar()"><</button>
+
+            <avatar-component class="preview" :avatar-id="avatarId" :color="this.color"></avatar-component>
+
+            <button class="next" v-on:click="nextAvatar()">></button>
         </div>
-        <div class="row">
-            <div class="col form-group">
-                <color-pool-component v-model="color"></color-pool-component>
-            </div>
+        <div class="color-pool">
+            <color-pool-component v-model="color"></color-pool-component>
         </div>
     </div>
 </template>
@@ -68,3 +50,48 @@
         },
     });
 </script>
+
+<style scoped>
+
+    .avatar {
+        height: 250px;
+    }
+
+    .avatar .preview {
+        display: inline-block;
+        height: 100%;
+    }
+
+    .avatar .back, .next {
+        display: inline-block;
+        height: 100%;
+        vertical-align: top;
+
+        width: 50px;
+        background-color: #593726;
+        color: white;
+        font-weight: bold;
+        border: none;
+        outline: none;
+    }
+
+    .avatar .back {
+        border-top-left-radius: 3px;
+        border-bottom-left-radius: 3px;
+    }
+
+    .avatar .next {
+        border-top-right-radius: 3px;
+        border-bottom-right-radius: 3px;
+    }
+
+    .avatar .back:hover, .next:hover {
+        cursor: pointer;
+        background-color: #3f271d;
+    }
+
+    .color-pool {
+        margin-top: 25px;
+    }
+
+</style>

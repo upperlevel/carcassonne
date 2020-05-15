@@ -1,10 +1,10 @@
 <template>
     <div>
-        <div class="w-100 h-100 text-center" :style="{
+        <div class="sprite-background" :style="{
             backgroundColor: colorToStr(this.color),
             zIndex: -1
         }">
-            <div ref="sprite" class="d-inline-block h-100" :style="getSpriteStyle()"></div>
+            <div ref="sprite" class="sprite" :style="getSpriteStyle()"></div>
         </div>
     </div>
 </template>
@@ -91,3 +91,17 @@
         }
     });
 </script>
+
+<style scoped>
+    .sprite-background {
+        width: 100%;
+        height: 100%;
+        text-align: center;
+    }
+
+    .sprite {
+        display: inline-block;
+        height: 100%;
+    }
+
+</style>

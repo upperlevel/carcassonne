@@ -1,16 +1,21 @@
 <template>
-    <div>
-        <div>
-            <label>Name:</label>
-            <input type="text" v-model="name">
+    <div class="container">
+        <!-- Name -->
+        <div class="insert-name">
+            <label>Insert your name here:</label>
+            <input type="text" v-model="name" spellcheck="false">
         </div>
-        <div style="margin-top: 25px">
-            <avatar-editor ref="editor"></avatar-editor>
+        <!-- Avatar -->
+        <div class="edit-avatar">
+            <label>Choose your avatar:</label>
+            <avatar-editor ref="editor" class="avatar-editor"></avatar-editor>
         </div>
-        <div>
-            <button l v-on:click="submit()" :disabled="!canSubmit()">Submit</button>
-            <div>{{ errorMessage }}</div>
-        </div>
+        <!-- Play! -->
+        <button class="play" v-on:click="submit()" :disabled="!canSubmit()">
+            Play!
+        </button>
+        <!-- Error -->
+        <div>{{ errorMessage }}</div>
     </div>
 </template>
 
@@ -48,3 +53,51 @@
         }
     });
 </script>
+
+<style scoped>
+    .container {
+        text-align: center;
+    }
+
+    label, input[type=text] {
+        display: block;
+        color: white;
+        width: 100%;
+    }
+
+    input[type=text] {
+        margin-top: 14px;
+
+        background-color: #593726;
+        border: none;
+        border-radius: 2px;
+        padding: 12px 6px;
+        outline: none;
+    }
+
+    .insert-name {
+        display: inline-block;
+    }
+
+    .edit-avatar {
+        margin-top: 35px;
+    }
+
+    .avatar-editor {
+        margin-top: 14px;
+    }
+
+    .play {
+        margin-top: 35px;
+        background-color: #ffd324;
+        border: none;
+        outline: none;
+        padding: 15px;
+    }
+
+    .play:hover {
+        background-color: #ffe666;
+        cursor: pointer;
+    }
+
+</style>

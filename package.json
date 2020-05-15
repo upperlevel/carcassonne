@@ -23,7 +23,6 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "bootstrap": "^4.4.1",
     "pixi.js": "^5.2.3",
     "vue": "^2.6.11"
   }

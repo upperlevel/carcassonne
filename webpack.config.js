@@ -47,6 +47,23 @@ const config = {
                 use: [
                     'file-loader'
                 ]
+            },
+            {
+                test: /\.(eot|woff|woff2|ttf)$/,
+                use: [
+                    'file-loader',
+                ]
+                /*
+                use: [
+                    'file-loader',
+                    {
+                        loader: ,
+                        options: {
+                            name: '[name].[ext]',
+                            outputPath: 'fonts/',
+                        }
+                    }
+                ]*/
             }
         ],
     },

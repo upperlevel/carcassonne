@@ -5,12 +5,9 @@ import * as PIXI from "pixi.js";
 
 import {LoginPhase} from "./phase/loginPhase";
 
-import 'bootstrap/dist/css/bootstrap.min.css';
 import {EventEmitterWrapper} from "./util/eventEmitterWrapper";
 
-// ================================================================================================
-// /public
-// ================================================================================================
+// ================================================================================================ Public
 
 const _public: string[] = [];
 
@@ -28,6 +25,8 @@ _public.push(AvatarsSs, BagSs, CardsSs, PawnsSs);
 
 import ClassicalMod from "Public/modalities/classical.json";
 _public.push(ClassicalMod);
+
+import "Public/style.css";
 
 export const windowEventEmitter = new EventEmitterWrapper((event, emitter) => {
     window.addEventListener(event, data => {
