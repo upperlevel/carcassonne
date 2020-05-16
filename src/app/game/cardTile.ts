@@ -47,7 +47,7 @@ export class CardTile {
     createSprite(): PIXI.Sprite {
         let resources = PIXI.Loader.shared.resources;
 
-        let res = new PIXI.Sprite(resources["cards"].textures[this.card.spritePath]);
+        let res = new PIXI.Sprite(resources["cards"].spritesheet.textures[this.card.spritePath]);
         res.anchor.set(0.5, 0.5);
         res.rotation = -this.rotation * Math.PI / 2;
         return res;

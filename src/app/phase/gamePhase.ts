@@ -118,7 +118,7 @@ export class GamePhase extends Phase {
     }
 
     setupBag() {
-        this.bag = Bag.fromModality(this, "classical");
+        this.bag = Bag.fromModality(this); // Always classical modality.
 
         return this.bag.draw(); // The first card of the un-shuffled bag is the root.
     }

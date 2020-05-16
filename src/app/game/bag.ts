@@ -3,6 +3,8 @@ import * as EventEmitter from "eventemitter3";
 import {Card, CardFlag} from "./card";
 import {GamePhase, RoundState} from "../phase/gamePhase";
 
+import ClassicalModality from "Public/modalities/classical.json";
+
 export class Bag {
     gamePhase: GamePhase;
     uiEventEmitter: EventEmitter;
@@ -66,9 +68,8 @@ export class Bag {
         return this.cards.length;
     }
 
-    static fromModality(gamePhase: GamePhase, modality: string): Bag {
-        const resource = PIXI.Loader.shared.resources["modalities/" + modality];
-        let cards = Bag.duplicateCards(resource.data);
+    static fromModality(gamePhase: GamePhase): Bag {
+        let cards = Bag.duplicateCards(ClassicalModality);
 
         let initialCard = Bag.findFirstInitialCard(cards);
         // Put the first card first

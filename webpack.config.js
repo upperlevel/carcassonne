@@ -40,11 +40,6 @@ const config = {
                 use: 'file-loader',
             },
             {
-                test: /\.json$/,
-                type: 'javascript/auto',
-                use: 'file-loader'
-            },
-            {
                 test: /\.(eot|woff|woff2|ttf)$/,
                 use: 'file-loader',
                 /*
@@ -67,7 +62,7 @@ const config = {
         },
     },
     resolve: {
-        extensions: ['.ts', '.js', '.vue'],
+        extensions: ['.ts', '.js', '.json', '.vue'],
         alias: {
             'vue$': 'vue/dist/vue.esm.js',
 

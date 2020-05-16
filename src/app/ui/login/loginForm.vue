@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="form">
         <!-- Name -->
         <div class="insert-name">
             <label>Insert your name here:</label>
@@ -55,7 +55,7 @@
 </script>
 
 <style scoped>
-    .container {
+    .form {
         text-align: center;
     }
 
