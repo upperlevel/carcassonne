@@ -30,8 +30,9 @@ export class PawnPlaceManager {
             // pawn already picked, remove it
             this.undoPawnPick();
         } else if (state == RoundState.PawnPick) {
-            let bpos = this.phase.board.position;
-            this.pawnPick(bpos.x + event.clientX, bpos.y + event.clientY);
+            let pos = new PIXI.Point(event.clientX, event.clientY);
+            this.phase.board.worldTransform.applyInverse(pos, pos);
+            this.pawnPick(pos.x, pos.y);
         }
     }
 
