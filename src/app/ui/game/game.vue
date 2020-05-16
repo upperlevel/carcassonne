@@ -8,14 +8,30 @@
         <div class="hint-bar" v-html="getRoundStateHint()"></div>
 
         <!------------------------------------------------------------------------------------------------ game-bar -->
-        <game-bar-component
-                class="game-bar"
 
-                :game-phase="this.gamePhase"
-                :pawns="this.myPlayer.pawns"
-                :player="this.myPlayer"
-        >
-        </game-bar-component>
+        <div class="game-bar" style="text-align: left">
+            <!-- Bag -->
+            <bag-component class="bag" :cards="this.gamePhase.bag.cards"></bag-component>
+
+            <!-- Pawn container -->
+            <div class="pawn-container" v-on:click="onPawnInteract">
+                <pawn-component v-for="pawn in this.myPlayer.pawns" :key="pawn"
+                                class="pawn"
+
+                                :game-phase="gamePhase"
+                                :pawn-id="myPlayer.details.avatar"
+                                :color="myPlayer.details.color"
+                >
+                </pawn-component>
+            </div>
+
+            <!-- Next round -->
+            <div class="button-bar">
+                <button class="primary-btn" v-on:click="onNextRound" :disabled="!canNextRound()">
+                    Done!
+                </button>
+            </div>
+        </div>
 
 
         <!------------------------------------------------------------------------------------------------ scoreboard -->
@@ -53,7 +69,9 @@
     import Vue from "vue";
 
     import PlayerBarComponent from "./playerBar.vue";
-    import GameBarComponent from "./gameBar.vue";
+    import BagComponent from "./bag.vue";
+    import PawnComponent from "./pawn.vue";
+
     import {RoundState} from "../../phase/gamePhase";
 
     export default Vue.extend({
@@ -68,9 +86,23 @@
          */
         components: {
             PlayerBarComponent,
-            GameBarComponent
+            BagComponent,
+            PawnComponent
         },
         methods: {
+            onPawnInteract(event: MouseEvent) {
+                this.eventEmitter.emit("pawn-interact", event);
+            },
+
+            canNextRound() {
+                return this.gamePhase.isMyRound() && this.gamePhase.canSkipRound();
+            },
+
+            onNextRound() {
+                this.eventEmitter.emit("next-round");
+            },
+
+
             colorToStr(color: number) {
                 return `
                     rgb(
@@ -139,23 +171,21 @@
 
     .hint-bar {
         position: absolute;
-
         bottom: 80px;
         width: 100%;
-
-        z-index: 10;
+        z-index: 40;
+        text-align: center;
 
         pointer-events: none;
-
-        text-align: center;
-        text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px  1px 0 black, 1px  1px 0 black;
     }
 
     .game-bar {
-        position: absolute;
+        position: fixed;
         bottom: 0;
         width: 100%;
         z-index: 25;
+
+        pointer-events: none;
     }
 
     .player-bar {
@@ -231,4 +261,43 @@
 
         pointer-events: none;
     }
+
+
+    .bag {
+        display: inline-block;
+        vertical-align: bottom;
+
+        pointer-events: auto;
+    }
+
+    .pawn-container {
+        display: inline-block;
+        vertical-align: bottom;
+
+        width: 140px;
+        height: 70px;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+
+        background-color: rgba(0, 0, 0, 0.30);
+
+        pointer-events: auto;
+    }
+
+    .pawn {
+        display: inline-block;
+
+        width: 28px;
+        height: 70px;
+    }
+
+    .button-bar {
+        text-align: center;
+        background-image: url("~Public/images/footer.png");
+
+        padding: 20px;
+
+        pointer-events: auto;
+    }
+
 </style>

@@ -19,7 +19,6 @@ import {Card} from "../game/card";
 import GameComponent from "../ui/game/game.vue";
 import {GamePlayer} from "../game/gamePlayer";
 import {ScoreVisualizer} from "../game/particles/scoreVisualizer";
-import {GameBar} from "../game/gameBar";
 import {PathAnimationScheduler} from "../game/particles/pathAnimationScheduler";
 import {CardPlaceAssistant} from "../game/particles/cardPlaceAssistant";
 import {RoomPhase} from "./roomPhase";
@@ -29,7 +28,6 @@ import {CardPreviewManager} from "../game/particles/cardPreviewManager";
 export class GamePhase extends Phase {
     seed: number;
 
-    gameBar: GameBar;
     bag: Bag;
     board: Board;
     scoreVisualizer: ScoreVisualizer;
@@ -87,7 +85,6 @@ export class GamePhase extends Phase {
         // UI
         this.pathAnimationScheduler = new PathAnimationScheduler(this);
         this.drawnCardPreview = new CardPreviewManager();
-        this.gameBar = new GameBar();
         let card = this.setupBag();
         this.setupBoard(card);
         this.scoreVisualizer = new ScoreVisualizer(this.orderedPlayers);
@@ -112,10 +109,6 @@ export class GamePhase extends Phase {
     // ================================================================================================
     // UI
     // ================================================================================================
-
-    onResize() {
-        this.gameBar.redraw();
-    }
 
     setupBag() {
         this.bag = Bag.fromModality(this); // Always classical modality.
@@ -592,19 +585,17 @@ export class GamePhase extends Phase {
     enable() {
         super.enable();
 
-        this.applyCanvasStyle(app.view);
-        document.body.appendChild(app.view);
+        const canvas = app.view;
+        this.applyCanvasStyle(canvas);
+        document.body.appendChild(canvas);
 
-        app.renderer.backgroundColor = 0x3e2723; // dark brown
+        //app.renderer.backgroundColor = 0x3e2723; // dark brown
 
         // PIXI
         app.stage = new PIXI.Container();
 
         app.stage.addChild(this.board);
         app.stage.interactive = true;
-
-        this.gameBar.zIndex = 1;
-        app.stage.addChild(this.gameBar);
 
         if (this.me.details.isHost) {
             this.generateSeed();
@@ -627,7 +618,6 @@ export class GamePhase extends Phase {
         app.stage.on("rightdown", this.onCursorRightClick, this);
 
         windowEventEmitter.on("wheel", this.onMouseWheel, this);
-        windowEventEmitter.on("resize", this.onResize, this);
         windowEventEmitter.on("keydown", this.onScoreBoardKeyDown, this);
         windowEventEmitter.on("keyup", this.onScoreBoardKeyUp, this);
 

@@ -11,11 +11,6 @@ import * as AssetsLoader from "./assetsLoader";
 
 // ================================================================================================ Public
 
-const _public: string[] = [];
-
-import ClassicalMod from "Public/modalities/classical.json";
-_public.push(ClassicalMod);
-
 import "Public/style.css";
 
 export const windowEventEmitter = new EventEmitterWrapper((event, emitter) => {
@@ -48,7 +43,10 @@ async function wsConnect(url: string): Promise<WebSocket> {
 }
 
 (async function () {
-    app = new PIXI.Application({resizeTo: window});
+    app = new PIXI.Application({
+        resizeTo: window,
+        transparent: true
+    });
     // The app.view (canvas) is only appended when the game-phase starts.
 
     stage.setPhase(new LoadingPhase());

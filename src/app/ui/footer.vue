@@ -1,8 +1,6 @@
 <template>
     <div class="footer">
-
         <div class="credits">
-            <!-- Links -->
             <div class="links">
                 <a href="https://github.com/upperlevel/carcassonne" target="_blank">
                     <img alt="" src="" class="github">
@@ -25,10 +23,10 @@
 <style scoped>
 
     .footer {
-        text-align: right;
     }
 
     .credits {
+        text-align: right;
         padding: 20px;
     }
 
