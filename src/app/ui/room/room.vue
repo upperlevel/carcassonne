@@ -1,14 +1,11 @@
 <template>
-    <div style="margin-top: 25px">
-        <div style="text-align: center">
-            <h1>Carcassonne</h1>
-            <h6>
-                Room: <code>{{ this.roomId }}</code>
-            </h6>
-            <div>
-                <small>Players: {{ this.playersCount() }}</small>
-            </div>
+    <div class="phase-container">
+        <div class="title-container">
+            <h1 class="title">Carcassonne</h1>
         </div>
+
+        <div style="text-align: center">Players: {{ this.playersCount() }}</div>
+
         <div class="player-container"> <!-- PlayerObject[] -->
             <div v-for="player of Object.values(this.playersById)" class="player">
                 <!-- Avatar -->
@@ -19,24 +16,28 @@
                         :color="player.color">
                 </avatar-component>
                 <!-- Name -->
-                <h4 class="player-name" :style="getNameStyle(player)">
+                <div class="player-name" :style="getNameStyle(player)">
                     {{ getName(player) }}
-                </h4>
+                </div>
             </div>
         </div>
-        <div style="text-align: center">
-            <button :disabled="!canStart()" v-on:click="onStart">Start</button>
+        <div v-if="this.me.isHost" style="text-align: center">
+            <button class="primary-btn" :disabled="!canStart()" v-on:click="onStart">Start</button>
         </div>
+
+        <footer-component></footer-component>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from "vue";
     import AvatarComponent from "../avatar.vue";
+    import FooterComponent from "../footer.vue";
 
     export default Vue.extend({
         components: {
-            AvatarComponent
+            AvatarComponent,
+            FooterComponent
         },
         methods: {
             playersCount() {
@@ -47,12 +48,6 @@
                 const isMe = player.id === this.me.id;
                 return {
                     color: isMe ? 'yellow' : 'white',
-                    textShadow: `
-                        -1px -1px 0 black,
-                         1px -1px 0 black,
-                        -1px  1px 0 black,
-                         1px  1px 0 black
-                    `,
                     textDecoration: player.isHost ? 'underline' : 'none',
                 }
             },

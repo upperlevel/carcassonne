@@ -58,7 +58,7 @@ export class LoginPhase extends Phase {
     joinRoom(roomId: string) {
         channel.eventEmitter.once("room_join_response", (packet: RoomJoinResponse) => {
             if (packet.result !== "ok") {
-                console.error("Error: " + packet.result);
+                this.form.errorMessage = packet.result;
                 return;
             }
             this.goToRoom(roomId, packet.players);
@@ -72,7 +72,7 @@ export class LoginPhase extends Phase {
     createRoom() {
         channel.eventEmitter.once("room_create_response", (packet: RoomCreateResponse) => {
             if (packet.result !== "ok") {
-                console.error("Error: " + packet.result);
+                this.form.errorMessage = packet.result;
                 return;
             }
 

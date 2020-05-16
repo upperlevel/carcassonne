@@ -3,21 +3,20 @@
 
 * {
     margin: 0;
-
+    color: white;
     font-family: 'Merienda One', cursive;
 }
 
-.phase-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-
+body {
     background-image: url('~Public/images/background.png');
 }
 
+.phase-container {
+}
+
 .title-container {
-    padding-top: 35px;
-    padding-bottom: 35px;
+    padding-top: 3%;
+    padding-bottom: 3%;
 
     text-align: center;
 }
@@ -29,3 +28,75 @@
     color: #ffd324;
     text-shadow: -2px -2px 2px black;
 }
+
+.secondary-btn {
+    background-color: #6e472c;
+    color: rgba(255, 255, 255, 1);
+    font-weight: bold;
+    border: none;
+    outline: none;
+}
+
+.secondary-btn:hover {
+    cursor: pointer;
+    background-color: #7e5330;
+}
+
+.secondary-btn[disabled] {
+    cursor: default;
+    color: rgba(255, 255, 255, 0.5);
+    background-color: #7e5330;
+}
+
+input[type=text] {
+    background-color: #6e472c;
+    border: none;
+    border-radius: 2px;
+    padding: 12px 6px;
+    outline: none;
+}
+
+.primary-btn {
+    color: rgba(0, 0, 0, 1);
+    background-color: #ffd324;
+    font-weight: bold;
+    border: none;
+    border-radius: 2px;
+    outline: none;
+    padding: 16px 24px;
+}
+
+.primary-btn:hover {
+    cursor: pointer;
+    background-color: #ffe666;
+}
+
+.primary-btn[disabled] {
+    cursor: default;
+    color: rgba(0, 0, 0, 0.5);
+    background-color: #ffe666;
+}
+
+.error-text {
+    color: red;
+    text-shadow: 1px 1px 5px black;
+}
+
+@media screen and (max-height: 890px) {
+    .footer {
+        position: static;
+    }
+}
+
+@media screen and (min-height: 890px) {
+    .footer {
+        position: fixed;
+        bottom: 0;
+    }
+}
+
+.footer {
+    width: 100%;
+    background-image: url('~Public/images/footer.png');
+}
+

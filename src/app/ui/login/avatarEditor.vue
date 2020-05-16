@@ -1,11 +1,11 @@
 <template>
     <div>
         <div class="avatar">
-            <button class="back" v-on:click="prevAvatar()"><</button>
+            <button class="secondary-btn back" v-on:click="prevAvatar()"><</button>
 
             <avatar-component class="preview" :avatar-id="avatarId" :color="this.color"></avatar-component>
 
-            <button class="next" v-on:click="nextAvatar()">></button>
+            <button class="secondary-btn next" v-on:click="nextAvatar()">></button>
         </div>
         <div class="color-pool">
             <color-pool-component v-model="color"></color-pool-component>
@@ -66,13 +66,7 @@
         display: inline-block;
         height: 100%;
         vertical-align: top;
-
         width: 50px;
-        background-color: #593726;
-        color: white;
-        font-weight: bold;
-        border: none;
-        outline: none;
     }
 
     .avatar .back {
@@ -83,11 +77,6 @@
     .avatar .next {
         border-top-right-radius: 3px;
         border-bottom-right-radius: 3px;
-    }
-
-    .avatar .back:hover, .next:hover {
-        cursor: pointer;
-        background-color: #3f271d;
     }
 
     .color-pool {

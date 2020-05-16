@@ -5,16 +5,20 @@
         </div>
 
         <login-form ref="form"></login-form>
+
+        <footer-component></footer-component>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from "vue";
     import LoginForm from "./loginForm.vue";
+    import FooterComponent from "../footer.vue";
 
     export default Vue.extend({
         components: {
-            LoginForm
+            LoginForm,
+            FooterComponent
         },
     });
 </script>

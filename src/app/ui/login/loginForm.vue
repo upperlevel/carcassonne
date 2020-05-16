@@ -2,26 +2,27 @@
     <div class="form">
         <!-- Name -->
         <div class="insert-name">
-            <label>Insert your name here:</label>
+            <label style="margin-bottom: 7px">Insert your name here:</label>
             <input type="text" v-model="name" spellcheck="false">
         </div>
         <!-- Avatar -->
-        <div class="edit-avatar">
-            <label>Choose your avatar:</label>
-            <avatar-editor ref="editor" class="avatar-editor"></avatar-editor>
+        <div class="edit-avatar" style="margin-top: 30px">
+            <label style="margin-bottom: 7px">Choose your avatar:</label>
+            <avatar-editor ref="editor"></avatar-editor>
         </div>
         <!-- Play! -->
-        <button class="play" v-on:click="submit()" :disabled="!canSubmit()">
+        <button class="primary-btn" style="margin-top: 30px" v-on:click="submit()" :disabled="!canSubmit()">
             Play!
         </button>
         <!-- Error -->
-        <div>{{ errorMessage }}</div>
+        <div class="error-text">{{ errorMessage }}</div>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from "vue";
     import AvatarEditor from "./avatarEditor.vue";
+    import FooterComponent from "../footer.vue";
 
     export default Vue.extend({
         data() {
@@ -31,7 +32,8 @@
             }
         },
         components: {
-            AvatarEditor
+            AvatarEditor,
+            FooterComponent
         },
         methods: {
             canSubmit() {
@@ -65,6 +67,7 @@
         width: 100%;
     }
 
+    /*
     input[type=text] {
         margin-top: 14px;
 
@@ -73,7 +76,7 @@
         border-radius: 2px;
         padding: 12px 6px;
         outline: none;
-    }
+    }*/
 
     .insert-name {
         display: inline-block;
@@ -81,23 +84,13 @@
 
     .edit-avatar {
         margin-top: 35px;
+
     }
 
-    .avatar-editor {
-        margin-top: 14px;
+    .error-text {
+        padding-top: 17px;
+        padding-bottom: 17px;
     }
 
-    .play {
-        margin-top: 35px;
-        background-color: #ffd324;
-        border: none;
-        outline: none;
-        padding: 15px;
-    }
-
-    .play:hover {
-        background-color: #ffe666;
-        cursor: pointer;
-    }
 
 </style>

@@ -6,7 +6,7 @@
                     :avatarId="player.details.avatar"
                     :color="player.details.color"
             ></avatar-component>
-            <div :class="player.isMyRound() ? 'round-of-marker' : ''">
+            <div :class="player.isMyRound() ? 'player round-of-marker' : 'player'">
                 <div class="player-name" :style="{textDecoration: player.online ? 'none' : 'line-through'}">
                     {{ player.username }}
                 </div>
@@ -45,9 +45,12 @@
         border-bottom: 3px solid red;
     }
 
+    .player {
+        color: black;
+    }
+
     .player-name {
         font-size: 12px;
-        font-weight: bold;
     }
 
     .player-description {
