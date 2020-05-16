@@ -89,7 +89,11 @@ export class CardConnector {
 
         if (!reAssign && pathData.openEndCount <= 0) {
             //console.warn("CLOSING " + path.toString())
-            this.pathsToClose.push(path)
+            if (pathData.pawns.length > 0) {
+                this.closePath(path, false);
+            } else {
+                this.pathsToClose.push(path)
+            }
         }
     }
 
@@ -141,29 +145,29 @@ export class CardConnector {
 
     closePath(path: number, gameEnd: boolean) {
         let pathData = this.pathData.get(path);
-        let x = pathData.entryPoint.x;
-        let y = pathData.entryPoint.y;
-        let side = pathData.entryPoint.side;
-
-        let tiles = new Array<[number, number]>();
-        let score = this.assignScore(x, y, side, gameEnd, tiles);
-
-        let winners = pathData.getScoreWinners();
-
-        // Give scores to pawns, we need to be sure to give the score only one time to each player
-        let toScore = new Set(winners);
-        for (let pawn of pathData.pawns) {
-            if (toScore.has(pawn.owner)) {
-                pawn.addScore(score);
-                toScore.delete(pawn.owner);
-            }
-        }
 
         if (pathData.pawns.length > 0) {
+            let x = pathData.entryPoint.x;
+            let y = pathData.entryPoint.y;
+            let side = pathData.entryPoint.side;
+
+            let tiles = new Array<[number, number]>();
+            let score = this.assignScore(x, y, side, gameEnd, tiles);
+
+            let winners = pathData.getScoreWinners();
+
+            // Give scores to pawns, we need to be sure to give the score only one time to each player
+            let toScore = new Set(winners);
+            for (let pawn of pathData.pawns) {
+                if (toScore.has(pawn.owner)) {
+                    pawn.addScore(score);
+                    toScore.delete(pawn.owner);
+                }
+            }
+
             let animData = new AnimationData(tiles, pathData.pawns);
             this.board.phase.pathAnimationScheduler.addAnimation(animData);
         }
-        //console.log("ADD SCORE " + score.toString());
 
         this.pathData.delete(path);
     }
