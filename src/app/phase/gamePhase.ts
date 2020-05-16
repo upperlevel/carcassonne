@@ -644,7 +644,6 @@ export class GamePhase extends Phase {
         channel.eventEmitter.off("next_round", this.onNextRoundPacket, this);
 
         windowEventEmitter.off("wheel", this.onMouseWheel, this);
-        windowEventEmitter.off("resize", this.onResize, this);
         windowEventEmitter.off("keydown", this.onScoreBoardKeyDown, this);
         windowEventEmitter.off("keyup", this.onScoreBoardKeyUp, this);
 
