@@ -4,12 +4,12 @@
         <div class="credits">
             <!-- Links -->
             <div class="links">
-                <a href="https://github.com/upperlevel/carcassonne">
-                    <img alt="" src="" class="github-logo">
+                <a href="https://github.com/upperlevel/carcassonne" target="_blank">
+                    <img alt="" src="" class="github">
                 </a>
             </div>
             <small>
-                Developed by <a href="https://github.com/upperlevel">Upperlevel</a>
+                Developed by <a href="https://github.com/upperlevel" target="_blank" class="upperlevel">Upperlevel</a>
             </small>
         </div>
     </div>
@@ -32,10 +32,18 @@
         padding: 20px;
     }
 
-    .github-logo {
+    .github {
         width: auto;
         height: 32px;
         content: url("~Public/images/GitHub-Mark-Light-32px.png");
+    }
+
+    .github:hover {
+        opacity: 0.5;
+    }
+
+    .upperlevel:hover {
+        opacity: 0.5;
     }
 
 </style>
