@@ -539,15 +539,15 @@ export class GamePhase extends Phase {
     // ================================================================================================================================
 
     onEnd() {
-        this.winner = this.getScoreBoard()[0];
-
         this.roundState = RoundState.GameEnd;
-        this.vue.$forceUpdate();
 
         this.board.cardConnector.onGameEnd();
         this.board.onGameEnd();
 
         let endFunc = () => {
+            this.winner = this.getScoreBoard()[0];
+            this.vue.$forceUpdate();
+
             this.setScoreBoardVisible(true);
 
             this.lobbyCountdown = 20;
