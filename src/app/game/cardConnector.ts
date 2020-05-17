@@ -159,9 +159,9 @@ export class CardConnector {
             // Give scores to pawns, we need to be sure to give the score only one time to each player
             let toScore = new Set(winners);
             for (let pawn of pathData.pawns) {
-                if (toScore.has(pawn.owner)) {
+                if (toScore.has(pawn.owner.id)) {
                     pawn.addScore(score);
-                    toScore.delete(pawn.owner);
+                    toScore.delete(pawn.owner.id);
                 }
             }
 
@@ -314,7 +314,7 @@ class PathData {
     }
 
     addPawn(g: Pawn): void {
-        this.addFollower(g.owner, 1);
+        this.addFollower(g.owner.id, 1);
         this.pawns.push(g);
     }
 }
