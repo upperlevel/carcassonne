@@ -21,16 +21,12 @@
 </script>
 
 <style scoped>
-
-    .footer {
-    }
-
     .credits {
         text-align: right;
         padding: 20px;
     }
 
-    .github {
+    .github::after {
         width: auto;
         height: 32px;
         content: url("~Public/images/GitHub-Mark-Light-32px.png");

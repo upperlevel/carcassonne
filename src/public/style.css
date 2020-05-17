@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Merienda+One&display=swap');
 
 * {
@@ -8,7 +7,10 @@
 }
 
 body {
-    background-image: url('~Public/images/background.png');
+    background-image: url(
+        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAPklEQVQoU2NkYGAwZmBgOMsAASD2cwYGhmcwPiOUIcXAwCCJpBDOhynA0AkzCaQA2QoMk0AKQIJwO+nvBmMAk2YWvDhYBRoAAAAASUVORK5CYII=
+    );
+    background-color: #6e472c;
 }
 
 .phase-container {
@@ -95,8 +97,19 @@ input[type=text] {
     }
 }
 
-.footer {
+.header {
     width: 100%;
-    background-image: url('~Public/images/footer.png');
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAWElEQVQoU2WOAQ3AIBADDxvYwAY6JgodszEb6FiaUTL+PyH5hv61BWjAwzcXcAPTuqxFJr2xdAW6tA26FCWRZNCnLxNJBuF2ZiQ5YmfGTv8OR3uTYodEegHjChci0QjV9AAAAABJRU5ErkJggg==);
+
+    border-bottom: 1px solid #523524;
+    background-color: #523524
 }
 
+.footer, .game-footer {
+
+    width: 100%;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAWElEQVQoU2WOAQ3AIBADDxvYwAY6JgodszEb6FiaUTL+PyH5hv61BWjAwzcXcAPTuqxFJr2xdAW6tA26FCWRZNCnLxNJBuF2ZiQ5YmfGTv8OR3uTYodEegHjChci0QjV9AAAAABJRU5ErkJggg==);
+
+    border-top: 1px solid #523524;
+    background-color: #523524;
+}

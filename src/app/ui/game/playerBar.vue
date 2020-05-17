@@ -1,5 +1,5 @@
 <template>
-    <div class="player-bar">
+    <div class="player-bar header">
         <div v-for="player in players" class="player">
             <avatar-component
                     style="height: 85px"
@@ -36,9 +36,8 @@
 
 <style scoped>
     .player-bar {
+        padding-bottom: 13px;
         text-align: center;
-        background-color: darkgray;
-        border-bottom: 3px solid dimgray;
     }
 
     .round-of-marker {

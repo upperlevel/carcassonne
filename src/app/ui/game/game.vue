@@ -1,8 +1,9 @@
-
 <template>
     <div class="game">
         <!------------------------------------------------------------------------------------------------ player-bar -->
-        <player-bar-component class="player-bar" :players="this.players"></player-bar-component>
+        <player-bar-component :players="this.players">
+
+        </player-bar-component>
 
         <!------------------------------------------------------------------------------------------------ hint-bar -->
         <div class="hint-bar" v-html="getRoundStateHint()"></div>
@@ -26,7 +27,7 @@
             </div>
 
             <!-- Next round -->
-            <div class="button-bar">
+            <div class="button-bar game-footer">
                 <button class="primary-btn" v-on:click="onNextRound" :disabled="!canNextRound()">
                     Done!
                 </button>
@@ -293,7 +294,6 @@
 
     .button-bar {
         text-align: center;
-        background-image: url("~Public/images/footer.png");
 
         padding: 20px;
 
