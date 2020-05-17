@@ -101,6 +101,7 @@ export class GamePhase extends Phase {
                     players: self.orderedPlayers,
                     roundState: self.roundState,
                     showScoreBoard: false,
+                    myPawnImage: "",
                 }
             },
         })

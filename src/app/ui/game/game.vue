@@ -20,8 +20,7 @@
                                 class="pawn"
 
                                 :game-phase="gamePhase"
-                                :pawn-id="myPlayer.details.avatar"
-                                :color="myPlayer.details.color"
+                                :pawn-image="myPawnImage"
                 >
                 </pawn-component>
             </div>
@@ -74,6 +73,10 @@
     import PawnComponent from "./pawn.vue";
 
     import {RoundState} from "../../phase/gamePhase";
+    import * as PIXI from "pixi.js"
+    import hex2rgb = PIXI.utils.hex2rgb;
+
+    import PawnsImg from "Public/images/pawns.png";
 
     export default Vue.extend({
         /* Passed on initialization.
@@ -89,6 +92,9 @@
             PlayerBarComponent,
             BagComponent,
             PawnComponent
+        },
+        mounted: function () {
+            this.recomputePawnImage()
         },
         methods: {
             onPawnInteract(event: MouseEvent) {
@@ -160,6 +166,56 @@
 
             isGameEnd() {
                 return this.gamePhase.roundState === RoundState.GameEnd;
+            },
+
+            recomputePawnImage() {
+                let fg = new Image();
+                fg.src = PawnsImg;
+
+                let onReady = () => {
+                    let canvas = document.createElement("canvas");
+                    canvas.style.display = "none";
+
+                    let color = this.myPlayer.details.color;
+
+                    let atlas = PIXI.Loader.shared.resources["pawns"].spritesheet;
+
+                    let size = atlas.baseTexture;
+
+                    const name = "pawn_" + this.myPlayer.details.avatar + ".png";
+                    const frame = atlas.textures[name].orig;
+
+                    canvas.width = frame.width;
+                    canvas.height = frame.height;
+                    let ctx = canvas.getContext("2d");
+
+                    ctx.globalCompositeOperation = 'copy';
+                    ctx.drawImage(fg, frame.x, frame.y, size.width, size.height, 0, 0, size.width, size.height);
+
+                    const rgbValues = hex2rgb(color);
+                    const r = rgbValues[0];
+                    const g = rgbValues[1];
+                    const b = rgbValues[2];
+
+                    const pixelData = ctx.getImageData(0, 0, size.width, size.height);
+                    let pixels = pixelData.data;
+
+                    for (let i = 0; i < pixels.length; i += 4) {
+                        pixels[i + 0] *= r;
+                        pixels[i + 1] *= g;
+                        pixels[i + 2] *= b;
+                    }
+
+                    ctx.putImageData(pixelData, 0, 0);
+                    console.log(canvas.toDataURL());
+                    this.myPawnImage = canvas.toDataURL();
+                };
+
+                if (fg.complete) {
+                    onReady()
+                } else {
+                    fg.onload = onReady;
+                }
             }
         },
     });
