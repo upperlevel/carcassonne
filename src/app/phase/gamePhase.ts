@@ -186,6 +186,18 @@ export class GamePhase extends Phase {
         }
     }
 
+    canPlacePawn(): boolean {
+        if (!this.canSkipRound()) return
+
+        if ((this.roundOf.pawns + this.roundOf.pendingPawns) <= 0) return false;
+
+        if (this.placedCard.tile.monasteryData !== undefined) {
+            return true
+        }
+
+        return this.board.cardConnector.canOwnAnyPath(this.placedCard.x, this.placedCard.y);
+    }
+
     hasDrawn() {
         return this.drawnCard !== undefined;
     }
@@ -364,7 +376,7 @@ export class GamePhase extends Phase {
         if (this.drawnCard && this.isMyRound()) {
             let pos = event.data.getLocalPosition(this.board, null, event.data.global);
             this.board.containerCoordsToTileCoords(pos, pos);
-            this.onPlaceSend(pos.x, pos.y)
+            this.onTryPlace(pos.x, pos.y);
         }
     }
 
@@ -413,26 +425,31 @@ export class GamePhase extends Phase {
         this.drawnCard = undefined;
         this.drawnCardSprite = undefined;
 
-        this.vue.$forceUpdate();
+        if (this.isMyRound()) {
+            channel.send({
+                type: "player_place_card",
+                x: x,
+                y: y,
+                rotation: rotation,
+            } as PlayerPlaceCard);
+        }
+
+        if (!this.canPlacePawn()) {
+            this.nextRound();
+        } else {
+            this.vue.$forceUpdate();
+        }
 
         return true;
     }
 
-    /** Function called when the board is clicked. */
-    onPlaceSend(x: number, y: number) {
+    /** Function called when a card is placed and packet sending is requested. */
+    onTryPlace(x: number, y: number) {
         if (!this.drawnCard || !this.isMyRound()) // Card not drawn or it's not your round.
             return false;
+
         let rotation = this.drawnCard.rotation;
-        if (!this.onPlace(x, y, rotation)) {
-            return false;
-        }
-        channel.send({
-            type: "player_place_card",
-            x: x,
-            y: y,
-            rotation: rotation,
-        } as PlayerPlaceCard);
-        return true;
+        return this.onPlace(x, y, rotation);
     }
 
     /** Function called when another player (that is not me) places a card.*/

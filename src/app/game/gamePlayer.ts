@@ -8,6 +8,9 @@ export class GamePlayer {
     score: number = 0;
     pawns: number = 5;
 
+    // Pawns that will be returned after the animation ends.
+    pendingPawns: number = 0;
+
     online: boolean = true;
 
     constructor(phase: GamePhase, details: PlayerObject) {

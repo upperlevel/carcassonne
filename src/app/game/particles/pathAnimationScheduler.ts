@@ -13,6 +13,7 @@ export class PathAnimationScheduler {
     }
 
     addAnimation(data: AnimationData) {
+        data.pawns.forEach(x => x.setPending());
         this.runLater.push(data);
         this.tryStart();
     }

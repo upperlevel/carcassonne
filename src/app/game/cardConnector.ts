@@ -248,6 +248,18 @@ export class CardConnector {
         if (pathId < 0) return undefined;
         return this.pathData.get(pathId);
     }
+
+    canOwnAnyPath(x: number, y: number) {
+        let tile = this.board.get(x, y);
+        if (tile === undefined) return false;
+        for (let side of SideUtil.all) {
+            if (!SideTypeUtil.isOwnable(tile.getSideType(side))) continue;
+            let path = tile.paths[side];
+            if (path < 0) continue;
+            if (this.pathData.get(path).followers.size == 0) return true;
+        }
+        return false;
+    }
 }
 
 class TileSide {
