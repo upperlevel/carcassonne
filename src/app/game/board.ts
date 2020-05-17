@@ -230,6 +230,15 @@ export class Board extends PIXI.Container {
 
         this.cardConnector.addCard(x, y);
 
+        // Update nearby monasteries (but not the currently placed card)
+        for (let dx of [-1, 0, 1]) {
+            for (let dy of [-1, 0, 1]) {
+                if (dx == 0 && dy == 0) continue;
+                this.monasteryPlaceNeighbour(x + dx, y + dy);
+            }
+        }
+
+
         // Graphics
         let sprite = tile.createSprite();
         sprite.anchor.set(0.5, 0.5);
@@ -251,14 +260,6 @@ export class Board extends PIXI.Container {
 
         // If monastery: initialize data
         this.monasteryInit(placedX, placedY);
-
-        // Update nearby monasteries
-        for (let dx of [-1, 0, 1]) {
-            for (let dy of [-1, 0, 1]) {
-                if (dx == 0 && dy == 0) continue;
-                this.monasteryPlaceNeighbour(placedX + dx, placedY + dy);
-            }
-        }
 
         this.cardConnector.onTurnEnd(endGame);
     }
