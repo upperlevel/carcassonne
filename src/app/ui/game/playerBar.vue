@@ -15,6 +15,9 @@
                     {{ player.score }}
                 </div>
                 <div>
+                    <div v-if="player.pawns === 0" class="pawn">
+                        &nbsp
+                    </div>
                     <div v-for="pawn in player.pawns" :key="pawn" class="pawn">
                         <svg height="14" width="14">
                             <circle cx="7" cy="7" r="6" stroke="black" stroke-width="1" :fill="`#${(`00000${(player.color | 0).toString(16)}`).substr(-6)}`" />
