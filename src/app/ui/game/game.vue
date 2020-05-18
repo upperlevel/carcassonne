@@ -1,9 +1,7 @@
 <template>
     <div class="game">
         <!------------------------------------------------------------------------------------------------ player-bar -->
-        <player-bar-component :players="this.players">
-
-        </player-bar-component>
+        <player-bar-component class="player-bar" :players="this.players"></player-bar-component>
 
         <!------------------------------------------------------------------------------------------------ hint-bar -->
         <div class="hint-bar" v-html="getRoundStateHint()"></div>
@@ -246,7 +244,7 @@
     }
 
     .player-bar {
-        position: absolute;
+        position: fixed;
         top: 0;
         width: 100%;
         z-index: 1;

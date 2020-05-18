@@ -2,14 +2,13 @@
 
 * {
     margin: 0;
-    color: white;
     font-family: 'Merienda One', cursive;
 }
 
 body {
-    background-image: url(
-        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAPklEQVQoU2NkYGAwZmBgOMsAASD2cwYGhmcwPiOUIcXAwCCJpBDOhynA0AkzCaQA2QoMk0AKQIJwO+nvBmMAk2YWvDhYBRoAAAAASUVORK5CYII=
-    );
+    color: white;
+
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAPklEQVQoU2NkYGAwZmBgOMsAASD2cwYGhmcwPiOUIcXAwCCJpBDOhynA0AkzCaQA2QoMk0AKQIJwO+nvBmMAk2YWvDhYBRoAAAAASUVORK5CYII=);
     background-color: #6e472c;
 }
 
@@ -97,19 +96,7 @@ input[type=text] {
     }
 }
 
-.header {
-    width: 100%;
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAWElEQVQoU2WOAQ3AIBADDxvYwAY6JgodszEb6FiaUTL+PyH5hv61BWjAwzcXcAPTuqxFJr2xdAW6tA26FCWRZNCnLxNJBuF2ZiQ5YmfGTv8OR3uTYodEegHjChci0QjV9AAAAABJRU5ErkJggg==);
-
-    border-bottom: 1px solid #523524;
-    background-color: #523524
-}
-
 .footer, .game-footer {
-
     width: 100%;
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAWElEQVQoU2WOAQ3AIBADDxvYwAY6JgodszEb6FiaUTL+PyH5hv61BWjAwzcXcAPTuqxFJr2xdAW6tA26FCWRZNCnLxNJBuF2ZiQ5YmfGTv8OR3uTYodEegHjChci0QjV9AAAAABJRU5ErkJggg==);
-
-    border-top: 1px solid #523524;
-    background-color: #523524;
+    background-color: rgba(0, 0, 0, 0.25);
 }
