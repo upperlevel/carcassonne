@@ -1,10 +1,7 @@
 <template>
     <div class="game">
-        <!------------------------------------------------------------------------------------------------ player-bar -->
         <player-bar-component class="player-bar" :players="this.players"></player-bar-component>
-
-        <!------------------------------------------------------------------------------------------------ hint-bar -->
-        <div class="hint-bar" v-html="getRoundStateHint()"></div>
+        <hint-bar-component class="hint" :game-phase="this.gamePhase" :round-of="this.gamePhase.roundOf" :round-state="this.gamePhase.roundState"></hint-bar-component>
 
         <!------------------------------------------------------------------------------------------------ game-bar -->
 
@@ -69,6 +66,7 @@
     import PlayerBarComponent from "./playerBar.vue";
     import BagComponent from "./bag.vue";
     import PawnComponent from "./pawn.vue";
+    import HintBarComponent from "./hintBar.vue";
 
     import {RoundState} from "../../phase/gamePhase";
     import * as PIXI from "pixi.js"
@@ -89,7 +87,8 @@
         components: {
             PlayerBarComponent,
             BagComponent,
-            PawnComponent
+            PawnComponent,
+            HintBarComponent
         },
         mounted: function () {
             this.recomputePawnImage()
@@ -129,37 +128,6 @@
                     default:
                         return {color: "white"};
                 }
-            },
-
-            getRoundStateHint() {
-                if (this.gamePhase.isMyRound()) {
-                    switch (this.gamePhase.roundState) {
-                        case RoundState.CardDraw:
-                            return `<h4 style="color: yellow">Yo! It's your turn, <u>draw a card</u>.</h4>`;
-                        case RoundState.CardPlace:
-                            return `<h4 style="color: yellow"><u>Place the card</u> on the board.</h4>`;
-                        case RoundState.PawnPick:
-                            return `<h4 style="color: yellow"><u>Skip</u> the round or <u>pick a pawn</u>.</h4>`;
-                        case RoundState.PawnPlace:
-                            return `<h4 style="color: yellow"><u>Place the pawn</u> within the card you've placed.</h4>`;
-                        default:
-                            return "";
-                    }
-                }
-                const roundOf = this.gamePhase.roundOf;
-
-                // roundOf can be undefined as soon as the game-phase starts.
-                // However, the hint-bar is filled when the first nextRound() is called.
-                if (roundOf !== undefined) {
-                    const roundOfColor = this.colorToStr(roundOf.color);
-                    if (roundOf.online) {
-                        return `<h4 style="color: red">It's the turn of: <span style="color: ${roundOfColor}">${roundOf.username}</span>.</h4>`;
-                    } else {
-                        return `<h4 style="color: red">It should be the turn of <span style="color: ${roundOfColor}">${roundOf.username}</span>, but he passed to a better life. .·´¯\`(>▂<)´¯\`·.</h4>`;
-                    }
-                }
-
-                return "";
             },
 
             isGameEnd() {
@@ -224,9 +192,9 @@
         user-select: none;
     }
 
-    .hint-bar {
+    .hint {
         position: absolute;
-        bottom: 80px;
+        bottom: 105px;
         width: 100%;
         z-index: 40;
         text-align: center;
