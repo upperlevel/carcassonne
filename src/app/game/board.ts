@@ -171,6 +171,29 @@ export class Board extends PIXI.Container {
         }
 
         tile.monasteryData.completedTiles = score;
+        if (score == 9) {
+            this.monasteryOnComplete(x, y);
+        }
+    }
+
+    private monasteryOnComplete(x: number, y: number) {
+        let tile = this.get(x, y);
+        if (tile === undefined) return;
+        let data = tile.monasteryData;
+        if (data === undefined || data.pawn == undefined) return;
+
+        // Create animation
+        let tiles = new Array<[number, number]>();
+        for (let dx of [-1, 0, 1]) {
+            for (let dy of [-1, 0, 1]) {
+                tiles.push([x + dx, y + dy]);
+            }
+        }
+
+        data.pawn.addScore(9);
+        let animData = new AnimationData(tiles, [data.pawn]);
+        this.phase.pathAnimationScheduler.addAnimation(animData);
+        data.pawn = undefined;
     }
 
     private monasteryPlaceNeighbour(x: number, y: number) {
@@ -179,18 +202,7 @@ export class Board extends PIXI.Container {
         let data = tile.monasteryData;
 
         if (++data.completedTiles >= 9 && data.pawn !== undefined) {
-            // Create animation
-            let tiles = new Array<[number, number]>();
-            for (let dx of [-1, 0, 1]) {
-                for (let dy of [-1, 0, 1]) {
-                    tiles.push([x + dx, y + dy]);
-                }
-            }
-
-            data.pawn.addScore(9);
-            let animData = new AnimationData(tiles, [data.pawn]);
-            this.phase.pathAnimationScheduler.addAnimation(animData);
-            data.pawn = undefined;
+            this.monasteryOnComplete(x, y);
         }
     }
 
