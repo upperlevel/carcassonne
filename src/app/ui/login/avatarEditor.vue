@@ -1,11 +1,11 @@
 <template>
     <div>
         <div class="avatar">
-            <button class="secondary-btn back" v-on:click="prevAvatar()"><</button>
+            <button class="btn secondary-btn back" v-on:click="prevAvatar()"><</button>
 
             <avatar-component class="preview" :avatar-id="avatarId" :color="this.color"></avatar-component>
 
-            <button class="secondary-btn next" v-on:click="nextAvatar()">></button>
+            <button class="btn secondary-btn next" v-on:click="nextAvatar()">></button>
         </div>
         <div class="color-pool">
             <color-pool-component v-model="color"></color-pool-component>

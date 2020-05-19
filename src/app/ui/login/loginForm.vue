@@ -11,7 +11,7 @@
             <avatar-editor ref="editor"></avatar-editor>
         </div>
         <!-- Play! -->
-        <button class="primary-btn" style="margin-top: 30px" v-on:click="submit()" :disabled="!canSubmit()">
+        <button class="btn primary-btn" style="margin-top: 30px" v-on:click="submit()" :disabled="!canSubmit()">
             Play!
         </button>
         <!-- Error -->
@@ -37,7 +37,7 @@
         },
         methods: {
             canSubmit() {
-                if (this.name.length < 1 || this.name.length > 16 || !/^[a-zA-Z0-9_]*$/.test(this.name))
+                if (this.name.length < 1 || this.name.length > 12 || !/^[a-zA-Z0-9_]*$/.test(this.name))
                     return false;
                 return true;
             },

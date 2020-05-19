@@ -22,7 +22,7 @@
 
             <!-- Next round -->
             <div class="button-bar game-footer">
-                <button class="primary-btn" v-on:click="onNextRound" :disabled="!canNextRound()">
+                <button class="btn primary-btn" v-on:click="onNextRound" :disabled="!canNextRound()">
                     Done!
                 </button>
             </div>

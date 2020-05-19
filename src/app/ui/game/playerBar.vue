@@ -3,7 +3,6 @@
         <div v-for="player in players" class="player" :style="player.isMyRound() ? {backgroundColor: 'rgba(255, 255, 0, 0.25)'} : {backgroundColor: 'rgba(0, 0, 0, 0.25)'}">
             <avatar-component
                     class="avatar"
-                    style="height: 85px"
                     :avatarId="player.details.avatar"
                     :color="player.details.color"
             ></avatar-component>
@@ -58,14 +57,26 @@
         text-align: center;
         display: inline-block;
 
-        padding: 13px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+
         border-radius: 5px;
 
         text-shadow: 1px 0 0 black, -1px 0 0 black, 0 1px 0 black, 0 -1px 0 black, 1px 1px black, -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black;
 
         margin-right: 13px;
 
+        width: 120px;
+        max-width: 120px;
+
         pointer-events: auto;
+    }
+
+    .player .avatar {
+        display: inline-block;
+
+        width: 85px;
+        height: 85px;
     }
 
     .player .name {

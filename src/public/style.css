@@ -57,6 +57,16 @@ input[type=text] {
     outline: none;
 }
 
+.btn {
+    font-size: 14px;
+    padding: 16px 24px;
+}
+
+.btn-sm {
+    font-size: 10px;
+    padding: 8px 10px;
+}
+
 .primary-btn {
     color: rgba(0, 0, 0, 1);
     background-color: #ffd324;
@@ -64,7 +74,6 @@ input[type=text] {
     border: none;
     border-radius: 2px;
     outline: none;
-    padding: 16px 24px;
 }
 
 .primary-btn:hover {
