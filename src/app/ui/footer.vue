@@ -2,9 +2,7 @@
     <div class="footer">
         <div class="credits">
             <div class="links">
-                <a href="https://github.com/upperlevel/carcassonne" target="_blank">
-                    <img alt="" src="" class="github">
-                </a>
+                <a href="https://github.com/upperlevel/carcassonne" target="_blank" class="github"></a>
             </div>
             <small>
                 Developed by <a href="https://github.com/upperlevel" target="_blank" class="upperlevel">Upperlevel</a>
@@ -26,14 +24,19 @@
         padding: 20px;
     }
 
-    .github::after {
-        width: auto;
+    .github {
+        display: inline-block;
+        width: 32px;
         height: 32px;
-        content: url("~Public/images/GitHub-Mark-Light-32px.png");
+        background-image: url("~Public/images/GitHub-Mark-Light-32px.png");
     }
 
     .github:hover {
         opacity: 0.5;
+    }
+
+    .upperlevel {
+        color: white;
     }
 
     .upperlevel:hover {
