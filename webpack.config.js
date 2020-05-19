@@ -81,7 +81,8 @@ const config = {
     plugins: [
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
-            title: "Carcassonne"
+            title: "Carcassonne",
+            template: "src/public/index.html"
         }),
         new VueLoaderPlugin(),
         new DotEnv({
