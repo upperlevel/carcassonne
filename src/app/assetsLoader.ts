@@ -16,12 +16,13 @@ import BagSpritesheet from "Public/spritesheets/bag.json";
 async function loadSpritesheet(loader: PIXI.Loader, name: string, image: string, data: any) {
     return new Promise((resolve, reject) => {
         const texture = PIXI.Texture.from(image);
-        const spritesheet = new PIXI.Spritesheet(texture, data);
-
-        loader.resources[name] = new (PIXI.LoaderResource as any)(name, "");
-        loader.resources[name].spritesheet = spritesheet;
-        spritesheet.parse(() => {
-            resolve(spritesheet);
+        texture.baseTexture.on("loaded", () => {
+            const spritesheet = new PIXI.Spritesheet(texture, data);
+            loader.resources[name] = new (PIXI.LoaderResource as any)(name, "");
+            loader.resources[name].spritesheet = spritesheet;
+            spritesheet.parse(() => {
+                resolve(spritesheet);
+            });
         });
     });
 }
