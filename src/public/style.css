@@ -33,7 +33,6 @@ body {
 .secondary-btn {
     background-color: #6e472c;
     color: rgba(255, 255, 255, 1);
-    font-weight: bold;
     border: none;
     outline: none;
 }
@@ -49,6 +48,18 @@ body {
     background-color: #7e5330;
 }
 
+.info-btn {
+    background-color: #faf8f0;
+    color: black;
+    border: none;
+    outline: none;
+}
+
+.info-btn:hover {
+    cursor: pointer;
+    background-color: white;
+}
+
 input[type=text] {
     background-color: #6e472c;
     border: none;
@@ -59,6 +70,7 @@ input[type=text] {
 
 .btn {
     font-size: 14px;
+    border-radius: 2px;
     padding: 16px 24px;
 }
 
@@ -70,9 +82,7 @@ input[type=text] {
 .primary-btn {
     color: rgba(0, 0, 0, 1);
     background-color: #ffd324;
-    font-weight: bold;
     border: none;
-    border-radius: 2px;
     outline: none;
 }
 
