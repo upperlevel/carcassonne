@@ -74,6 +74,11 @@ input[type=text] {
     padding: 16px 24px;
 }
 
+.btn::-moz-focus-inner {
+    border: none;
+    outline: none;
+}
+
 .btn-sm {
     font-size: 10px;
     padding: 8px 10px;
