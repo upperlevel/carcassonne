@@ -1,6 +1,6 @@
 [
   {
-    "spritePath": "image--000.jpg",
+    "spritePath": "image--000.png",
     "quantity": 4,
     "sides": {
       "top": "lawn",
@@ -13,7 +13,7 @@
     "flags": ["monastery"]
   },
   {
-    "spritePath": "image--001.jpg",
+    "spritePath": "image--001.png",
     "quantity": 2,
     "sides": {
       "top": "lawn",
@@ -26,7 +26,7 @@
     "flags": ["monastery"]
   },
   {
-    "spritePath": "image--002.jpg",
+    "spritePath": "image--002.png",
     "quantity": 2,
     "sides": {
       "top": "village",
@@ -40,7 +40,7 @@
     "flags": ["pennant"]
   },
   {
-    "spritePath": "image--003.jpg",
+    "spritePath": "image--003.png",
     "quantity": 3,
     "sides": {
       "top": "village",
@@ -54,7 +54,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--004.jpg",
+    "spritePath": "image--004.png",
     "quantity": 1,
     "sides": {
       "top": "village",
@@ -68,7 +68,7 @@
     "flags": ["pennant"]
   },
   {
-    "spritePath": "image--005.jpg",
+    "spritePath": "image--005.png",
     "quantity": 1,
     "sides": {
       "top": "village",
@@ -82,7 +82,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--006.jpg",
+    "spritePath": "image--006.png",
     "quantity": 2,
     "sides": {
       "top": "village",
@@ -96,7 +96,7 @@
     "flags": ["pennant"]
   },
   {
-    "spritePath": "image--007.jpg",
+    "spritePath": "image--007.png",
     "quantity": 3,
     "sides": {
       "top": "village",
@@ -110,7 +110,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--008.jpg",
+    "spritePath": "image--008.png",
     "quantity": 2,
     "sides": {
       "top": "village",
@@ -124,7 +124,7 @@
     "flags": ["pennant"]
   },
   {
-    "spritePath": "image--009.jpg",
+    "spritePath": "image--009.png",
     "quantity": 3,
     "sides": {
       "top": "village",
@@ -139,7 +139,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--010.jpg",
+    "spritePath": "image--010.png",
     "quantity": 2,
     "sides": {
       "top": "village",
@@ -154,7 +154,7 @@
     "flags": ["pennant"]
   },
   {
-    "spritePath": "image--011.jpg",
+    "spritePath": "image--011.png",
     "quantity": 1,
     "sides": {
       "top": "lawn",
@@ -168,7 +168,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--012.jpg",
+    "spritePath": "image--012.png",
     "quantity": 2,
     "sides": {
       "top": "lawn",
@@ -182,7 +182,7 @@
     "flags": ["pennant"]
   },
   {
-    "spritePath": "image--013.jpg",
+    "spritePath": "image--013.png",
     "quantity": 2,
     "sides": {
       "top": "village",
@@ -195,7 +195,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--014.jpg",
+    "spritePath": "image--014.png",
     "quantity": 3,
     "sides": {
       "top": "village",
@@ -208,7 +208,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--015.jpg",
+    "spritePath": "image--015.png",
     "quantity": 5,
     "sides": {
       "top": "village",
@@ -221,7 +221,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--016.jpg",
+    "spritePath": "image--016.png",
     "quantity": 3,
     "sides": {
       "top": "village",
@@ -235,7 +235,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--017.jpg",
+    "spritePath": "image--017.png",
     "quantity": 3,
     "sides": {
       "top": "village",
@@ -249,7 +249,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--018.jpg",
+    "spritePath": "image--018.png",
     "quantity": 3,
     "sides": {
       "top": "village",
@@ -262,7 +262,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--019.jpg",
+    "spritePath": "image--019.png",
     "quantity": 4,
     "sides": {
       "top": "village",
@@ -276,7 +276,7 @@
     "flags": ["root"]
   },
   {
-    "spritePath": "image--020.jpg",
+    "spritePath": "image--020.png",
     "quantity": 8,
     "sides": {
       "top": "road",
@@ -290,7 +290,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--021.jpg",
+    "spritePath": "image--021.png",
     "quantity": 9,
     "sides": {
       "top": "lawn",
@@ -304,7 +304,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--022.jpg",
+    "spritePath": "image--022.png",
     "quantity": 4,
     "sides": {
       "top": "lawn",
@@ -317,7 +317,7 @@
     "flags": []
   },
   {
-    "spritePath": "image--023.jpg",
+    "spritePath": "image--023.png",
     "quantity": 1,
     "sides": {
       "top": "road",
