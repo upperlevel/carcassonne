@@ -2,7 +2,7 @@
     <div class="phase-container">
         <div class="title-container">
             <h1 class="title">Carcassonne</h1>
-            A board-game brought online!
+            <p>Carcassonne board game brought online!</p>
         </div>
 
         <login-form ref="form"></login-form>

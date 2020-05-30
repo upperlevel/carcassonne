@@ -4,8 +4,9 @@
             <div class="links">
                 <a href="https://github.com/upperlevel/carcassonne" target="_blank" class="github"></a>
             </div>
-            <small>
-                Developed by <a href="https://github.com/upperlevel" target="_blank" class="upperlevel">Upperlevel</a>
+            <small style="color: lightgray">
+                Developed by <a href="https://github.com/upperlevel" target="_blank" class="upperlevel">Upperlevel</a> /
+                Drawings by <span style="color: white">Giorgia Nizzoli</span>
             </small>
         </div>
     </div>

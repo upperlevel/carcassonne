@@ -4,11 +4,11 @@
         <p>
             The game is divided in turns.
             <br>
-            Every turn the player must draw a card from the bag and place it on the map, where it's possible.
-            After placing the card, the player has the possibility to own the structure formed (a village, or a road) by placing a pawn on it.
+            Every turn the player has to draw a card from the bag and place it on the map where possible.
+            After placing the card, the player can decide to own the structure formed (a village or a road) by placing a pawn on it.
             <br>
             If the structure was already owned by another player, this can't be done.
-            After closing a structure, the players that have the highest number of pawns within it will receive the same amount of point.
+            After closing a structure, the players that have the highest number of pawns within it will receive the same amount of points.
             <br>
             The game ends when the bag's empty and the winner is the player that scored higher points.
         </p>

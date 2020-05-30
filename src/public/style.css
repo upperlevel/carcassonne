@@ -102,7 +102,19 @@ input[type=text] {
     background-color: #ffe666;
 }
 
-.error-text {
+.text-primary {
+    color: #ffd324;
+}
+
+.text-success {
+    color: #B2FF59;
+}
+
+.text-info {
+    color: #EEEEEE;
+}
+
+.text-error {
     color: red;
     text-shadow: 1px 1px 5px black;
 }

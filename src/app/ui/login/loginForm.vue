@@ -15,7 +15,7 @@
             Play!
         </button>
         <!-- Error -->
-        <div class="error-text">{{ errorMessage }}</div>
+        <div class="text-error">{{ errorMessage }}</div>
     </div>
 </template>
 
@@ -87,7 +87,7 @@
 
     }
 
-    .error-text {
+    .text-error {
         padding-top: 17px;
         padding-bottom: 17px;
     }

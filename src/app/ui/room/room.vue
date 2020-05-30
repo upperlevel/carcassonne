@@ -2,7 +2,17 @@
     <div class="phase-container">
         <div class="title-container">
             <h1 class="title">Carcassonne</h1>
-            A board-game brought online!
+            <div v-if="this.playersCount() < 2" style="color: #B2FF59">
+                Invite friends to play Carcassonne with you, the minimum number of players requested to start is 2.
+            </div>
+            <div class="text-primary" v-else>
+                <div v-if="this.me.isHost">
+                    When you're ready press start!
+                </div>
+                <div class="text-info" v-else>
+                    Only the guy with the underlined name can start.
+                </div>
+            </div>
         </div>
 
         <div style="text-align: center;">

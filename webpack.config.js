@@ -82,6 +82,7 @@ const config = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             title: "Carcassonne",
+            favicon: "src/public/favicon.png",
             template: "src/public/index.html"
         }),
         new VueLoaderPlugin(),
