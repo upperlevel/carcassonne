@@ -1,7 +1,7 @@
 # Carcassonne
 Carcassone board-game brought online.
 
-If you don't know what carcassonne is, visit us at [carcassonne.xyz](https://carcassonne.xyz) (and remember to bring friends!).
+If you don't know what carcassonne is, visit us at [carcassonne.online](https://carcassonne.online) (and remember to bring friends!).
 
 ### How do I host it?
 This is only the client code, the server code is hosted [here](https://gtihub.com/upperlevel/carcassonne-server).
