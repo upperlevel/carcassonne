@@ -9,6 +9,26 @@ This is only the client code, the server code is hosted [here](https://gtihub.co
 In our production server a nginx webserver hosts the files and routes websocket requests to carcasssonne-server.
 To select where you want your websocket to connect you can edit configurations in your .env file.
 
+### How do I build it?
+
+In order to build the client you only need Node.js (preferably >= 18.x).
+
+After you've cloned the repository, install the node.js dependencies:
+
+```
+npm install .
+```
+
+Then you have to copy `.env.example` into `.env` and if needed configure the fields as you like.
+
+Build the game files:
+
+```
+npx webpack --mode production
+```
+
+Once built carcassonne's game files can be found under the `./dist` directory. The generated files have to be statically served by a webserver such as Apache or nginx.
+
 ### Why did you create it?
 In our lonely quarantine days we wanted to play with our friends but we found no game like carcassonne available
 online, so we started creating it! If you want to help us make more games like this available do not hesitate to
